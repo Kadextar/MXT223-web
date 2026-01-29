@@ -501,9 +501,9 @@ async def get_subjects():
                 subjects.append(subject)
             
             return subjects
-    except Exception as e:
-        print(f"Subjects API Error: {e}")
-        return []
+        except Exception as e:
+            print(f"Subjects API Error: {e}")
+            return []
 
 # Exams API Endpoints
 @app.get("/api/exams")
