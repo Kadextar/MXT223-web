@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/menu.css">
     <link rel="stylesheet" href="/static/search.css">
+    <link rel="stylesheet" href="/static/install.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -123,6 +124,39 @@
             </div>
         </main>
 
+        <!-- PWA Install Banner (Android/Desktop) -->
+        <div id="install-banner" class="install-banner hidden">
+            <div class="install-banner-content">
+                <div class="install-banner-icon">📱</div>
+                <div class="install-banner-text">
+                    <h3>Установить приложение</h3>
+                    <p>Быстрый доступ с главного экрана</p>
+                </div>
+                <div class="install-banner-actions">
+                    <button id="install-btn" class="install-btn-primary">
+                        Установить
+                    </button>
+                    <button id="install-dismiss" class="install-btn-secondary">
+                        Позже
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- iOS Install Instructions -->
+        <div id="ios-install-instructions" class="ios-install-instructions hidden">
+            <div class="ios-install-content">
+                <h3>📱 Установите приложение на iPhone</h3>
+                <div class="ios-install-steps">
+                    <span>Нажмите</span>
+                    <span>📤 Поделиться</span>
+                    <span>→</span>
+                    <span>На экран "Домой"</span>
+                </div>
+                <button id="ios-close-btn" class="ios-close-btn">Понятно</button>
+            </div>
+        </div>
+
         <footer class="footer">
             <p>Developed for MXT-223</p>
         </footer>
@@ -131,6 +165,7 @@
     <!-- Scripts -->
     <script src="/static/theme.js"></script>
     <script src="/static/search.js"></script>
+    <script src="/static/install.js"></script>
     <script type="module" src="/static/app.js"></script>
     <script src="/static/menu.js"></script>
     <script>

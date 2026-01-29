@@ -1,0 +1,211 @@
+.install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 9998;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.install-banner.hidden {
+    display: none;
+}
+
+.install-banner-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.install-banner-icon {
+    font-size: 2.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.install-banner-text {
+    flex: 1;
+}
+
+.install-banner-text h3 {
+    color: white;
+    font-size: 1.1rem;
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
+}
+
+.install-banner-text p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.install-banner-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.install-btn-primary {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.install-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.install-btn-primary:active {
+    transform: translateY(0);
+}
+
+.install-btn-secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.install-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.install-btn-secondary:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .install-banner {
+        padding: 1rem 0.75rem;
+    }
+
+    .install-banner-content {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .install-banner-icon {
+        font-size: 2rem;
+    }
+
+    .install-banner-text {
+        flex: 1 1 100%;
+    }
+
+    .install-banner-text h3 {
+        font-size: 1rem;
+    }
+
+    .install-banner-text p {
+        font-size: 0.85rem;
+    }
+
+    .install-banner-actions {
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .install-btn-primary,
+    .install-btn-secondary {
+        flex: 1;
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* iOS specific styles */
+.ios-install-instructions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.5rem 1rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 9998;
+    animation: slideUp 0.4s ease-out;
+}
+
+.ios-install-instructions.hidden {
+    display: none;
+}
+
+.ios-install-content {
+    max-width: 600px;
+    margin: 0 auto;
+    color: white;
+    text-align: center;
+}
+
+.ios-install-content h3 {
+    font-size: 1.1rem;
+    margin: 0 0 1rem 0;
+}
+
+.ios-install-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.ios-install-steps span {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+}
+
+.ios-close-btn {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 0.625rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
