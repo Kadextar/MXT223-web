@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Экзамены - МХТ-223</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/exams.css">
+    <meta name="theme-color" content="#0f172a">
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="back-link">← Расписание</a>
+                <span class="badge">MXT-223</span>
+                <h1>Экзамены</h1>
+                <p class="subtitle">6-й семестр • 2025/2026</p>
+            </div>
+        </header>
+
+        <main class="exams-container">
+            <!-- Exams Grid -->
+            <div id="exams-grid" class="exams-grid">
+                <!-- Exams will be loaded here -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка экзаменов...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <div class="empty-icon">📚</div>
+                <p>Расписание экзаменов пока не опубликовано</p>
+                <small>Следите за обновлениями</small>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Developed for MXT-223</p>
+        </footer>
+    </div>
+
+    <script src="/static/exams.js"></script>
+</body>
+
+</html>

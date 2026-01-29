@@ -92,6 +92,22 @@ async def init_db():
     """
     await database.execute(query)
     
+    # Exams table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS exams (
+            id {id_type},
+            subject TEXT NOT NULL,
+            teacher TEXT,
+            exam_date DATE NOT NULL,
+            exam_time TEXT,
+            room TEXT,
+            exam_type TEXT,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    await database.execute(query)
+    
     # Check if students exist
     count_query = "SELECT COUNT(*) FROM students"
     count = await database.fetch_val(query=count_query)
@@ -286,6 +302,30 @@ async def get_subjects():
         return subjects
     except Exception as e:
         print(f"Subjects API Error: {e}")
+        return []
+
+# Exams API Endpoints
+@app.get("/api/exams")
+async def get_exams():
+    """Returns all exams sorted by date"""
+    try:
+        query = "SELECT * FROM exams ORDER BY exam_date ASC"
+        rows = await database.fetch_all(query=query)
+        exams = []
+        for row in rows:
+            exams.append({
+                "id": row["id"],
+                "subject": row["subject"],
+                "teacher": row["teacher"],
+                "exam_date": str(row["exam_date"]),
+                "exam_time": row["exam_time"],
+                "room": row["room"],
+                "exam_type": row["exam_type"],
+                "notes": row["notes"]
+            })
+        return exams
+    except Exception as e:
+        print(f"Exams API Error: {e}")
         return []
 
 # Teacher Rating API Endpoints
