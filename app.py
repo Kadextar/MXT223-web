@@ -153,6 +153,18 @@ def login():
 def ratings():
     return FileResponse(BASE_DIR / "web" / "ratings.html")
 
+@app.get("/profile.html")
+def profile():
+    return FileResponse(BASE_DIR / "web" / "profile.html")
+
+@app.get("/subjects.html")
+def subjects():
+    return FileResponse(BASE_DIR / "web" / "subjects.html")
+
+@app.get("/exams.html")
+def exams():
+    return FileResponse(BASE_DIR / "web" / "exams.html")
+
 @app.get("/manifest.json")
 def manifest():
     return FileResponse(BASE_DIR / "web" / "manifest.json", media_type="application/manifest+json")
