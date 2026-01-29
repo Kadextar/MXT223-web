@@ -53,6 +53,14 @@ async def shutdown():
 def index():
     return FileResponse(BASE_DIR / "web" / "index.html")
 
+@app.get("/login.html")
+def login():
+    return FileResponse(BASE_DIR / "web" / "login.html")
+
+@app.get("/ratings.html")
+def ratings():
+    return FileResponse(BASE_DIR / "web" / "ratings.html")
+
 @app.get("/manifest.json")
 def manifest():
     return FileResponse(BASE_DIR / "web" / "manifest.json", media_type="application/manifest+json")
@@ -64,6 +72,57 @@ def service_worker():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+# Authentication API
+from pydantic import BaseModel
+
+class LoginRequest(BaseModel):
+    telegram_id: str
+    password: str
+
+class ChangePasswordRequest(BaseModel):
+    telegram_id: str
+    old_password: str
+    new_password: str
+
+@app.post("/api/login")
+async def login_student(request: LoginRequest):
+    """Authenticate student with telegram_id and password"""
+    try:
+        query = "SELECT telegram_id, name FROM students WHERE telegram_id = $1 AND password = $2"
+        student = await database.fetch_one(query=query, values=[request.telegram_id, request.password])
+        
+        if student:
+            return {
+                "success": True,
+                "telegram_id": student["telegram_id"],
+                "name": student["name"]
+            }
+        else:
+            return {"success": False, "error": "Неверный ID или пароль"}
+    except Exception as e:
+        print(f"Login error: {e}")
+        return {"success": False, "error": "Ошибка сервера"}
+
+@app.post("/api/change-password")
+async def change_password(request: ChangePasswordRequest):
+    """Change student password"""
+    try:
+        # Verify old password
+        check_query = "SELECT id FROM students WHERE telegram_id = $1 AND password = $2"
+        student = await database.fetch_one(query=check_query, values=[request.telegram_id, request.old_password])
+        
+        if not student:
+            return {"success": False, "error": "Неверный старый пароль"}
+        
+        # Update password
+        update_query = "UPDATE students SET password = $1 WHERE telegram_id = $2"
+        await database.execute(query=update_query, values=[request.new_password, request.telegram_id])
+        
+        return {"success": True, "message": "Пароль успешно изменён"}
+    except Exception as e:
+        print(f"Password change error: {e}")
+        return {"success": False, "error": "Ошибка сервера"}
 
 @app.get("/api/schedule")
 async def get_schedule():

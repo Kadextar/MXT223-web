@@ -1,46 +1,61 @@
 // Login Page JavaScript
 
-// Список авторизованных студентов
-const AUTHORIZED_STUDENTS = [
-    '1748727700', // Робия
-    '1427112602', // Сардор
-    '1937736219', // Хислатбек
-    '207103078',  // Тимур
-    '5760110758', // Амир
-    '1362668588', // Мухаммад
-    '2023499343', // Абдумалик
-    '1214641616', // Азамат
-    '1020773033'  // Нозима
-];
-
 const loginForm = document.getElementById('login-form');
 const telegramIdInput = document.getElementById('telegram-id');
+const passwordInput = document.getElementById('password');
 
-loginForm.addEventListener('submit', function (e) {
+loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const telegramId = telegramIdInput.value.trim();
+    const password = passwordInput.value.trim();
 
-    if (!telegramId) {
-        alert('❌ Введите ваш Telegram ID');
+    if (!telegramId || !password) {
+        alert('❌ Введите ID и пароль');
         return;
     }
 
-    // Проверяем, есть ли студент в списке
-    if (AUTHORIZED_STUDENTS.includes(telegramId)) {
-        // Сохраняем ID в localStorage
-        localStorage.setItem('student_id', telegramId);
+    // Disable button during request
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Вход...';
 
-        // Перенаправляем на главную страницу
-        window.location.href = '/';
-    } else {
-        alert('❌ Доступ запрещен!\n\nВы не являетесь студентом группы МХТ-223.\nТолько студенты группы могут войти в систему.');
-        telegramIdInput.value = '';
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                telegram_id: telegramId,
+                password: password
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Save to localStorage
+            localStorage.setItem('student_id', result.telegram_id);
+            localStorage.setItem('student_name', result.name);
+
+            // Redirect to main page
+            window.location.href = '/';
+        } else {
+            alert('❌ ' + (result.error || 'Ошибка входа'));
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Войти';
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('❌ Ошибка подключения к серверу');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Войти';
     }
 });
 
-// Если уже авторизован, перенаправляем
+// If already logged in, redirect
 const studentId = localStorage.getItem('student_id');
-if (studentId && AUTHORIZED_STUDENTS.includes(studentId)) {
+if (studentId) {
     window.location.href = '/';
 }
