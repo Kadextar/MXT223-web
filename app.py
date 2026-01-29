@@ -89,8 +89,8 @@ class ChangePasswordRequest(BaseModel):
 async def login_student(request: LoginRequest):
     """Authenticate student with telegram_id and password"""
     try:
-        query = "SELECT telegram_id, name FROM students WHERE telegram_id = $1 AND password = $2"
-        student = await database.fetch_one(query=query, values=[request.telegram_id, request.password])
+        query = "SELECT telegram_id, name FROM students WHERE telegram_id = :telegram_id AND password = :password"
+        student = await database.fetch_one(query=query, values={"telegram_id": request.telegram_id, "password": request.password})
         
         if student:
             return {
@@ -109,20 +109,20 @@ async def change_password(request: ChangePasswordRequest):
     """Change student password"""
     try:
         # Verify old password
-        check_query = "SELECT id FROM students WHERE telegram_id = $1 AND password = $2"
-        student = await database.fetch_one(query=check_query, values=[request.telegram_id, request.old_password])
+        check_query = "SELECT id FROM students WHERE telegram_id = :telegram_id AND password = :old_password"
+        student = await database.fetch_one(query=check_query, values={"telegram_id": request.telegram_id, "old_password": request.old_password})
         
         if not student:
             return {"success": False, "error": "Неверный старый пароль"}
         
         # Update password
-        update_query = "UPDATE students SET password = $1 WHERE telegram_id = $2"
-        await database.execute(query=update_query, values=[request.new_password, request.telegram_id])
+        update_query = "UPDATE students SET password = :new_password WHERE telegram_id = :telegram_id"
+        await database.execute(query=update_query, values={"new_password": request.new_password, "telegram_id": request.telegram_id})
         
         return {"success": True, "message": "Пароль успешно изменён"}
     except Exception as e:
         print(f"Password change error: {e}")
-        return {"success": False, "error": "Ошибка сервера"}
+        return {"success": False, "error": f"Ошибка сервера: {str(e)}"}
 
 @app.get("/api/schedule")
 async def get_schedule():
@@ -190,15 +190,15 @@ async def get_teacher_details(teacher_id: int):
     """Returns teacher details with all ratings"""
     try:
         # Get teacher info
-        teacher_query = "SELECT * FROM teachers WHERE id = $1"
-        teacher = await database.fetch_one(query=teacher_query, values=[teacher_id])
+        teacher_query = "SELECT * FROM teachers WHERE id = :teacher_id"
+        teacher = await database.fetch_one(query=teacher_query, values={"teacher_id": teacher_id})
         
         if not teacher:
             return {"error": "Teacher not found"}
         
         # Get all ratings (anonymous)
-        ratings_query = "SELECT rating, tags, comment, created_at FROM teacher_ratings WHERE teacher_id = $1 ORDER BY created_at DESC"
-        ratings_rows = await database.fetch_all(query=ratings_query, values=[teacher_id])
+        ratings_query = "SELECT rating, tags, comment, created_at FROM teacher_ratings WHERE teacher_id = :teacher_id ORDER BY created_at DESC"
+        ratings_rows = await database.fetch_all(query=ratings_query, values={"teacher_id": teacher_id})
         
         ratings = []
         for row in ratings_rows:
@@ -239,38 +239,40 @@ async def submit_rating(teacher_id: int, submission: RatingSubmission):
         student_hash = hashlib.sha256(f"{submission.student_id}mxt223_secret".encode()).hexdigest()
         
         # Check if rating exists
-        check_query = "SELECT id FROM teacher_ratings WHERE teacher_id = $1 AND student_hash = $2"
-        existing = await database.fetch_one(query=check_query, values=[teacher_id, student_hash])
+        check_query = "SELECT id FROM teacher_ratings WHERE teacher_id = :teacher_id AND student_hash = :student_hash"
+        existing = await database.fetch_one(query=check_query, values={"teacher_id": teacher_id, "student_hash": student_hash})
         
         if existing:
             # Update existing rating
             update_query = """
                 UPDATE teacher_ratings 
-                SET rating = $1, tags = $2, comment = $3, updated_at = CURRENT_TIMESTAMP 
-                WHERE teacher_id = $4 AND student_hash = $5
+                SET rating = :rating, tags = :tags, comment = :comment, updated_at = CURRENT_TIMESTAMP 
+                WHERE teacher_id = :teacher_id AND student_hash = :student_hash
             """
-            await database.execute(query=update_query, values=[
-                submission.rating, submission.tags, submission.comment, teacher_id, student_hash
-            ])
+            await database.execute(query=update_query, values={
+                "rating": submission.rating, "tags": submission.tags, "comment": submission.comment,
+                "teacher_id": teacher_id, "student_hash": student_hash
+            })
         else:
             # Insert new rating
             insert_query = """
                 INSERT INTO teacher_ratings (teacher_id, student_hash, rating, tags, comment)
-                VALUES ($1, $2, $3, $4, $5)
+                VALUES (:teacher_id, :student_hash, :rating, :tags, :comment)
             """
-            await database.execute(query=insert_query, values=[
-                teacher_id, student_hash, submission.rating, submission.tags, submission.comment
-            ])
+            await database.execute(query=insert_query, values={
+                "teacher_id": teacher_id, "student_hash": student_hash,
+                "rating": submission.rating, "tags": submission.tags, "comment": submission.comment
+            })
         
         # Update teacher's average rating
-        stats_query = "SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM teacher_ratings WHERE teacher_id = $1"
-        stats = await database.fetch_one(query=stats_query, values=[teacher_id])
+        stats_query = "SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM teacher_ratings WHERE teacher_id = :teacher_id"
+        stats = await database.fetch_one(query=stats_query, values={"teacher_id": teacher_id})
         
         avg_rating = round(float(stats["avg_rating"]), 2) if stats["avg_rating"] else 0
         total_ratings = stats["total"]
         
-        update_teacher_query = "UPDATE teachers SET average_rating = $1, total_ratings = $2 WHERE id = $3"
-        await database.execute(query=update_teacher_query, values=[avg_rating, total_ratings, teacher_id])
+        update_teacher_query = "UPDATE teachers SET average_rating = :avg_rating, total_ratings = :total_ratings WHERE id = :teacher_id"
+        await database.execute(query=update_teacher_query, values={"avg_rating": avg_rating, "total_ratings": total_ratings, "teacher_id": teacher_id})
         
         return {"success": True, "average_rating": avg_rating, "total_ratings": total_ratings}
     except Exception as e:
@@ -284,8 +286,8 @@ async def get_my_rating(teacher_id: int, student_id: str):
         import hashlib
         student_hash = hashlib.sha256(f"{student_id}mxt223_secret".encode()).hexdigest()
         
-        query = "SELECT rating, tags, comment FROM teacher_ratings WHERE teacher_id = $1 AND student_hash = $2"
-        rating = await database.fetch_one(query=query, values=[teacher_id, student_hash])
+        query = "SELECT rating, tags, comment FROM teacher_ratings WHERE teacher_id = :teacher_id AND student_hash = :student_hash"
+        rating = await database.fetch_one(query=query, values={"teacher_id": teacher_id, "student_hash": student_hash})
         
         if rating:
             return {
@@ -306,8 +308,8 @@ async def get_teacher_today_lessons(teacher_id: int):
         import pytz
         
         # Get teacher info
-        teacher_query = "SELECT name FROM teachers WHERE id = $1"
-        teacher = await database.fetch_one(query=teacher_query, values=[teacher_id])
+        teacher_query = "SELECT name FROM teachers WHERE id = :teacher_id"
+        teacher = await database.fetch_one(query=teacher_query, values={"teacher_id": teacher_id})
         
         if not teacher:
             return {"error": "Teacher not found"}
@@ -332,13 +334,13 @@ async def get_teacher_today_lessons(teacher_id: int):
         # Get today's lessons for this teacher
         query = """
             SELECT * FROM schedule 
-            WHERE teacher = $1 
-            AND day_of_week = $2 
-            AND week_start <= $3 
-            AND week_end >= $3
+            WHERE teacher = :teacher_name 
+            AND day_of_week = :today_name 
+            AND week_start <= :current_week 
+            AND week_end >= :current_week
             ORDER BY pair_number
         """
-        lessons = await database.fetch_all(query=query, values=[teacher_name, today_name, current_week])
+        lessons = await database.fetch_all(query=query, values={"teacher_name": teacher_name, "today_name": today_name, "current_week": current_week})
         
         # Check which lessons are completed
         pair_times = {
