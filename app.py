@@ -105,6 +105,140 @@ async def get_announcement():
         print(f"DB Error: {e}")
         return None
 
+# Teacher Rating API Endpoints
+@app.get("/api/teachers")
+async def get_teachers():
+    """Returns list of all teachers with ratings"""
+    try:
+        query = "SELECT * FROM teachers ORDER BY average_rating DESC"
+        rows = await database.fetch_all(query=query)
+        teachers = []
+        for row in rows:
+            teachers.append({
+                "id": row["id"],
+                "name": row["name"],
+                "subject": row["subject"],
+                "average_rating": float(row["average_rating"]) if row["average_rating"] else 0,
+                "total_ratings": row["total_ratings"]
+            })
+        return teachers
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return []
+
+@app.get("/api/teachers/{teacher_id}")
+async def get_teacher_details(teacher_id: int):
+    """Returns teacher details with all ratings"""
+    try:
+        # Get teacher info
+        teacher_query = "SELECT * FROM teachers WHERE id = $1"
+        teacher = await database.fetch_one(query=teacher_query, values=[teacher_id])
+        
+        if not teacher:
+            return {"error": "Teacher not found"}
+        
+        # Get all ratings (anonymous)
+        ratings_query = "SELECT rating, tags, comment, created_at FROM teacher_ratings WHERE teacher_id = $1 ORDER BY created_at DESC"
+        ratings_rows = await database.fetch_all(query=ratings_query, values=[teacher_id])
+        
+        ratings = []
+        for row in ratings_rows:
+            ratings.append({
+                "rating": row["rating"],
+                "tags": row["tags"],
+                "comment": row["comment"],
+                "created_at": str(row["created_at"])
+            })
+        
+        return {
+            "id": teacher["id"],
+            "name": teacher["name"],
+            "subject": teacher["subject"],
+            "average_rating": float(teacher["average_rating"]) if teacher["average_rating"] else 0,
+            "total_ratings": teacher["total_ratings"],
+            "ratings": ratings
+        }
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return {"error": str(e)}
+
+from pydantic import BaseModel
+
+class RatingSubmission(BaseModel):
+    student_id: str
+    rating: int
+    tags: str = None
+    comment: str = None
+
+@app.post("/api/teachers/{teacher_id}/rate")
+async def submit_rating(teacher_id: int, submission: RatingSubmission):
+    """Submit or update a rating for a teacher"""
+    try:
+        import hashlib
+        
+        # Hash student ID for anonymity
+        student_hash = hashlib.sha256(f"{submission.student_id}mxt223_secret".encode()).hexdigest()
+        
+        # Check if rating exists
+        check_query = "SELECT id FROM teacher_ratings WHERE teacher_id = $1 AND student_hash = $2"
+        existing = await database.fetch_one(query=check_query, values=[teacher_id, student_hash])
+        
+        if existing:
+            # Update existing rating
+            update_query = """
+                UPDATE teacher_ratings 
+                SET rating = $1, tags = $2, comment = $3, updated_at = CURRENT_TIMESTAMP 
+                WHERE teacher_id = $4 AND student_hash = $5
+            """
+            await database.execute(query=update_query, values=[
+                submission.rating, submission.tags, submission.comment, teacher_id, student_hash
+            ])
+        else:
+            # Insert new rating
+            insert_query = """
+                INSERT INTO teacher_ratings (teacher_id, student_hash, rating, tags, comment)
+                VALUES ($1, $2, $3, $4, $5)
+            """
+            await database.execute(query=insert_query, values=[
+                teacher_id, student_hash, submission.rating, submission.tags, submission.comment
+            ])
+        
+        # Update teacher's average rating
+        stats_query = "SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM teacher_ratings WHERE teacher_id = $1"
+        stats = await database.fetch_one(query=stats_query, values=[teacher_id])
+        
+        avg_rating = round(float(stats["avg_rating"]), 2) if stats["avg_rating"] else 0
+        total_ratings = stats["total"]
+        
+        update_teacher_query = "UPDATE teachers SET average_rating = $1, total_ratings = $2 WHERE id = $3"
+        await database.execute(query=update_teacher_query, values=[avg_rating, total_ratings, teacher_id])
+        
+        return {"success": True, "average_rating": avg_rating, "total_ratings": total_ratings}
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return {"error": str(e)}
+
+@app.get("/api/teachers/{teacher_id}/my-rating/{student_id}")
+async def get_my_rating(teacher_id: int, student_id: str):
+    """Get student's own rating for editing"""
+    try:
+        import hashlib
+        student_hash = hashlib.sha256(f"{student_id}mxt223_secret".encode()).hexdigest()
+        
+        query = "SELECT rating, tags, comment FROM teacher_ratings WHERE teacher_id = $1 AND student_hash = $2"
+        rating = await database.fetch_one(query=query, values=[teacher_id, student_hash])
+        
+        if rating:
+            return {
+                "rating": rating["rating"],
+                "tags": rating["tags"],
+                "comment": rating["comment"]
+            }
+        return None
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return None
+
 @app.get("/api/calendar.ics")
 async def export_calendar():
     """Generate .ics file with all semester lessons"""
