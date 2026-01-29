@@ -113,12 +113,38 @@ h1 {
 
 .week-info {
     margin-top: 8px;
-    display: inline-block;
+    display: flex;
+    gap: 12px;
+    align-items: center;
     background: rgba(255, 255, 255, 0.05);
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 0.85rem;
     border: 1px solid var(--card-border);
+}
+
+.calendar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calendar-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.calendar-btn:active {
+    transform: translateY(0);
 }
 
 /* Navigation */
