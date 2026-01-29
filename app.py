@@ -136,6 +136,44 @@ async def init_db():
                 await database.execute(query=insert_query, values=student)
             except Exception as e:
                 print(f"Error seeding student {student['name']}: {e}")
+    
+    # Create indexes for performance
+    print("📊 Creating database indexes...")
+    
+    try:
+        # Index on students.telegram_id (for login queries)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_students_telegram_id 
+            ON students(telegram_id)
+        """)
+        
+        # Index on schedule.day_of_week (for day filtering)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_schedule_day 
+            ON schedule(day_of_week)
+        """)
+        
+        # Composite index on schedule (day, week_start, week_end)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_schedule_day_week 
+            ON schedule(day_of_week, week_start, week_end)
+        """)
+        
+        # Index on teacher_ratings.teacher_id (for rating aggregation)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ratings_teacher 
+            ON teacher_ratings(teacher_id)
+        """)
+        
+        # Index on exams.exam_date (for sorting exams)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_exams_date 
+            ON exams(exam_date)
+        """)
+        
+        print("✓ Database indexes created")
+    except Exception as e:
+        print(f"Warning: Could not create indexes: {e}")
 
 @app.on_event("shutdown")
 async def shutdown():
