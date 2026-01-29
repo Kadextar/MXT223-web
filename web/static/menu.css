@@ -75,6 +75,8 @@
     box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(20px);
     border-left: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .side-menu.active {
@@ -122,6 +124,7 @@
 .side-menu ul {
     list-style: none;
     padding: 20px 0;
+    flex: 1;
 }
 
 .side-menu li {
@@ -147,6 +150,43 @@
 
 .side-menu a:active {
     background: rgba(255, 255, 255, 0.1);
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#theme-toggle-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: var(--text-main);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+#theme-toggle-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+#theme-toggle-btn:active {
+    transform: translateY(0);
+}
+
+.theme-icon {
+    font-size: 1.2rem;
 }
 
 /* Mobile Adjustments */
