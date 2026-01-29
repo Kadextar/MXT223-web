@@ -276,9 +276,29 @@ async function init() {
     updateLiveStatus();
     setInterval(updateLiveStatus, 30000); // Каждые 30 сек
 
+    // Загружаем объявление
+    loadAnnouncement();
+
     // Listeners
     dom.prevWeekBtn.onclick = () => updateWeek(-1);
     dom.nextWeekBtn.onclick = () => updateWeek(1);
+}
+
+// --- Announcement Loading ---
+async function loadAnnouncement() {
+    try {
+        const response = await fetch('/api/announcement');
+        const data = await response.json();
+
+        if (data && data.message) {
+            const banner = document.getElementById('announcement-banner');
+            const text = document.getElementById('announcement-text');
+            text.textContent = data.message;
+            banner.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Failed to load announcement:', error);
+    }
 }
 
 init();

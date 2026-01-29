@@ -88,6 +88,22 @@ async def get_schedule():
     
     return schedule
 
+@app.get("/api/announcement")
+async def get_announcement():
+    """Returns active announcement if exists"""
+    try:
+        query = "SELECT * FROM announcements WHERE is_active = TRUE ORDER BY created_at DESC LIMIT 1"
+        row = await database.fetch_one(query=query)
+        if row:
+            return {
+                "message": row["message"],
+                "created_at": str(row["created_at"])
+            }
+        return None
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return None
+
 @app.get("/api/calendar.ics")
 async def export_calendar():
     """Generate .ics file with all semester lessons"""

@@ -65,13 +65,19 @@ body {
 }
 
 @keyframes moveGlobe {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(50px, 30px) scale(1.1); }
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        transform: translate(50px, 30px) scale(1.1);
+    }
 }
 
 /* App Container */
 .app-container {
-    max-width: 600px; /* Mobile focused max width */
+    max-width: 600px;
+    /* Mobile focused max width */
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
@@ -145,6 +151,67 @@ h1 {
 
 .calendar-btn:active {
     transform: translateY(0);
+}
+
+/* Announcement Banner */
+.announcement-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 12px 20px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.announcement-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.announcement-icon {
+    font-size: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.announcement-text {
+    flex: 1;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.announcement-banner.hidden {
+    display: none;
 }
 
 /* Navigation */
@@ -229,8 +296,15 @@ h1 {
 }
 
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .lesson-card:hover {
@@ -248,9 +322,17 @@ h1 {
     background: var(--text-muted);
 }
 
-.lesson-card.lecture::before { background: var(--primary); }
-.lesson-card.seminar::before { background: var(--secondary); }
-.lesson-card.exam::before { background: var(--accent); }
+.lesson-card.lecture::before {
+    background: var(--primary);
+}
+
+.lesson-card.seminar::before {
+    background: var(--secondary);
+}
+
+.lesson-card.exam::before {
+    background: var(--accent);
+}
 
 .card-header {
     display: flex;
@@ -343,8 +425,15 @@ h1 {
 }
 
 @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .live-header {
@@ -377,9 +466,17 @@ h1 {
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+    }
 }
 
 .live-time {
