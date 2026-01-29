@@ -44,6 +44,82 @@ DAY_MAPPING = {
 @app.on_event("startup")
 async def startup():
     await database.connect()
+    await init_db()
+
+async def init_db():
+    """Initialize database tables if they don't exist"""
+    is_postgres = "postgresql" in DATABASE_URL
+    id_type = "SERIAL PRIMARY KEY" if is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
+    
+    # Students table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS students (
+            id {id_type},
+            telegram_id TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    await database.execute(query)
+    
+    # Teachers table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS teachers (
+            id {id_type},
+            name TEXT NOT NULL,
+            subject TEXT,
+            average_rating FLOAT DEFAULT 0,
+            total_ratings INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    await database.execute(query)
+    
+    # Teacher Ratings table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS teacher_ratings (
+            id {id_type},
+            teacher_id INTEGER NOT NULL,
+            student_hash TEXT NOT NULL,
+            rating INTEGER NOT NULL,
+            tags TEXT,
+            comment TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(teacher_id, student_hash)
+        )
+    """
+    await database.execute(query)
+    
+    # Check if students exist
+    count_query = "SELECT COUNT(*) FROM students"
+    count = await database.fetch_val(query=count_query)
+    
+    if count == 0:
+        print("🌱 Seeding students...")
+        students = [
+            {"telegram_id": "1748727700", "password": "robiya2026", "name": "Робия"},
+            {"telegram_id": "1427112602", "password": "sardor2026", "name": "Сардор"},
+            {"telegram_id": "1937736219", "password": "khislatbek2026", "name": "Хислатбек"},
+            {"telegram_id": "207103078", "password": "timur2026", "name": "Тимур"},
+            {"telegram_id": "5760110758", "password": "amir2026", "name": "Амир"},
+            {"telegram_id": "1362668588", "password": "muhammad2026", "name": "Мухаммад"},
+            {"telegram_id": "2023499343", "password": "abdumalik2026", "name": "Абдумалик"},
+            {"telegram_id": "1214641616", "password": "azamat2026", "name": "Азамат"},
+            {"telegram_id": "1020773033", "password": "nozima2026", "name": "Нозима"}
+        ]
+        
+        insert_query = """
+            INSERT INTO students (telegram_id, password, name)
+            VALUES (:telegram_id, :password, :name)
+        """
+        
+        for student in students:
+            try:
+                await database.execute(query=insert_query, values=student)
+            except Exception as e:
+                print(f"Error seeding student {student['name']}: {e}")
 
 @app.on_event("shutdown")
 async def shutdown():
