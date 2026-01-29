@@ -1,4 +1,4 @@
-import { SEMESTER_START_DATE, PAIR_TIMES, getLessonsForDay } from './schedule_data.js';
+import { SEMESTER_START_DATE, PAIR_TIMES, getLessonsForDay, setScheduleData } from './schedule_data.js';
 
 // --- State ---
 const state = {
@@ -247,7 +247,17 @@ function updateWeek(offset) {
     updateLiveStatus();
 }
 
-function init() {
+async function init() {
+    // Load schedule data from API
+    try {
+        const response = await fetch('/api/schedule');
+        const data = await response.json();
+        setScheduleData(data);
+    } catch (error) {
+        console.error('Failed to load schedule:', error);
+        // Continue with empty schedule
+    }
+
     const now = new Date();
     state.currentWeek = getWeekNumber(now);
 

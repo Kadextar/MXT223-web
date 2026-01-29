@@ -1,2 +1,6 @@
 fastapi
+fastapi
 uvicorn
+databases[postgresql]
+psycopg2-binary
+python-dotenv
