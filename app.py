@@ -471,36 +471,36 @@ async def get_subjects():
                 GROUP BY subject, teacher, lesson_type
                 ORDER BY subject
             """
-        rows = await database.fetch_all(query=query)
+            rows = await database.fetch_all(query=query)
         
-        # Aggregate by subject
-        subjects_dict = {}
-        for row in rows:
-            subject_name = row["subject"]
-            if subject_name not in subjects_dict:
-                subjects_dict[subject_name] = {
-                    "name": subject_name,
-                    "teacher": row["teacher"],
-                    "lectures": 0,
-                    "seminars": 0,
-                    "types": set()
-                }
+            # Aggregate by subject
+            subjects_dict = {}
+            for row in rows:
+                subject_name = row["subject"]
+                if subject_name not in subjects_dict:
+                    subjects_dict[subject_name] = {
+                        "name": subject_name,
+                        "teacher": row["teacher"],
+                        "lectures": 0,
+                        "seminars": 0,
+                        "types": set()
+                    }
+                
+                if row["lesson_type"] == "lecture":
+                    subjects_dict[subject_name]["lectures"] += row["count"]
+                    subjects_dict[subject_name]["types"].add("lecture")
+                else:
+                    subjects_dict[subject_name]["seminars"] += row["count"]
+                    subjects_dict[subject_name]["types"].add("seminar")
             
-            if row["lesson_type"] == "lecture":
-                subjects_dict[subject_name]["lectures"] += row["count"]
-                subjects_dict[subject_name]["types"].add("lecture")
-            else:
-                subjects_dict[subject_name]["seminars"] += row["count"]
-                subjects_dict[subject_name]["types"].add("seminar")
-        
-        # Convert to list and calculate total hours
-        subjects = []
-        for subject in subjects_dict.values():
-            subject["types"] = list(subject["types"])
-            subject["total_hours"] = (subject["lectures"] + subject["seminars"]) * 1.5  # Each pair is 1.5 hours
-            subjects.append(subject)
-        
-        return subjects
+            # Convert to list and calculate total hours
+            subjects = []
+            for subject in subjects_dict.values():
+                subject["types"] = list(subject["types"])
+                subject["total_hours"] = (subject["lectures"] + subject["seminars"]) * 1.5  # Each pair is 1.5 hours
+                subjects.append(subject)
+            
+            return subjects
     except Exception as e:
         print(f"Subjects API Error: {e}")
         return []
@@ -515,7 +515,7 @@ async def get_exams():
     async def get_exams_data():
         try:
             query = "SELECT * FROM exams ORDER BY exam_date ASC"
-        rows = await database.fetch_all(query=query)
+            rows = await database.fetch_all(query=query)
         exams = []
         for row in rows:
             exams.append({
