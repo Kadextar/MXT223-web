@@ -25,7 +25,7 @@ app.mount(
 )
 
 # Constants for calendar generation
-SEMESTER_START = datetime(2026, 2, 2)  # 2 февраля 2026
+SEMESTER_START = datetime(2026, 2, 3)  # 3 февраля 2026 (понедельник 1-й недели)
 PAIR_TIMES = {
     1: ("08:00", "09:20"),
     2: ("09:30", "10:50"),
