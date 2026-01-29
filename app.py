@@ -516,18 +516,18 @@ async def get_exams():
         try:
             query = "SELECT * FROM exams ORDER BY exam_date ASC"
             rows = await database.fetch_all(query=query)
-        exams = []
-        for row in rows:
-            exams.append({
-                "id": row["id"],
-                "subject": row["subject"],
-                "teacher": row["teacher"],
-                "exam_date": str(row["exam_date"]),
-                "exam_time": row["exam_time"],
-                "room": row["room"],
-                "exam_type": row["exam_type"],
-                "notes": row["notes"]
-            })
+            exams = []
+            for row in rows:
+                exams.append({
+                    "id": row["id"],
+                    "subject": row["subject"],
+                    "teacher": row["teacher"],
+                    "exam_date": str(row["exam_date"]),
+                    "exam_time": row["exam_time"],
+                    "room": row["room"],
+                    "exam_type": row["exam_type"],
+                    "notes": row["notes"]
+                })
             return exams
         except Exception as e:
             print(f"Exams API Error: {e}")
