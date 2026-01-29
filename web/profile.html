@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль - МХТ-223</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/profile.css">
+    <meta name="theme-color" content="#0f172a">
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <span class="badge">MXT-223</span>
+                <h1>Профиль</h1>
+                <p class="subtitle">Управление аккаунтом</p>
+            </div>
+        </header>
+
+        <nav class="profile-nav">
+            <a href="/index.html" class="nav-link">📅 Расписание</a>
+            <a href="/ratings.html" class="nav-link">⭐ Рейтинг</a>
+            <a href="/profile.html" class="nav-link active">👤 Профиль</a>
+        </nav>
+
+        <main class="profile-container">
+            <!-- Student Info Card -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">👤</div>
+                    <div class="profile-info">
+                        <h2 id="student-name">Загрузка...</h2>
+                        <p class="student-id" id="student-id">ID: ...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Change Card -->
+            <div class="profile-card">
+                <h3>🔐 Смена пароля</h3>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label>Текущий пароль</label>
+                        <input type="password" id="old-password" placeholder="Введите текущий пароль" required
+                            autocomplete="current-password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Новый пароль</label>
+                        <input type="password" id="new-password" placeholder="Введите новый пароль" required
+                            autocomplete="new-password">
+                        <small>Минимум 6 символов</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Подтвердите новый пароль</label>
+                        <input type="password" id="confirm-password" placeholder="Повторите новый пароль" required
+                            autocomplete="new-password">
+                    </div>
+
+                    <button type="submit" class="submit-btn">Изменить пароль</button>
+                </form>
+
+                <div id="message" class="message hidden"></div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="profile-card">
+                <h3>⚙️ Действия</h3>
+                <button class="logout-btn" id="logout-btn">🚪 Выйти из аккаунта</button>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Developed for MXT-223</p>
+        </footer>
+    </div>
+
+    <script src="/static/profile.js"></script>
+</body>
+
+</html>
