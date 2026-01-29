@@ -185,9 +185,32 @@ class LoginRequest(BaseModel):
     password: str
 
 class ChangePasswordRequest(BaseModel):
-    telegram_id: str
     old_password: str
     new_password: str
+
+@app.get("/api/me")
+async def get_current_user(authorization: str = None):
+    """Get current user info from token"""
+    if not authorization:
+        return {"success": False, "error": "No authorization header"}
+    
+    try:
+        # Extract telegram_id from Bearer token (token is the telegram_id)
+        token = authorization.replace("Bearer ", "")
+        
+        query = "SELECT telegram_id, name FROM students WHERE telegram_id = :telegram_id"
+        student = await database.fetch_one(query=query, values={"telegram_id": token})
+        
+        if student:
+            return {
+                "telegram_id": student["telegram_id"],
+                "name": student["name"]
+            }
+        else:
+            return {"success": False, "error": "User not found"}
+    except Exception as e:
+        print(f"Get user error: {e}")
+        return {"success": False, "error": str(e)}
 
 @app.post("/api/login")
 async def login_student(request: LoginRequest):
@@ -209,19 +232,25 @@ async def login_student(request: LoginRequest):
         return {"success": False, "error": f"Ошибка сервера: {str(e)}"}
 
 @app.post("/api/change-password")
-async def change_password(request: ChangePasswordRequest):
+async def change_password(request: ChangePasswordRequest, authorization: str = None):
     """Change student password"""
+    if not authorization:
+        return {"success": False, "error": "No authorization header"}
+    
     try:
+        # Extract telegram_id from Bearer token
+        telegram_id = authorization.replace("Bearer ", "")
+        
         # Verify old password
         check_query = "SELECT id FROM students WHERE telegram_id = :telegram_id AND password = :old_password"
-        student = await database.fetch_one(query=check_query, values={"telegram_id": request.telegram_id, "old_password": request.old_password})
+        student = await database.fetch_one(query=check_query, values={"telegram_id": telegram_id, "old_password": request.old_password})
         
         if not student:
             return {"success": False, "error": "Неверный старый пароль"}
         
         # Update password
         update_query = "UPDATE students SET password = :new_password WHERE telegram_id = :telegram_id"
-        await database.execute(query=update_query, values={"new_password": request.new_password, "telegram_id": request.telegram_id})
+        await database.execute(query=update_query, values={"new_password": request.new_password, "telegram_id": telegram_id})
         
         return {"success": True, "message": "Пароль успешно изменён"}
     except Exception as e:
