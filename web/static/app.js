@@ -1,5 +1,16 @@
 import { SEMESTER_START_DATE, PAIR_TIMES, getLessonsForDay, setScheduleData } from './schedule_data.js';
 
+// --- Authentication Check ---
+const AUTHORIZED_STUDENTS = [
+    '1748727700', '1427112602', '1937736219', '207103078', '5760110758',
+    '1362668588', '2023499343', '1214641616', '1020773033'
+];
+
+const studentId = localStorage.getItem('student_id');
+if (!studentId || !AUTHORIZED_STUDENTS.includes(studentId)) {
+    window.location.href = '/login.html';
+}
+
 // --- State ---
 const state = {
     currentDate: new Date(),

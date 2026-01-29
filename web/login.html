@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - МХТ-223</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/login.css">
+    <meta name="theme-color" content="#0f172a">
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <span class="badge">MXT-223</span>
+                <h1>Добро пожаловать!</h1>
+                <p class="subtitle">Введите ваш Telegram ID для входа</p>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Telegram ID</label>
+                    <input type="text" id="telegram-id" placeholder="Например: 1214641616" required autocomplete="off">
+                    <small>Ваш ID можно узнать у бота @userinfobot</small>
+                </div>
+
+                <button type="submit" class="login-btn">Войти</button>
+            </form>
+
+            <div class="students-list">
+                <p class="list-title">Студенты группы МХТ-223:</p>
+                <ul>
+                    <li>Робия</li>
+                    <li>Сардор</li>
+                    <li>Хислатбек</li>
+                    <li>Тимур</li>
+                    <li>Амир</li>
+                    <li>Мухаммад</li>
+                    <li>Абдумалик</li>
+                    <li>Азамат</li>
+                    <li>Нозима</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/login.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,23 @@
 // Ratings Page JavaScript
 
+// --- Authentication Check ---
+const AUTHORIZED_STUDENTS = [
+    '1748727700', '1427112602', '1937736219', '207103078', '5760110758',
+    '1362668588', '2023499343', '1214641616', '1020773033'
+];
+
+const studentId = localStorage.getItem('student_id');
+if (!studentId || !AUTHORIZED_STUDENTS.includes(studentId)) {
+    window.location.href = '/login.html';
+}
+
+// --- Constants ---
+const PAIR_TIMES = {
+    1: { start: '08:00', end: '09:20' },
+    2: { start: '09:30', end: '10:50' },
+    3: { start: '11:00', end: '12:20' }
+};
+
 let currentTeacherId = null;
 let selectedRating = null;
 let selectedTags = [];
@@ -81,11 +99,106 @@ function getGrade(rating) {
     return 2;
 }
 
+let currentLessonData = null;
+
 // Modal Functions
-window.openRatingModal = function (teacherId, teacherName, subject) {
+window.openRatingModal = async function (teacherId, teacherName, subject) {
     currentTeacherId = teacherId;
     document.getElementById('modal-teacher-name').textContent = teacherName;
     document.getElementById('modal-subject').textContent = subject;
+
+    // Show lesson selection, hide form
+    document.getElementById('lesson-selection').classList.remove('hidden');
+    document.getElementById('rating-form').classList.add('hidden');
+
+    // Load today's lessons
+    try {
+        const response = await fetch(`/api/teachers/${teacherId}/today-lessons`);
+        const data = await response.json();
+
+        if (data.error) {
+            alert('Ошибка: ' + data.error);
+            closeModal();
+            return;
+        }
+
+        renderLessons(data.lessons, data.today);
+    } catch (error) {
+        console.error('Failed to load lessons:', error);
+        alert('Не удалось загрузить занятия');
+        closeModal();
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function renderLessons(lessons, today) {
+    const lessonsList = document.getElementById('lessons-list');
+    const noLessonsMsg = document.getElementById('no-lessons-msg');
+
+    lessonsList.innerHTML = '';
+
+    const completedLessons = lessons.filter(l => l.is_completed);
+
+    if (completedLessons.length === 0) {
+        noLessonsMsg.classList.remove('hidden');
+        lessonsList.classList.add('hidden');
+        return;
+    }
+
+    noLessonsMsg.classList.add('hidden');
+    lessonsList.classList.remove('hidden');
+
+    lessons.forEach(lesson => {
+        const card = document.createElement('div');
+        card.className = `lesson-card ${!lesson.is_completed ? 'disabled' : ''}`;
+
+        const pairTimes = {
+            1: '08:00-09:20',
+            2: '09:30-10:50',
+            3: '11:00-12:20'
+        };
+
+        card.innerHTML = `
+            <div class="lesson-header">
+                <span class="lesson-title">${lesson.pair_number} пара (${pairTimes[lesson.pair_number]})</span>
+                <span class="lesson-status ${lesson.is_completed ? 'completed' : 'in-progress'}">
+                    ${lesson.is_completed ? '✓ Завершено' : '⏳ Идёт'}
+                </span>
+            </div>
+            <div class="lesson-details">
+                ${lesson.subject} (${lesson.lesson_type})<br>
+                Аудитория: ${lesson.room}
+            </div>
+        `;
+
+        if (lesson.is_completed) {
+            card.addEventListener('click', () => selectLesson(lesson));
+        }
+
+        lessonsList.appendChild(card);
+    });
+}
+
+function selectLesson(lesson) {
+    currentLessonData = lesson;
+
+    // Hide lesson selection, show form
+    document.getElementById('lesson-selection').classList.add('hidden');
+    document.getElementById('rating-form').classList.remove('hidden');
+
+    // Show selected lesson info
+    const pairTimes = {
+        1: '08:00-09:20',
+        2: '09:30-10:50',
+        3: '11:00-12:20'
+    };
+
+    document.getElementById('selected-lesson-info').innerHTML = `
+        <strong>Оцениваете:</strong> ${lesson.subject} (${lesson.lesson_type})<br>
+        <strong>Пара:</strong> ${lesson.pair_number} (${pairTimes[lesson.pair_number]})<br>
+        <strong>Аудитория:</strong> ${lesson.room}
+    `;
 
     // Reset form
     selectedRating = null;
@@ -93,13 +206,10 @@ window.openRatingModal = function (teacherId, teacherName, subject) {
     ratingInput.value = '';
     ratingDisplay.textContent = 'Выберите оценку';
     document.getElementById('comment-input').value = '';
-    document.getElementById('student-id-input').value = '';
 
     // Reset buttons
     document.querySelectorAll('.emoji-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
-
-    modal.classList.remove('hidden');
 }
 
 function closeModal() {
@@ -109,6 +219,12 @@ function closeModal() {
 
 closeModalBtn.addEventListener('click', closeModal);
 modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+
+// Back to lesson selection
+document.getElementById('back-to-lessons').addEventListener('click', function () {
+    document.getElementById('rating-form').classList.add('hidden');
+    document.getElementById('lesson-selection').classList.remove('hidden');
+});
 
 // Emoji Rating
 document.querySelectorAll('.emoji-btn').forEach(btn => {
@@ -156,9 +272,8 @@ ratingForm.addEventListener('submit', async function (e) {
         return;
     }
 
-    const studentId = document.getElementById('student-id-input').value.trim();
-    if (!studentId) {
-        alert('Пожалуйста, введите ваш ID');
+    if (!currentLessonData) {
+        alert('Ошибка: занятие не выбрано');
         return;
     }
 
@@ -167,13 +282,16 @@ ratingForm.addEventListener('submit', async function (e) {
     submitBtn.textContent = 'Отправка...';
 
     try {
+        // Use student_id from localStorage
+        const storedStudentId = localStorage.getItem('student_id');
+
         const response = await fetch(`/api/teachers/${currentTeacherId}/rate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                student_id: studentId,
+                student_id: storedStudentId,
                 rating: selectedRating,
                 tags: selectedTags.join(', '),
                 comment: document.getElementById('comment-input').value.trim()

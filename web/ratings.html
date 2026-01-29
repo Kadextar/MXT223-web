@@ -66,7 +66,22 @@
             <h2 id="modal-teacher-name">Оценить преподавателя</h2>
             <p class="modal-subject" id="modal-subject"></p>
 
-            <form id="rating-form">
+            <!-- Lesson Selection Step -->
+            <div id="lesson-selection" class="lesson-selection">
+                <p class="info-text">Выберите занятие для оценки:</p>
+                <div id="lessons-list" class="lessons-list">
+                    <!-- Lessons will be loaded here -->
+                </div>
+                <p id="no-lessons-msg" class="no-lessons hidden">
+                    ⏰ У этого преподавателя сегодня нет завершённых занятий.<br>
+                    Вы можете оценить только сегодняшние занятия после их окончания.
+                </p>
+            </div>
+
+            <!-- Rating Form (hidden initially) -->
+            <form id="rating-form" class="hidden">
+                <div class="selected-lesson-info" id="selected-lesson-info"></div>
+
                 <div class="form-group">
                     <label>Оценка качества преподавания</label>
                     <div class="emoji-rating">
@@ -101,14 +116,8 @@
                         placeholder="Ваш анонимный отзыв..."></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label>Ваш ID (для анонимности)</label>
-                    <input type="text" id="student-id-input" name="student_id" placeholder="Введите любой уникальный ID"
-                        required>
-                    <small>Используется только для хеширования. Никто не увидит ваш ID.</small>
-                </div>
-
                 <button type="submit" class="submit-btn" id="submit-btn">Отправить оценку</button>
+                <button type="button" class="back-btn" id="back-to-lessons">← Назад к выбору занятия</button>
             </form>
         </div>
     </div>

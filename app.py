@@ -239,6 +239,79 @@ async def get_my_rating(teacher_id: int, student_id: str):
         print(f"DB Error: {e}")
         return None
 
+@app.get("/api/teachers/{teacher_id}/today-lessons")
+async def get_teacher_today_lessons(teacher_id: int):
+    """Get today's lessons for a teacher with completion status"""
+    try:
+        from datetime import datetime, time
+        import pytz
+        
+        # Get teacher info
+        teacher_query = "SELECT name FROM teachers WHERE id = $1"
+        teacher = await database.fetch_one(query=teacher_query, values=[teacher_id])
+        
+        if not teacher:
+            return {"error": "Teacher not found"}
+        
+        teacher_name = teacher["name"]
+        
+        # Get current time in Tashkent timezone
+        tz = pytz.timezone('Asia/Tashkent')
+        now = datetime.now(tz)
+        current_time = now.time()
+        current_weekday = now.weekday()  # 0=Monday, 6=Sunday
+        
+        # Calculate current week number
+        semester_start = datetime(2026, 1, 12, tzinfo=tz)
+        days_since_start = (now - semester_start).days
+        current_week = (days_since_start // 7) + 1
+        
+        # Map weekday to day name
+        day_names = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+        today_name = day_names[current_weekday]
+        
+        # Get today's lessons for this teacher
+        query = """
+            SELECT * FROM schedule 
+            WHERE teacher = $1 
+            AND day_of_week = $2 
+            AND week_start <= $3 
+            AND week_end >= $3
+            ORDER BY pair_number
+        """
+        lessons = await database.fetch_all(query=query, values=[teacher_name, today_name, current_week])
+        
+        # Check which lessons are completed
+        pair_times = {
+            1: time(9, 20),   # Ends at 09:20
+            2: time(10, 50),  # Ends at 10:50
+            3: time(12, 20)   # Ends at 12:20
+        }
+        
+        result = []
+        for lesson in lessons:
+            pair_num = lesson["pair_number"]
+            end_time = pair_times.get(pair_num)
+            is_completed = current_time > end_time if end_time else False
+            
+            result.append({
+                "pair_number": pair_num,
+                "subject": lesson["subject"],
+                "lesson_type": lesson["lesson_type"],
+                "room": lesson["room"],
+                "is_completed": is_completed
+            })
+        
+        return {
+            "teacher_id": teacher_id,
+            "teacher_name": teacher_name,
+            "today": today_name,
+            "lessons": result
+        }
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return {"error": str(e)}
+
 @app.get("/api/calendar.ics")
 async def export_calendar():
     """Generate .ics file with all semester lessons"""

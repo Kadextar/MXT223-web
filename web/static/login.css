@@ -1,0 +1,138 @@
+/* Login Page Styles */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.login-header .badge {
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.login-header h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.login-header .subtitle {
+    color: var(--text-muted);
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.form-group small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 6px;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.students-list {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--card-border);
+}
+
+.list-title {
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.students-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.students-list li {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 24px;
+    }
+
+    .students-list ul {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
