@@ -359,28 +359,33 @@ async def change_password(request: ChangePasswordRequest, authorization: str = H
         raise HTTPException(status_code=500, detail="Server error")
 
 @app.get("/api/schedule")
-async def get_schedule():
-    """Returns all lessons from database in a format compatible with frontend"""
-    try:
-        query = "SELECT * FROM schedule ORDER BY pair_number"
-        rows = await database.fetch_all(query=query)
-    except Exception as e:
-        print(f"DB Error: {e}")
-        return []
-
-    schedule = []
-    for row in rows:
-        schedule.append({
-            "day": row["day_of_week"],
-            "pair": row["pair_number"],
-            "subject": row["subject"],
-            "type": row["lesson_type"],
-            "weeks": [row["week_start"], row["week_end"]],
-            "room": row["room"],
-            "teacher": row["teacher"]
-        })
+async def get_schedule_cached():
+    """Returns all lessons from database with caching"""
+    from utils.cache import cached
     
-    return schedule
+    @cached(ttl=300)  # 5 minutes cache
+    async def get_schedule_data():
+        try:
+            query = "SELECT * FROM schedule ORDER BY pair_number"
+            rows = await database.fetch_all(query=query)
+        except Exception as e:
+            print(f"DB Error: {e}")
+            return []
+
+        schedule = []
+        for row in rows:
+            schedule.append({
+                "day": row["day_of_week"],
+                "pair": row["pair_number"],
+                "subject": row["subject"],
+                "type": row["lesson_type"], # Changed from "type" to "lesson_type" to match DB column
+                "teacher": row["teacher"],
+                "room": row["room"],
+                "weeks": [row["week_start"], row["week_end"]] # Changed from "week_start", "week_end" to "weeks" list
+            })
+        return schedule
+    
+    return await get_schedule_data()
 
 @app.get("/api/announcement")
 async def get_announcement():
@@ -400,18 +405,22 @@ async def get_announcement():
 
 @app.get("/api/subjects")
 async def get_subjects():
-    """Returns aggregated subjects information"""
-    try:
-        query = """
-            SELECT 
-                subject,
-                teacher,
-                lesson_type,
-                COUNT(*) as count
-            FROM schedule
-            GROUP BY subject, teacher, lesson_type
-            ORDER BY subject
-        """
+    """Returns aggregated subjects information with caching"""
+    from utils.cache import cached
+    
+    @cached(ttl=600)  # 10 minutes cache (subjects change rarely)
+    async def get_subjects_data():
+        try:
+            query = """
+                SELECT 
+                    subject,
+                    teacher,
+                    lesson_type,
+                    COUNT(*) as count
+                FROM schedule
+                GROUP BY subject, teacher, lesson_type
+                ORDER BY subject
+            """
         rows = await database.fetch_all(query=query)
         
         # Aggregate by subject
@@ -449,9 +458,13 @@ async def get_subjects():
 # Exams API Endpoints
 @app.get("/api/exams")
 async def get_exams():
-    """Returns all exams sorted by date"""
-    try:
-        query = "SELECT * FROM exams ORDER BY exam_date ASC"
+    """Returns all exams sorted by date with caching"""
+    from utils.cache import cached
+    
+    @cached(ttl=3600)  # 1 hour cache (exams change very rarely)
+    async def get_exams_data():
+        try:
+            query = "SELECT * FROM exams ORDER BY exam_date ASC"
         rows = await database.fetch_all(query=query)
         exams = []
         for row in rows:
@@ -465,10 +478,12 @@ async def get_exams():
                 "exam_type": row["exam_type"],
                 "notes": row["notes"]
             })
-        return exams
-    except Exception as e:
-        print(f"Exams API Error: {e}")
-        return []
+            return exams
+        except Exception as e:
+            print(f"Exams API Error: {e}")
+            return []
+    
+    return await get_exams_data()
 
 # Teacher Rating API Endpoints
 @app.get("/api/teachers")
