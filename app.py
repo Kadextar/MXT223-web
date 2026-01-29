@@ -176,6 +176,106 @@ async def init_db():
             except Exception as e:
                 print(f"Error seeding student {student['name']}: {e}")
     
+    # Check if schedule exists
+    count_query = "SELECT COUNT(*) FROM schedule"
+    count = await database.fetch_val(query=count_query)
+    
+    if count == 0:
+        print("📅 Seeding schedule...")
+        
+        # Mappings for teachers
+        TEACHERS = {
+            "Качество и безопасность в гостиничной деятельности": {
+                "lecture": "Махмудова Азиза Пирмаматовна",
+                "seminar": "Мир-Джафарова Азиза Джавохировна"
+            },
+            "Стратегический менеджмент в гостиничном хозяйстве": {
+                "lecture": "Усманова Нигина Маруповна",
+                "seminar": "Бурхонова Наргиза Миршохидовна"
+            },
+            "Мировая экономика и международные экономические отношения": {
+                "lecture": "Халимов Шахбоз Халимович",
+                "seminar": "Амриева Шахзода Шухратовна"
+            },
+            "Международный гостиничный бизнес": {
+                "lecture": "Амриддинова Райхона Садриддиновна",
+                "seminar": "Мейлиев Абдугани Наджмиддинович"
+            },
+            "Урок просвещения": {
+                "lecture": "Пардаев Гайрат Яхшибаевич",
+                "seminar": "Пардаев Гайрат Яхшибаевич"
+            }
+        }
+
+        lessons = [
+            # Понедельник
+            {"day": "monday", "pair": 1, "subject": "Качество и безопасность в гостиничной деятельности", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 8},
+            {"day": "monday", "pair": 1, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "lecture", "room": "2/214*", "week_start": 10, "week_end": 15},
+            {"day": "monday", "pair": 2, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 8},
+            {"day": "monday", "pair": 2, "subject": "Мировая экономика и международные экономические отношения", "type": "lecture", "room": "2/214*", "week_start": 10, "week_end": 15},
+            {"day": "monday", "pair": 3, "subject": "Урок просвещения", "type": "lecture", "room": "3/305*", "week_start": 4, "week_end": 8},
+            {"day": "monday", "pair": 3, "subject": "Урок просвещения", "type": "lecture", "room": "3/305*", "week_start": 10, "week_end": 12},
+            {"day": "monday", "pair": 3, "subject": "Урок просвещения", "type": "lecture", "room": "3/305*", "week_start": 13, "week_end": 15},
+
+            # Вторник
+            {"day": "tuesday", "pair": 1, "subject": "Мировая экономика и международные экономические отношения", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 10},
+            {"day": "tuesday", "pair": 1, "subject": "Мировая экономика и международные экономические отношения", "type": "seminar", "room": "2/214", "week_start": 11, "week_end": 15},
+            {"day": "tuesday", "pair": 2, "subject": "Качество и безопасность в гостиничной деятельности", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 10},
+            {"day": "tuesday", "pair": 2, "subject": "Качество и безопасность в гостиничной деятельности", "type": "lecture", "room": "2/214*", "week_start": 11, "week_end": 15},
+            {"day": "tuesday", "pair": 3, "subject": "Международный гостиничный бизнес", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 14},
+
+            # Среда
+            {"day": "wednesday", "pair": 1, "subject": "Международный гостиничный бизнес", "type": "seminar", "room": "2/214", "week_start": 4, "week_end": 15},
+            {"day": "wednesday", "pair": 2, "subject": "Качество и безопасность в гостиничной деятельности", "type": "seminar", "room": "2/214", "week_start": 4, "week_end": 15},
+            {"day": "wednesday", "pair": 3, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "lecture", "room": "2/214*", "week_start": 10, "week_end": 10},
+            {"day": "wednesday", "pair": 3, "subject": "Мировая экономика и международные экономические отношения", "type": "seminar", "room": "2/214", "week_start": 15, "week_end": 15},
+
+            # Четверг
+            {"day": "thursday", "pair": 1, "subject": "Мировая экономика и международные экономические отношения", "type": "seminar", "room": "2/214", "week_start": 4, "week_end": 15},
+            {"day": "thursday", "pair": 2, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 9},
+            {"day": "thursday", "pair": 2, "subject": "Международный гостиничный бизнес", "type": "seminar", "room": "2/214", "week_start": 10, "week_end": 10},
+            {"day": "thursday", "pair": 2, "subject": "Качество и безопасность в гостиничной деятельности", "type": "seminar", "room": "2/214", "week_start": 11, "week_end": 15},
+            {"day": "thursday", "pair": 3, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "seminar", "room": "2/214", "week_start": 6, "week_end": 12},
+            {"day": "thursday", "pair": 3, "subject": "Качество и безопасность в гостиничной деятельности", "type": "seminar", "room": "2/214", "week_start": 13, "week_end": 13},
+
+            # Пятница
+            {"day": "friday", "pair": 1, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "seminar", "room": "2/214", "week_start": 4, "week_end": 9},
+            {"day": "friday", "pair": 1, "subject": "Международный гостиничный бизнес", "type": "seminar", "room": "2/214", "week_start": 11, "week_end": 15},
+            {"day": "friday", "pair": 2, "subject": "Мировая экономика и международные экономические отношения", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 8},
+            {"day": "friday", "pair": 2, "subject": "Качество и безопасность в гостиничной деятельности", "type": "lecture", "room": "3/207*", "week_start": 9, "week_end": 9},
+            {"day": "friday", "pair": 2, "subject": "Стратегический менеджмент в гостиничном хозяйстве", "type": "seminar", "room": "2/214", "week_start": 11, "week_end": 15},
+            {"day": "friday", "pair": 3, "subject": "Международный гостиничный бизнес", "type": "lecture", "room": "2/214*", "week_start": 4, "week_end": 9},
+            {"day": "friday", "pair": 3, "subject": "Международный гостиничный бизнес", "type": "lecture", "room": "2/214*", "week_start": 11, "week_end": 11}
+        ]
+        
+        insert_query = """
+            INSERT INTO schedule (day_of_week, pair_number, subject, lesson_type, teacher, room, week_start, week_end)
+            VALUES (:day, :pair, :subject, :type, :teacher, :room, :week_start, :week_end)
+        """
+        
+        for lesson in lessons:
+            try:
+                # Determine teacher based on subject and type
+                teacher_name = TEACHERS.get(lesson["subject"], {}).get(lesson["type"], "Не указан")
+                
+                # Format data for insertion
+                data = {
+                    "day": lesson["day"],
+                    "pair": lesson["pair"],
+                    "subject": lesson["subject"],
+                    "type": lesson["type"],
+                    "teacher": teacher_name,
+                    "room": lesson["room"],
+                    "week_start": lesson["week_start"],
+                    "week_end": lesson["week_end"]
+                }
+                
+                await database.execute(query=insert_query, values=data)
+            except Exception as e:
+                print(f"Error seeding lesson {lesson['subject']}: {e}")
+                
+        print(f"✓ Seeded {len(lessons)} lessons")
+    
     # Create indexes for performance
     print("📊 Creating database indexes...")
     
