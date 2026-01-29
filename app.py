@@ -102,7 +102,7 @@ async def login_student(request: LoginRequest):
             return {"success": False, "error": "Неверный ID или пароль"}
     except Exception as e:
         print(f"Login error: {e}")
-        return {"success": False, "error": "Ошибка сервера"}
+        return {"success": False, "error": f"Ошибка сервера: {str(e)}"}
 
 @app.post("/api/change-password")
 async def change_password(request: ChangePasswordRequest):
