@@ -298,7 +298,13 @@ async function init() {
     const closeBannerBtn = document.getElementById('close-banner-btn');
     if (closeBannerBtn) {
         closeBannerBtn.onclick = () => {
-            document.getElementById('announcement-banner').classList.add('hidden');
+            const banner = document.getElementById('announcement-banner');
+            banner.classList.add('hidden');
+
+            // Remember that we closed this announcement
+            if (banner.dataset.createdAt) {
+                localStorage.setItem('closed_announcement_date', banner.dataset.createdAt);
+            }
         }
     }
 }
@@ -310,10 +316,19 @@ async function loadAnnouncement() {
         const data = await response.json();
 
         if (data && data.message) {
+            // Check if this specific announcement was already closed
+            const lastClosed = localStorage.getItem('closed_announcement_date');
+            if (lastClosed === data.created_at) {
+                return; // User already closed this announcement
+            }
+
             const banner = document.getElementById('announcement-banner');
             const text = document.getElementById('announcement-text');
             text.textContent = data.message;
             banner.classList.remove('hidden');
+
+            // Store current announcement date for the close handler
+            banner.dataset.createdAt = data.created_at;
         }
     } catch (error) {
         console.error('Failed to load announcement:', error);
