@@ -1,9 +1,36 @@
 // Profile Page JavaScript
 
 // Check authentication
-const token = localStorage.getItem('auth_token');
+const token = localStorage.getItem('access_token');
 if (!token) {
     window.location.href = '/login.html';
+}
+
+// Token refresh function
+async function refreshAccessToken() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+        return false;
+    }
+
+    try {
+        const response = await fetch('/api/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: refreshToken })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('refresh_token', data.refresh_token);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Token refresh error:', error);
+        return false;
+    }
 }
 
 // Load student info
@@ -19,7 +46,16 @@ async function loadStudentInfo() {
 
         // Check for authentication errors
         if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem('auth_token');
+            // Try to refresh token
+            const refreshed = await refreshAccessToken();
+            if (refreshed) {
+                // Retry with new token
+                window.location.reload();
+                return;
+            }
+
+            // Refresh failed, redirect to login
+            localStorage.clear();
             window.location.href = '/login.html';
             return;
         }

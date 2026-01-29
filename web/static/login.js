@@ -35,9 +35,11 @@ loginForm.addEventListener('submit', async function (e) {
         const result = await response.json();
 
         if (result.success) {
-            // Save to localStorage
-            localStorage.setItem('student_id', result.telegram_id);
-            localStorage.setItem('student_name', result.name);
+            // Save JWT tokens to localStorage
+            localStorage.setItem('access_token', result.access_token);
+            localStorage.setItem('refresh_token', result.refresh_token);
+            localStorage.setItem('student_id', result.user.telegram_id);
+            localStorage.setItem('student_name', result.user.name);
 
             // Redirect to main page
             window.location.href = '/';
