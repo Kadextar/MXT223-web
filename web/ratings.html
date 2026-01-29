@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рейтинг преподавателей - МХТ-223</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/ratings.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+    </div>
+
+    <!-- Announcement Banner -->
+    <div id="announcement-banner" class="announcement-banner hidden">
+        <div class="announcement-content">
+            <span class="announcement-icon">📣</span>
+            <span class="announcement-text" id="announcement-text"></span>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="back-link">← Расписание</a>
+                <span class="badge">MXT-223</span>
+                <h1>Рейтинг преподавателей</h1>
+                <p class="subtitle">Анонимная оценка качества преподавания</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Teachers List -->
+            <div id="teachers-container" class="teachers-grid">
+                <!-- Teachers will be loaded here -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Загрузка преподавателей...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <p>📚 Преподаватели еще не добавлены</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Rating Modal -->
+    <div id="rating-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="close-modal">×</button>
+
+            <h2 id="modal-teacher-name">Оценить преподавателя</h2>
+            <p class="modal-subject" id="modal-subject"></p>
+
+            <form id="rating-form">
+                <div class="form-group">
+                    <label>Оценка качества преподавания</label>
+                    <div class="emoji-rating">
+                        <button type="button" class="emoji-btn" data-rating="20">😞</button>
+                        <button type="button" class="emoji-btn" data-rating="40">😐</button>
+                        <button type="button" class="emoji-btn" data-rating="60">🙂</button>
+                        <button type="button" class="emoji-btn" data-rating="80">😊</button>
+                        <button type="button" class="emoji-btn" data-rating="100">🤩</button>
+                    </div>
+                    <div class="rating-value">
+                        <span id="rating-display">Выберите оценку</span>
+                    </div>
+                    <input type="hidden" id="rating-input" name="rating" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Быстрые теги (необязательно)</label>
+                    <div class="tags-grid">
+                        <button type="button" class="tag-btn" data-tag="Понятно объясняет">✓ Понятно объясняет</button>
+                        <button type="button" class="tag-btn" data-tag="Интересные лекции">✓ Интересные лекции</button>
+                        <button type="button" class="tag-btn" data-tag="Справедливая оценка">✓ Справедливая
+                            оценка</button>
+                        <button type="button" class="tag-btn" data-tag="Много домашних заданий">✓ Много ДЗ</button>
+                        <button type="button" class="tag-btn" data-tag="Доступен для вопросов">✓ Доступен</button>
+                        <button type="button" class="tag-btn" data-tag="Хорошие материалы">✓ Хорошие материалы</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Комментарий (необязательно)</label>
+                    <textarea id="comment-input" name="comment" rows="3"
+                        placeholder="Ваш анонимный отзыв..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Ваш ID (для анонимности)</label>
+                    <input type="text" id="student-id-input" name="student_id" placeholder="Введите любой уникальный ID"
+                        required>
+                    <small>Используется только для хеширования. Никто не увидит ваш ID.</small>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">Отправить оценку</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/static/ratings.js"></script>
+</body>
+
+</html>
