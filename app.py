@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response
 from pathlib import Path
@@ -189,10 +189,10 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 @app.get("/api/me")
-async def get_current_user(authorization: str = None):
+async def get_current_user(authorization: str = Header(None)):
     """Get current user info from token"""
     if not authorization:
-        return {"success": False, "error": "No authorization header"}
+        raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
         # Extract telegram_id from Bearer token (token is the telegram_id)
@@ -201,16 +201,18 @@ async def get_current_user(authorization: str = None):
         query = "SELECT telegram_id, name FROM students WHERE telegram_id = :telegram_id"
         student = await database.fetch_one(query=query, values={"telegram_id": token})
         
-        if student:
-            return {
-                "telegram_id": student["telegram_id"],
-                "name": student["name"]
-            }
-        else:
-            return {"success": False, "error": "User not found"}
+        if not student:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        return {
+            "telegram_id": student["telegram_id"],
+            "name": student["name"]
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Get user error: {e}")
-        return {"success": False, "error": str(e)}
+        raise HTTPException(status_code=500, detail="Server error")
 
 @app.post("/api/login")
 async def login_student(request: LoginRequest):

@@ -8,6 +8,8 @@ if (!token) {
 
 // Load student info
 async function loadStudentInfo() {
+    if (!token) return; // Double check
+
     try {
         const response = await fetch('/api/me', {
             headers: {
@@ -15,12 +17,14 @@ async function loadStudentInfo() {
             }
         });
 
+        // Check for authentication errors
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('auth_token');
+            window.location.href = '/login.html';
+            return;
+        }
+
         if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('auth_token');
-                window.location.href = '/login.html';
-                return;
-            }
             throw new Error('Failed to load student info');
         }
 

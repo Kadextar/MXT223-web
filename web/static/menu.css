@@ -1,0 +1,163 @@
+/* Hamburger Menu Styles */
+
+.menu-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+}
+
+.menu-btn:hover {
+    background: rgba(30, 41, 59, 0.95);
+    transform: scale(1.05);
+}
+
+.menu-btn span {
+    width: 24px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+.menu-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.menu-btn.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Menu Overlay */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Side Menu */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+    z-index: 1000;
+    transition: right 0.3s ease-out;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.side-menu.active {
+    right: 0;
+}
+
+.menu-header {
+    padding: 30px 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu-header h2 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.menu-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.menu-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.menu-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 20px 0;
+}
+
+.side-menu li {
+    margin: 0;
+}
+
+.side-menu a {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+.side-menu a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--primary);
+    padding-left: 25px;
+}
+
+.side-menu a:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .side-menu {
+        width: 280px;
+        right: -280px;
+    }
+
+    .menu-btn {
+        top: 15px;
+        right: 15px;
+    }
+}
