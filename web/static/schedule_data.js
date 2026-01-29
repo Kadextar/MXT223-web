@@ -1,4 +1,4 @@
-export const SEMESTER_START_DATE = new Date('2026-02-02');
+export const SEMESTER_START_DATE = new Date('2026-01-12');
 
 export const PAIR_TIMES = {
     1: "08:00 - 09:20",
