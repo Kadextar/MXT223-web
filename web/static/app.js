@@ -293,6 +293,14 @@ async function init() {
     // Listeners
     dom.prevWeekBtn.onclick = () => updateWeek(-1);
     dom.nextWeekBtn.onclick = () => updateWeek(1);
+
+    // Close banner
+    const closeBannerBtn = document.getElementById('close-banner-btn');
+    if (closeBannerBtn) {
+        closeBannerBtn.onclick = () => {
+            document.getElementById('announcement-banner').classList.add('hidden');
+        }
+    }
 }
 
 // --- Announcement Loading ---
