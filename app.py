@@ -108,6 +108,18 @@ async def init_db():
     """
     await database.execute(query)
     
+    # Push subscriptions table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id {id_type},
+            student_id TEXT NOT NULL,
+            subscription_data TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(student_id)
+        )
+    """
+    await database.execute(query)
+    
     # Check if students exist
     count_query = "SELECT COUNT(*) FROM students"
     count = await database.fetch_val(query=count_query)
