@@ -37,7 +37,7 @@ const TEACHERS = {
         seminar: "Мейлиев Абдугани Наджмиддинович"
     },
     "Урок просвещения": {
-        lecture: "",
+        lecture: "Пардаев Гайрат Яхшибаевич",
         seminar: ""
     }
 };
@@ -334,13 +334,13 @@ export function getLessonsForDay(dayOfWeek, currentWeek) {
     return SCHEDULE.filter(lesson => {
         // Проверяем день
         if (lesson.day !== dayOfWeek) return false;
-        
+
         // Проверяем неделю (если задан массив [start, end])
         if (Array.isArray(lesson.weeks)) {
             const [start, end] = lesson.weeks;
             if (currentWeek < start || currentWeek > end) return false;
         }
-        
+
         return true;
     });
 }

@@ -17,6 +17,14 @@ app.mount(
 def index():
     return FileResponse(BASE_DIR / "web" / "index.html")
 
+@app.get("/manifest.json")
+def manifest():
+    return FileResponse(BASE_DIR / "web" / "manifest.json", media_type="application/manifest+json")
+
+@app.get("/sw.js")
+def service_worker():
+    return FileResponse(BASE_DIR / "web" / "sw.js", media_type="application/javascript")
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
