@@ -218,46 +218,81 @@ async def get_current_user(authorization: str = Header(None)):
 async def login_student(request: LoginRequest):
     """Authenticate student with telegram_id and password"""
     try:
-        query = "SELECT telegram_id, name FROM students WHERE telegram_id = :telegram_id AND password = :password"
-        student = await database.fetch_one(query=query, values={"telegram_id": request.telegram_id, "password": request.password})
+        from utils.auth import verify_password, is_password_hashed, hash_password
         
-        if student:
-            return {
-                "success": True,
-                "telegram_id": student["telegram_id"],
-                "name": student["name"]
-            }
-        else:
+        # Get student with password hash
+        query = "SELECT telegram_id, name, password FROM students WHERE telegram_id = :telegram_id"
+        student = await database.fetch_one(query=query, values={"telegram_id": request.telegram_id})
+        
+        if not student:
             return {"success": False, "error": "Неверный ID или пароль"}
+        
+        # Check if password is hashed or plain text (for backward compatibility during migration)
+        if is_password_hashed(student["password"]):
+            # New hashed password
+            if not verify_password(request.password, student["password"]):
+                return {"success": False, "error": "Неверный ID или пароль"}
+        else:
+            # Old plain text password - check and migrate
+            if student["password"] != request.password:
+                return {"success": False, "error": "Неверный ID или пароль"}
+            
+            # Migrate to hashed password
+            hashed = hash_password(request.password)
+            await database.execute(
+                "UPDATE students SET password = :password WHERE telegram_id = :telegram_id",
+                {"password": hashed, "telegram_id": request.telegram_id}
+            )
+        
+        return {
+            "success": True,
+            "telegram_id": student["telegram_id"],
+            "name": student["name"]
+        }
     except Exception as e:
         print(f"Login error: {e}")
         return {"success": False, "error": f"Ошибка сервера: {str(e)}"}
 
 @app.post("/api/change-password")
-async def change_password(request: ChangePasswordRequest, authorization: str = None):
+async def change_password(request: ChangePasswordRequest, authorization: str = Header(None)):
     """Change student password"""
     if not authorization:
-        return {"success": False, "error": "No authorization header"}
+        raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
+        from utils.auth import verify_password, hash_password, is_password_hashed
+        
         # Extract telegram_id from Bearer token
         telegram_id = authorization.replace("Bearer ", "")
         
-        # Verify old password
-        check_query = "SELECT id FROM students WHERE telegram_id = :telegram_id AND password = :old_password"
-        student = await database.fetch_one(query=check_query, values={"telegram_id": telegram_id, "old_password": request.old_password})
+        # Get student with current password
+        check_query = "SELECT id, password FROM students WHERE telegram_id = :telegram_id"
+        student = await database.fetch_one(query=check_query, values={"telegram_id": telegram_id})
         
         if not student:
-            return {"success": False, "error": "Неверный старый пароль"}
+            raise HTTPException(status_code=404, detail="Student not found")
+        
+        # Verify old password (support both hashed and plain text)
+        if is_password_hashed(student["password"]):
+            if not verify_password(request.old_password, student["password"]):
+                return {"success": False, "error": "Неверный старый пароль"}
+        else:
+            if student["password"] != request.old_password:
+                return {"success": False, "error": "Неверный старый пароль"}
+        
+        # Hash new password
+        hashed_new_password = hash_password(request.new_password)
         
         # Update password
         update_query = "UPDATE students SET password = :new_password WHERE telegram_id = :telegram_id"
-        await database.execute(query=update_query, values={"new_password": request.new_password, "telegram_id": telegram_id})
+        await database.execute(query=update_query, values={"new_password": hashed_new_password, "telegram_id": telegram_id})
         
         return {"success": True, "message": "Пароль успешно изменён"}
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Password change error: {e}")
-        return {"success": False, "error": f"Ошибка сервера: {str(e)}"}
+        raise HTTPException(status_code=500, detail="Server error")
 
 @app.get("/api/schedule")
 async def get_schedule():
