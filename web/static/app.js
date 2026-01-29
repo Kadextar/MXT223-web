@@ -79,7 +79,7 @@ function getWeekDateRange(weekNumber) {
         return `${day} ${month}`;
     };
 
-    return `${formatShort(weekStart)} - ${formatShort(weekEnd)}`;
+    return `${weekNumber}-я неделя • ${formatShort(weekStart)} - ${formatShort(weekEnd)}`;
 }
 
 function renderWeekInfo() {
