@@ -120,6 +120,33 @@ async def init_db():
     """
     await database.execute(query)
     
+    # Schedule table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS schedule (
+            id {id_type},
+            day_of_week TEXT NOT NULL,
+            pair_number INTEGER NOT NULL,
+            subject TEXT NOT NULL,
+            lesson_type TEXT NOT NULL,
+            teacher TEXT,
+            room TEXT,
+            week_start INTEGER,
+            week_end INTEGER
+        )
+    """
+    await database.execute(query)
+    
+    # Announcements table
+    query = f"""
+        CREATE TABLE IF NOT EXISTS announcements (
+            id {id_type},
+            message TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    await database.execute(query)
+    
     # Check if students exist
     count_query = "SELECT COUNT(*) FROM students"
     count = await database.fetch_val(query=count_query)
