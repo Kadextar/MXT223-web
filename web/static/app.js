@@ -64,9 +64,33 @@ function parseTime(timeStr, dateParams) {
 }
 
 // --- Render Functions ---
+function getWeekDateRange(weekNumber) {
+    // Calculate Monday of the given week
+    const weekStart = new Date(SEMESTER_START_DATE);
+    weekStart.setDate(weekStart.getDate() + (weekNumber - 1) * 7);
+
+    // Calculate Sunday (end of week)
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    const formatShort = (date) => {
+        const day = date.getDate();
+        const month = date.toLocaleDateString('ru-RU', { month: 'long' });
+        return `${day} ${month}`;
+    };
+
+    return `${formatShort(weekStart)} - ${formatShort(weekEnd)}`;
+}
+
 function renderWeekInfo() {
     dom.currentDate.textContent = formatDate(state.currentDate);
     dom.weekNumber.textContent = `${state.currentWeek}-я неделя`;
+
+    // Update week date range
+    const weekDateRangeEl = document.getElementById('week-date-range');
+    if (weekDateRangeEl) {
+        weekDateRangeEl.textContent = getWeekDateRange(state.currentWeek);
+    }
 }
 
 function renderTabs() {
