@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/menu.css">
+    <link rel="stylesheet" href="/static/search.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -66,6 +67,27 @@
             </div>
         </nav>
 
+        <!-- Search Modal -->
+        <div id="search-modal" class="search-modal hidden">
+            <div class="search-overlay" onclick="closeSearch()"></div>
+            <div class="search-container">
+                <div class="search-header">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Поиск предметов, преподавателей, аудиторий..."
+                        autocomplete="off" />
+                    <button class="search-close-btn" onclick="closeSearch()">✕</button>
+                </div>
+                <div class="search-results" id="search-results">
+                    <!-- Results will be inserted here -->
+                </div>
+                <div class="search-footer">
+                    <span><kbd>↑</kbd> <kbd>↓</kbd> навигация</span>
+                    <span><kbd>Enter</kbd> выбрать</span>
+                    <span><kbd>Esc</kbd> закрыть</span>
+                </div>
+            </div>
+        </div>
+
         <header class="header">
             <div class="header-content">
                 <span class="badge">MXT-223</span>
@@ -108,6 +130,7 @@
 
     <!-- Scripts -->
     <script src="/static/theme.js"></script>
+    <script src="/static/search.js"></script>
     <script type="module" src="/static/app.js"></script>
     <script src="/static/menu.js"></script>
     <script>

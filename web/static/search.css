@@ -1,0 +1,219 @@
+.search-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+}
+
+.search-modal.hidden {
+    display: none;
+}
+
+.search-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.search-container {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+    gap: 0.75rem;
+}
+
+.search-icon {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+
+#search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1.1rem;
+    color: var(--text-main);
+    outline: none;
+    font-family: var(--font-family);
+}
+
+#search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.search-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-results::-webkit-scrollbar {
+    width: 8px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: var(--card-border);
+    border-radius: 4px;
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+.search-result-item {
+    padding: 0.875rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--card-border);
+    transition: background 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover,
+.search-result-item.selected {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.search-result-title {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+}
+
+.search-result-title mark {
+    background: var(--accent);
+    color: white;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+}
+
+.search-result-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-result-type {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.search-empty {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.search-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.search-footer {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-dark);
+    border-top: 1px solid var(--card-border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+kbd {
+    padding: 0.2rem 0.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .search-modal {
+        padding-top: 5vh;
+    }
+
+    .search-container {
+        width: 95%;
+    }
+
+    .search-header {
+        padding: 0.875rem 1rem;
+    }
+
+    .search-result-item {
+        padding: 0.75rem 1rem;
+    }
+
+    .search-footer {
+        padding: 0.625rem 1rem;
+        gap: 1rem;
+    }
+}
