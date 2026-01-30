@@ -170,6 +170,28 @@
 
             <!-- Announcements Section -->
             <div id="announcements" class="admin-section">
+                <!-- Push Notification Card -->
+                <div class="card" style="padding: 20px; margin-bottom: 20px;">
+                    <h3>🔔 Push-уведомления</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">Отправка уведомлений всем подписанным
+                        устройствам.</p>
+                    <div class="form-group">
+                        <label>Заголовок</label>
+                        <input type="text" id="push-title" placeholder="МХТ-223" value="МХТ-223">
+                    </div>
+                    <div class="form-group">
+                        <label>Сообщение</label>
+                        <textarea id="push-message" placeholder="Введите текст уведомления..." rows="3"
+                            style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Ссылка (опционально)</label>
+                        <input type="text" id="push-url" placeholder="/" value="/">
+                    </div>
+                    <button class="btn-add" onclick="sendPushNotification()">Отправить Push</button>
+                    <div id="push-result" class="message hidden" style="margin-top: 10px;"></div>
+                </div>
+
                 <div class="card" style="padding: 20px;">
                     <h3>📣 Управление баннером</h3>
                     <p style="color: var(--text-muted); margin-bottom: 15px;">
