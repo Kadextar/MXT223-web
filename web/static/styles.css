@@ -21,7 +21,7 @@
     --secondary: #7c3aed;
     --accent: #059669;
     --text-main: #0f172a;
-    --text-muted: #64748b;
+    --text-muted: #475569;
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -141,6 +141,14 @@ h1 {
     margin-bottom: 4px;
 }
 
+/* Light theme specific overrides */
+[data-theme="light"] h1 {
+    background: linear-gradient(to right, #0f172a, #475569);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .subtitle {
     color: var(--text-muted);
     font-size: 1rem;
@@ -191,6 +199,7 @@ h1 {
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
     color: white;
     padding: 12px 20px;
+    padding-right: 80px; /* Space for menu button */
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
     animation: slideDown 0.5s ease-out;
@@ -212,7 +221,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 12px;
-    max-width: 1200px;
+    max-width: 600px; /* Match app-container max-width */
     margin: 0 auto;
 }
 
