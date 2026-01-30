@@ -108,6 +108,44 @@ function renderTabs() {
         tabsContainer.appendChild(btn);
     });
 }
+/* Note: The main navigation handled in HTML structure, checking if we need to inject the bottom nav */
+function initFloatingNav() {
+    // Check if nav exists, if not create it (for index.html mainly)
+    let nav = document.querySelector('.profile-nav');
+    if (!nav) {
+        nav = document.createElement('nav');
+        nav.className = 'profile-nav';
+        nav.innerHTML = `
+            <a href="/index.html" class="nav-link active">
+                <i class="fas fa-calendar-alt"></i> <span>Расписание</span>
+            </a>
+            <a href="/subjects.html" class="nav-link">
+                <i class="fas fa-book"></i> <span>Предметы</span>
+            </a>
+            <a href="/ratings.html" class="nav-link">
+                <i class="fas fa-star"></i> <span>Рейтинг</span>
+            </a>
+            <a href="/profile.html" class="nav-link">
+                <i class="fas fa-user"></i> <span>Профиль</span>
+            </a>
+        `;
+        document.body.appendChild(nav);
+    }
+
+    // Highlight active link
+    const path = window.location.pathname;
+    nav.querySelectorAll('.nav-link').forEach(link => {
+        if (link.getAttribute('href') === path || (path === '/' && link.getAttribute('href') === '/index.html')) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+
+    // Mobile specific: Hide original bottom nav if it exists to avoid duplication
+    const oldNav = document.getElementById('days-tabs');
+    // We keep days-tabs for schedule switching, but might want to style it differently
+}
 
 function renderSchedule() {
     const container = dom.scheduleContainer;
@@ -323,6 +361,9 @@ async function init() {
     renderWeekInfo();
     renderTabs();
     renderSchedule();
+
+    // Initialize new floating navigation
+    initFloatingNav();
 
     // Запускаем Live Update
     updateLiveStatus();

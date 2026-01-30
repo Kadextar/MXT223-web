@@ -36,11 +36,14 @@ const ratingInput = document.getElementById('rating-input');
 async function loadTeachers() {
     try {
         const response = await fetch('/api/teachers');
+        if (!response.ok) throw new Error('Network response was not ok');
+
         const teachers = await response.json();
 
+        // Ensure loading is hidden
         loading.classList.add('hidden');
 
-        if (teachers.length === 0) {
+        if (!Array.isArray(teachers) || teachers.length === 0) {
             emptyState.classList.remove('hidden');
             return;
         }

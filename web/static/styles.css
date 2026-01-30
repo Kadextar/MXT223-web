@@ -1,29 +1,28 @@
 :root {
-    /* Dark theme (default) */
-    --bg-dark: #0f172a;
-    --card-bg: rgba(30, 41, 59, 0.7);
+    /* Dark Glass Theme */
+    --bg-dark: #050510;
+    --card-bg: rgba(255, 255, 255, 0.03);
     --card-border: rgba(255, 255, 255, 0.1);
+    --glass-highlight: rgba(255, 255, 255, 0.05);
+
+    /* Neon Accents */
     --primary: #3b82f6;
+    /* Electric Blue */
     --secondary: #8b5cf6;
-    --accent: #10b981;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --font-family: 'Outfit', sans-serif;
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    /* Deep Purple */
+    --accent: #00ff9d;
+    /* Cyan/Green */
+
+    --text-main: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.6);
+
+    --font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --neon-glow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
-/* Light theme */
-[data-theme="light"] {
-    --bg-dark: #f8fafc;
-    --card-bg: rgba(255, 255, 255, 0.9);
-    --card-border: rgba(0, 0, 0, 0.1);
-    --primary: #2563eb;
-    --secondary: #7c3aed;
-    --accent: #059669;
-    --text-main: #0f172a;
-    --text-muted: #475569;
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-}
+/* Light theme support removed for this concept (Dark Mode Only) */
 
 * {
     margin: 0;
@@ -43,7 +42,7 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Background Animations */
+/* Background Animations (Orbs) */
 .background-globes {
     position: fixed;
     top: 0;
@@ -52,40 +51,51 @@ body {
     height: 100%;
     z-index: -1;
     overflow: hidden;
+    background: var(--bg-dark);
 }
 
 .globe {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.6;
-    animation: moveGlobe 20s infinite alternate;
+    filter: blur(100px);
+    opacity: 0.4;
+    animation: floatOrb 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .globe-1 {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
     background: var(--primary);
-    top: -50px;
-    left: -50px;
+    top: -10%;
+    left: -10%;
 }
 
 .globe-2 {
-    width: 250px;
-    height: 250px;
+    width: 350px;
+    height: 350px;
     background: var(--secondary);
-    bottom: -50px;
-    right: -50px;
+    bottom: 10%;
+    right: -10%;
     animation-delay: -5s;
 }
 
-@keyframes moveGlobe {
+.globe-3 {
+    width: 300px;
+    height: 300px;
+    background: var(--accent);
+    top: 40%;
+    left: 40%;
+    opacity: 0.2;
+    animation-delay: -10s;
+}
+
+@keyframes floatOrb {
     0% {
         transform: translate(0, 0) scale(1);
     }
 
     100% {
-        transform: translate(50px, 30px) scale(1.1);
+        transform: translate(30px, 50px) scale(1.1);
     }
 }
 
@@ -277,6 +287,120 @@ h1 {
 }
 
 /* Navigation */
+/* Glass Card (Global) */
+.profile-card,
+.days-tabs,
+.lesson-card,
+.live-widget {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 24px;
+    /* Increased radius */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    color: var(--text-main);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.profile-card:hover,
+.lesson-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--glass-highlight);
+}
+
+/* Floating Navigation (Bottom Pill) */
+.profile-nav {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+
+    background: rgba(15, 15, 20, 0.6);
+    /* Slightly darker glass */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 100px;
+    /* Pill shape */
+
+    padding: 8px 12px;
+    /* Compact padding */
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: auto;
+    /* Shrink to fit */
+    margin: 0;
+}
+
+.nav-link {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-link:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+    transform: none;
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Nav Tweak */
+@media (max-width: 768px) {
+    .profile-nav {
+        width: 90%;
+        /* Wider on mobile */
+        justify-content: space-between;
+        bottom: 20px;
+    }
+
+    .nav-link {
+        flex: 1;
+        justify-content: center;
+        padding: 12px;
+        font-size: 0;
+        /* Hide text on mobile if icons available, or keep small */
+    }
+
+    .nav-link::before {
+        content: attr(data-icon);
+        font-size: 1.2rem;
+    }
+
+    /* Since we don't have icons in HTML yet, let's keep text but make it small */
+    .nav-link {
+        font-size: 0.75rem;
+        padding: 10px 12px;
+    }
+
+    /* Content Padding to avoid overlap with Nav */
+    .app-container {
+        padding-bottom: 100px;
+    }
+}
+
 .week-nav {
     display: flex;
     justify-content: space-between;
@@ -309,12 +433,8 @@ h1 {
 .days-tabs {
     display: flex;
     justify-content: space-between;
-    background: var(--card-bg);
     padding: 6px;
-    border-radius: 16px;
     margin-bottom: 24px;
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--card-border);
 }
 
 .tab {
@@ -374,70 +494,78 @@ h1 {
     box-shadow: var(--glass-shadow);
 }
 
+/* Lesson Card Specifics */
+.lesson-card {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    padding: 24px;
+    /* More breathing room */
+}
+
+/* Glowing Left Border */
 .lesson-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 4px;
+    width: 6px;
+    /* High visibility */
     height: 100%;
+    /* Default fallback */
     background: var(--text-muted);
+    box-shadow: 0 0 15px currentColor;
+    opacity: 0.8;
 }
 
 .lesson-card.lecture::before {
     background: var(--primary);
+    box-shadow: 0 0 20px var(--primary);
 }
 
 .lesson-card.seminar::before {
     background: var(--secondary);
+    box-shadow: 0 0 20px var(--secondary);
 }
 
 .lesson-card.exam::before {
     background: var(--accent);
+    box-shadow: 0 0 20px var(--accent);
+}
+
+.lesson-subject {
+    font-size: 1.4rem;
+    /* Larger */
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    line-height: 1.3;
+    background: linear-gradient(to right, #ffffff, #e0e0e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .time-badge {
     background: rgba(255, 255, 255, 0.1);
-    padding: 4px 10px;
-    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-family: 'SF Mono', monospace;
+    /* Tech feel */
     font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-main);
-}
-
-.type-badge {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-muted);
-}
-
-.lesson-subject {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-
-.lesson-details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.4);
 }
 
 .detail-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.9;
 }
 
 .icon {
@@ -469,8 +597,63 @@ h1 {
 }
 
 /* Utilities */
-.hidden {
-    display: none !important;
+/* --- Global Polish --- */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Text Selection */
+::selection {
+    background: rgba(59, 130, 246, 0.5);
+    /* Primary with opacity */
+    color: white;
+}
+
+/* Smooth Focus Rings */
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Button Active State (Press) */
+button:active {
+    transform: scale(0.96);
+}
+
+/* Page Transition Animation */
+body {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Helpers */
+.glass-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(25px);
+    border-radius: 24px;
 }
 
 /* Live Status Widget */
