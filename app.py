@@ -682,21 +682,20 @@ async def debug_check_db():
 @app.get("/api/debug/migrate-admin")
 async def debug_migrate_admin():
     """Add is_admin column to students table"""
+    messages = []
     try:
-        # Check if column exists
-        query = "PRAGMA table_info(students)"
-        columns = await database.fetch_all(query=query)
-        for col in columns:
-            if col["name"] == "is_admin":
-                return {"status": "ok", "message": "Column is_admin already exists"}
+        # Try to add column directly
+        try:
+            await database.execute("ALTER TABLE students ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
+            messages.append("Added is_admin column")
+        except Exception as e:
+            messages.append(f"Column creation skipped (probably exists): {e}")
         
-        # Add column
-        await database.execute("ALTER TABLE students ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
-        
-        # Make specific user admin (optional, for bootstrap)
+        # Make specific user admin
         await database.execute("UPDATE students SET is_admin = TRUE WHERE telegram_id = '1214641616'") # Azamat
+        messages.append("Promoted Azamat to admin")
         
-        return {"status": "ok", "message": "Added is_admin column and promoted Azamat"}
+        return {"status": "ok", "messages": messages}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
