@@ -17,7 +17,35 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <!-- FontAwesome placeholder, better use SVGs or local icons usually, but for speed we'll use unicode or simple SVGs in CSS -->
+    <!-- FontAwesome placeholder -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <!-- GLOBAL ERROR HANDLER FOR DEBUGGING -->
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            const container = document.getElementById('schedule-container') || document.body;
+            // Check if error message element already exists
+            let errBox = document.getElementById('global-error-box');
+            if (!errBox) {
+                errBox = document.createElement('div');
+                errBox.id = 'global-error-box';
+                errBox.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;font-family:monospace;white-space:pre-wrap;';
+                document.body.prepend(errBox);
+            }
+            errBox.innerHTML += `🚨 ERROR: ${msg}\nLine: ${line}:${col}\nURL: ${url}\nStack: ${error ? error.stack : 'N/A'}\n\n`;
+
+            // Also hide loading state if possible
+            const loading = document.querySelector('.empty-state p');
+            if (loading) loading.textContent = "Ошибка JS (см. сверху)";
+
+            return false;
+        };
+
+        // Catch unhandled promise rejections (async errors)
+        window.addEventListener('unhandledrejection', function (event) {
+            window.onerror('Unhandled Rejection: ' + event.reason, 'Promise', 0, 0, event.reason);
+        });
+    </script>
 </head>
 
 <body>
