@@ -684,6 +684,24 @@ async def debug_seed_schedule():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.get("/api/debug/check-db")
+async def debug_check_db():
+    """Check what's actually in the database"""
+    try:
+        query = "SELECT COUNT(*) as count FROM schedule"
+        count_result = await database.fetch_one(query=query)
+        
+        query2 = "SELECT * FROM schedule LIMIT 3"
+        sample = await database.fetch_all(query=query2)
+        
+        return {
+            "total_count": count_result["count"] if count_result else 0,
+            "sample": [dict(row) for row in sample]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/announcement")
 async def get_announcement():
     """Returns active announcement if exists"""
