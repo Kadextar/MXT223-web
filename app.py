@@ -677,11 +677,20 @@ async def debug_seed_schedule():
             count += 1
             
         # Clear cache
-        from utils.cache import clear_cache
+        # Clear cache AGGRESSIVELY
+        from utils.cache import clear_cache, schedule_cache
+        print(f"📊 Cache size before clear: {len(schedule_cache)}")
         clear_cache()
+        print(f"📊 Cache size after clear: {len(schedule_cache)}")
+        
+        # Also clear the specific function cache
+        if hasattr(get_schedule_data, 'clear_cache'):
+            get_schedule_data.clear_cache()
+            print("✅ Cleared get_schedule_data function cache")
         
         return {"status": "ok", "seeded": count}
     except Exception as e:
+        print(f"❌ Seed error: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.get("/api/debug/check-db")
