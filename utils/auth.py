@@ -17,7 +17,8 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password string
     """
-    return pwd_context.hash(password)
+    # Truncate to 72 bytes to avoid bcrypt limitation
+    return pwd_context.hash(password[:72])
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -32,10 +33,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         True if password matches, False otherwise
     """
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+        # Truncate to 72 chars to avoid bcrypt limitation before verifying
+        # Standard bcrypt behavior is to reject > 72 bytes, so we handle safely
+        return pwd_context.verify(plain_password[:72], hashed_password)
     except Exception:
-        # bcrypt limitation: password must be <= 72 bytes
-        # If password is too long, verification fails safely instead of crashing
+        # If verification still fails internally for some reason
         return False
 
 

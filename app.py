@@ -583,10 +583,11 @@ async def get_schedule_cached():
 async def debug_seed_schedule():
     """Manual trigger to re-seed schedule"""
     try:
-        # DROP table to ensure schema mismatch (e.g. legacy columns) is fixed
+        # DROP tables to ensure schema and data is fresh
         await database.execute("DROP TABLE IF EXISTS schedule")
+        await database.execute("DROP TABLE IF EXISTS students")
         
-        # Re-create table with correct schema
+        # Re-create tables with correct schema and seed data
         await init_db()
         
         # Mappings
