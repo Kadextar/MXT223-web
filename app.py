@@ -579,6 +579,31 @@ async def get_schedule_cached():
     """Returns all lessons from database with caching"""
     return await get_schedule_data()
 
+@app.get("/api/debug/schedule-nocache")
+async def get_schedule_nocache():
+    """Returns schedule WITHOUT caching - for debugging"""
+    try:
+        query = "SELECT * FROM schedule ORDER BY pair_number"
+        rows = await database.fetch_all(query=query)
+        print(f"🔍 NOCACHE: Found {len(rows)} rows in DB")
+        schedule = []
+        for row in rows:
+            schedule.append({
+                "day": row["day_of_week"],
+                "pair": row["pair_number"],
+                "subject": row["subject"],
+                "type": row["lesson_type"],
+                "teacher": row["teacher"],
+                "room": row["room"],
+                "weeks": [row["week_start"], row["week_end"]]
+            })
+        print(f"🔍 NOCACHE: Returning {len(schedule)} lessons")
+        return schedule
+    except Exception as e:
+        print(f"❌ NOCACHE Error: {e}")
+        return []
+
+
 @app.get("/api/debug/seed")
 async def debug_seed_schedule():
     """Manual trigger to re-seed schedule"""
