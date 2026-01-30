@@ -3,6 +3,7 @@ uvicorn
 databases[postgresql]
 psycopg2-binary
 python-dotenv
+bcrypt<5.0.0
 passlib[bcrypt]
 python-jose[cryptography]
 cachetools
