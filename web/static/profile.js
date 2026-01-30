@@ -67,6 +67,21 @@ async function loadStudentInfo() {
         const data = await response.json();
         document.getElementById('student-name').textContent = data.name;
         document.getElementById('student-id').textContent = `ID: ${data.telegram_id}`;
+
+        // Stats
+        if (data.created_at && data.created_at !== 'N/A') {
+            const date = new Date(data.created_at);
+            document.getElementById('join-date').textContent = date.toLocaleDateString('ru-RU');
+        } else {
+            document.getElementById('join-date').textContent = 'Неизвестно';
+        }
+
+        document.getElementById('reviews-count').textContent = data.ratings_count || 0;
+
+        // Avatar
+        if (data.avatar) {
+            document.getElementById('current-avatar').src = `/static/avatars/${data.avatar}`;
+        }
     } catch (error) {
         console.error('Error loading student info:', error);
         showMessage('Ошибка загрузки данных профиля', 'error');
@@ -237,3 +252,52 @@ async function checkNotificationStatus() {
 // Init Push Logic
 document.getElementById('enable-notifications-btn')?.addEventListener('click', enableNotifications);
 checkNotificationStatus();
+
+// --- Avatar Logic ---
+const avatarModal = document.getElementById('avatar-modal');
+const currentAvatarImg = document.getElementById('current-avatar');
+
+// Open Modal
+document.getElementById('edit-avatar-btn').addEventListener('click', () => {
+    avatarModal.classList.remove('hidden');
+});
+
+// Close Modal
+document.getElementById('close-avatar-modal').addEventListener('click', () => {
+    avatarModal.classList.add('hidden');
+});
+avatarModal.querySelector('.modal-overlay').addEventListener('click', () => {
+    avatarModal.classList.add('hidden');
+});
+
+// Select Avatar
+document.querySelectorAll('.avatar-option').forEach(img => {
+    img.addEventListener('click', async () => {
+        const selectedAvatar = img.getAttribute('data-id');
+
+        try {
+            const response = await fetch('/api/me/avatar', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ avatar: selectedAvatar })
+            });
+
+            if (response.ok) {
+                // Update UI immediately
+                currentAvatarImg.src = `/static/avatars/${selectedAvatar}`;
+                avatarModal.classList.add('hidden');
+                showMessage('Аватарка обновлена! 📸', 'success');
+            } else {
+                showMessage('Ошибка при сохранении', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showMessage('Ошибка соединения', 'error');
+        }
+    });
+});
+
+

@@ -1,0 +1,13 @@
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Database
+schedule.db
+
+# System
+.DS_Store

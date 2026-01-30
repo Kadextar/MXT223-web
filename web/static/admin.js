@@ -53,6 +53,17 @@ async function checkAdmin() {
     }
 }
 
+// Stats Function
+async function loadStats() {
+    const data = await apiCall('/api/admin/stats');
+    if (data) {
+        document.getElementById('stat-students').textContent = data.students;
+        document.getElementById('stat-teachers').textContent = data.teachers;
+        document.getElementById('stat-ratings').textContent = data.ratings;
+        document.getElementById('stat-subs').textContent = data.subscriptions;
+    }
+}
+
 // --- Schedule Functions ---
 const DAY_MAPPING = {
     "monday": "Понедельник",
@@ -288,6 +299,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 // Init
 checkAdmin();
+loadStats();
 loadSchedule();
 loadTeachers();
 loadAnnouncement();

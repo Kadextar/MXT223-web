@@ -8,3 +8,8 @@ passlib[bcrypt]
 python-jose[cryptography]
 cachetools
 pywebpush
+aiosqlite
+pytest
+pytest-asyncio
+httpx
+sentry-sdk
