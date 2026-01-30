@@ -286,9 +286,9 @@ function updateWeek(offset) {
 
 async function init() {
     // Load schedule data from API
-    // Load schedule data from API
+    // TEMP: Using nocache endpoint as workaround for persistent cache issue
     try {
-        const response = await fetch('/api/schedule');
+        const response = await fetch('/api/debug/schedule-nocache');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setScheduleData(data);
