@@ -284,13 +284,28 @@ function updateWeek(offset) {
 
 async function init() {
     // Load schedule data from API
+    // Load schedule data from API
     try {
         const response = await fetch('/api/schedule');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setScheduleData(data);
     } catch (error) {
         console.error('Failed to load schedule:', error);
-        // Continue with empty schedule
+
+        // Show error to user
+        const container = document.getElementById('schedule-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <p>Ошибка загрузки</p>
+                    <p class="subtitle">${error.message}</p>
+                    <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; border-radius: 8px; border: none; background: var(--primary); color: white;">Попробовать снова</button>
+                </div>
+            `;
+            return; // Stop initialization
+        }
     }
 
     const now = new Date();
