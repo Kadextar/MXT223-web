@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v3';
+const CACHE_NAME = 'mxt223-schedule-v4';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
 
 // Install Event
 self.addEventListener('install', (event) => {
+    self.skipWaiting(); // Force waiting SW to become active immediately
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             console.log('[Service Worker] Caching all: app shell and content');
@@ -44,6 +45,6 @@ self.addEventListener('activate', (event) => {
                     return caches.delete(key);
                 }
             }));
-        })
+        }).then(() => self.clients.claim()) // Become available to all pages immediately
     );
 });
