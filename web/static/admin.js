@@ -69,7 +69,7 @@ const PAIR_TIMES = {
 };
 
 async function loadSchedule() {
-    const data = await apiCall('/api/schedule');
+    const data = await apiCall('/api/admin/schedule');
     if (data) {
         scheduleData = data;
         renderSchedule(data);
@@ -117,7 +117,7 @@ window.deleteLesson = async function (id) {
 
 // --- Teachers Functions ---
 async function loadTeachers() {
-    const data = await apiCall('/api/teachers');
+    const data = await apiCall('/api/admin/teachers');
     if (data) {
         teachersData = data;
         renderTeachers(data);

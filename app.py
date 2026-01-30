@@ -744,6 +744,11 @@ async def check_admin_status(user = Depends(require_admin)):
     """Verify admin status"""
     return {"is_admin": True, "name": user["name"]}
 
+@app.get("/api/admin/schedule")
+async def get_admin_schedule(user = Depends(require_admin)):
+    """Get full schedule for admin (same as public but requires auth)"""
+    return await get_schedule_nocache()
+
 @app.post("/api/admin/schedule")
 async def add_schedule_item(item: dict, user = Depends(require_admin)):
     """Add new lesson to schedule"""
@@ -776,6 +781,11 @@ async def delete_schedule_item(lesson_id: int, user = Depends(require_admin)):
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+@app.get("/api/admin/teachers")
+async def get_admin_teachers(user = Depends(require_admin)):
+    """Get teacher list for admin"""
+    return await get_teachers()
 
 @app.post("/api/admin/teachers")
 async def add_teacher(item: dict, user = Depends(require_admin)):
