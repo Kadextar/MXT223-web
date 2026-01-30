@@ -330,6 +330,10 @@ async def shutdown():
 def index():
     return FileResponse(BASE_DIR / "web" / "index.html")
 
+@app.get("/index.html")
+def index_file():
+    return FileResponse(BASE_DIR / "web" / "index.html")
+
 @app.get("/login.html")
 def login():
     return FileResponse(BASE_DIR / "web" / "login.html")
