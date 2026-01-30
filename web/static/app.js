@@ -84,7 +84,9 @@ function getWeekDateRange(weekNumber) {
 
 function renderWeekInfo() {
     dom.currentDate.textContent = formatDate(state.currentDate);
-    dom.weekNumber.textContent = `${state.currentWeek}-я неделя`;
+    if (dom.weekNumber) {
+        dom.weekNumber.textContent = `${state.currentWeek}-я неделя`;
+    }
 
     // Update week date range
     const weekDateRangeEl = document.getElementById('week-date-range');
