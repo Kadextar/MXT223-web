@@ -6,6 +6,7 @@ import os
 import databases
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from utils.cache import cached
 
 load_dotenv()
 
