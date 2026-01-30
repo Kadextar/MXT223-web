@@ -323,10 +323,26 @@ async function loadAnnouncement() {
         const data = await response.json();
 
         if (data && data.message) {
-            const banner = document.getElementById('announcement-banner');
-            const text = document.getElementById('announcement-text');
-            text.textContent = data.message;
-            banner.classList.remove('hidden');
+            // Check if banner was closed before
+            const isClosed = localStorage.getItem('bannerClosed');
+
+            // Allow showing if messaged matches stored or simple check
+            // For simplicity, just check existence
+            if (!isClosed) {
+                const banner = document.getElementById('announcement-banner');
+                const text = document.getElementById('announcement-text');
+                const closeBtn = document.getElementById('close-banner-btn');
+
+                text.textContent = data.message;
+                banner.classList.remove('hidden');
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        banner.classList.add('hidden');
+                        localStorage.setItem('bannerClosed', 'true');
+                    });
+                }
+            }
         }
     } catch (error) {
         console.error('Failed to load announcement:', error);
