@@ -15,16 +15,25 @@ export function setScheduleData(data) {
 }
 
 export function getLessonsForDay(dayOfWeek, currentWeek) {
-    return scheduleData.filter(lesson => {
+    console.log(`🔍 Filtering for day: ${dayOfWeek}, week: ${currentWeek}`);
+    console.log(`📊 Total lessons in data: ${scheduleData.length}`);
+
+    const filtered = scheduleData.filter(lesson => {
         // Проверяем день
         if (lesson.day !== dayOfWeek) return false;
 
         // Проверяем неделю (если задан массив [start, end])
         if (Array.isArray(lesson.weeks)) {
             const [start, end] = lesson.weeks;
-            if (currentWeek < start || currentWeek > end) return false;
+            if (currentWeek < start || currentWeek > end) {
+                console.log(`❌ Lesson "${lesson.subject}" filtered out: week ${currentWeek} not in range [${start}, ${end}]`);
+                return false;
+            }
         }
 
         return true;
     });
+
+    console.log(`✅ Filtered lessons: ${filtered.length}`);
+    return filtered;
 }
