@@ -10,7 +10,7 @@ export const PAIR_TIMES = {
 let scheduleData = [];
 
 export function setScheduleData(data) {
-    scheduleData = data;
+    scheduleData = data || [];
     console.log('📅 Schedule data optimized loaded:', scheduleData.length, 'lessons');
 }
 
