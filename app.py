@@ -576,8 +576,29 @@ async def get_schedule_data():
 
 @app.get("/api/schedule")
 async def get_schedule_cached():
-    """Returns all lessons from database with caching"""
-    return await get_schedule_data()
+    """Returns all lessons from database"""
+    # TEMP: Disabled caching due to persistent stale cache issue
+    # TODO: Fix cache invalidation logic
+    try:
+        query = "SELECT * FROM schedule ORDER BY pair_number"
+        rows = await database.fetch_all(query=query)
+        print(f"🔍 get_schedule: Found {len(rows)} rows in DB")
+        schedule = []
+        for row in rows:
+            schedule.append({
+                "day": row["day_of_week"],
+                "pair": row["pair_number"],
+                "subject": row["subject"],
+                "type": row["lesson_type"],
+                "teacher": row["teacher"],
+                "room": row["room"],
+                "weeks": [row["week_start"], row["week_end"]]
+            })
+        return schedule
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return []
+
 
 @app.get("/api/debug/schedule-nocache")
 async def get_schedule_nocache():
