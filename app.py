@@ -547,27 +547,30 @@ async def get_schedule_cached():
     """Returns all lessons from database with caching"""
     from utils.cache import cached
     
-    @cached(ttl=300)  # 5 minutes cache
-    async def get_schedule_data():
-        try:
-            query = "SELECT * FROM schedule ORDER BY pair_number"
-            rows = await database.fetch_all(query=query)
-            schedule = []
-            for row in rows:
-                schedule.append({
-                    "day": row["day_of_week"],
-                    "pair": row["pair_number"],
-                    "subject": row["subject"],
-                    "type": row["lesson_type"], # Changed from "type" to "lesson_type" to match DB column
-                    "teacher": row["teacher"],
-                    "room": row["room"],
-                    "weeks": [row["week_start"], row["week_end"]] # Changed from "week_start", "week_end" to "weeks" list
-                })
-            return schedule
-        except Exception as e:
-            print(f"DB Error: {e}")
-            return []
-    
+@cached(ttl=300)  # 5 minutes cache
+async def get_schedule_data():
+    try:
+        query = "SELECT * FROM schedule ORDER BY pair_number"
+        rows = await database.fetch_all(query=query)
+        schedule = []
+        for row in rows:
+            schedule.append({
+                "day": row["day_of_week"],
+                "pair": row["pair_number"],
+                "subject": row["subject"],
+                "type": row["lesson_type"],
+                "teacher": row["teacher"],
+                "room": row["room"],
+                "weeks": [row["week_start"], row["week_end"]]
+            })
+        return schedule
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return []
+
+@app.get("/api/schedule")
+async def get_schedule_cached():
+    """Returns all lessons from database with caching"""
     return await get_schedule_data()
 
 @app.get("/api/announcement")
