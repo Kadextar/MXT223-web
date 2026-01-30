@@ -48,3 +48,44 @@ self.addEventListener('activate', (event) => {
         }).then(() => self.clients.claim()) // Become available to all pages immediately
     );
 });
+// Push Event
+self.addEventListener('push', (event) => {
+    if (event.data) {
+        const data = event.data.json();
+        console.log('[Service Worker] Push Received:', data);
+
+        const title = data.title || 'МХТ-223';
+        const options = {
+            body: data.body,
+            icon: data.icon || '/static/icons/icon-192x192.png',
+            badge: '/static/icons/icon-72x72.png',
+            data: {
+                url: data.url || '/'
+            }
+        };
+
+        event.waitUntil(self.registration.showNotification(title, options));
+    }
+});
+
+// Notification Click Event
+self.addEventListener('notificationclick', (event) => {
+    console.log('[Service Worker] Notification click Received.', event.notification.data);
+
+    event.notification.close();
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // Check if there is already a window open and focus it
+            for (const client of clientList) {
+                if (client.url.includes(event.notification.data.url) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Otherwise open a new window
+            if (clients.openWindow) {
+                return clients.openWindow(event.notification.data.url);
+            }
+        })
+    );
+});

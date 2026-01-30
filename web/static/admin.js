@@ -154,6 +154,29 @@ window.deleteTeacher = async function (id) {
     }
 }
 
+async function sendPushNotification() {
+    const title = document.getElementById('push-title').value;
+    const message = document.getElementById('push-message').value;
+    const url = document.getElementById('push-url').value;
+    const resultDiv = document.getElementById('push-result');
+
+    if (!message) {
+        showAdminMessage(resultDiv, 'Введите текст сообщения', true);
+        return;
+    }
+
+    if (!confirm('Отправить это уведомление всем подписчикам?')) return;
+
+    const result = await apiCall('/api/admin/push', 'POST', { title, message, url });
+
+    if (result && result.success) {
+        showAdminMessage(resultDiv, `Отправлено: ${result.sent}, Ошибок: ${result.failed}`, false);
+        document.getElementById('push-message').value = '';
+    } else {
+        showAdminMessage(resultDiv, result?.error || 'Ошибка отправки', true);
+    }
+}
+
 // --- Announcements ---
 async function loadAnnouncement() {
     const data = await apiCall('/api/announcement');

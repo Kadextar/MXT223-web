@@ -142,4 +142,98 @@ function showMessage(text, type) {
 }
 
 // Initialize
+// Initialize
 loadStudentInfo();
+
+// --- Push Notifications ---
+const VAPID_PUBLIC_KEY = 'BIXAbfTsvZxslOFPeyLZ-R2mxNla936P_69FI1dNYW4-nE82_TQVQ_0qHxuWKoKJDjwsiPB7ZHZToxJLq3HZE9g';
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+async function enableNotifications() {
+    const btn = document.getElementById('enable-notifications-btn');
+    const msg = document.getElementById('push-message');
+
+    try {
+        btn.disabled = true;
+        btn.textContent = 'Запрос разрешения...';
+
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            throw new Error('Разрешение отклонено');
+        }
+
+        btn.textContent = 'Подписка...';
+
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+        }
+
+        // Send to backend
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            },
+            body: JSON.stringify(subscription)
+        });
+
+        if (!response.ok) throw new Error('Ошибка сервера при подписке');
+
+        showMessage(msg, 'Уведомления успешно включены! 🎉', 'success');
+        btn.textContent = 'Уведомления активны';
+        btn.style.background = 'var(--accent)';
+
+    } catch (error) {
+        console.error('Push error:', error);
+        showMessage(`${error.message}`, 'error');
+        // Reset button state
+        btn.disabled = false;
+        btn.textContent = 'Включить уведомления';
+    }
+}
+
+async function checkNotificationStatus() {
+    const btn = document.getElementById('enable-notifications-btn');
+    if (!btn) return;
+
+    if (!('Notification' in window)) {
+        btn.style.display = 'none';
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            btn.textContent = 'Уведомления активны';
+            btn.style.background = 'var(--accent)';
+            btn.disabled = true;
+        }
+    }
+}
+
+// Init Push Logic
+document.getElementById('enable-notifications-btn')?.addEventListener('click', enableNotifications);
+checkNotificationStatus();
