@@ -44,7 +44,10 @@ DAY_MAPPING = {
 @app.on_event("startup")
 async def startup():
     await database.connect()
-    await init_db()
+    try:
+        await init_db()
+    except Exception as e:
+        print(f"CRITICAL: init_db failed: {e}")
 
 async def init_db():
     """Initialize database tables if they don't exist"""
@@ -177,8 +180,12 @@ async def init_db():
                 print(f"Error seeding student {student['name']}: {e}")
     
     # Check if schedule exists
-    count_query = "SELECT COUNT(*) FROM schedule"
-    count = await database.fetch_val(query=count_query)
+    try:
+        count_query = "SELECT COUNT(*) FROM schedule"
+        count = await database.fetch_val(query=count_query)
+    except Exception as e:
+        print(f"Schedule table check failed (maybe not created?): {e}")
+        count = -1  # Skip seeding if table check fails
     
     if count == 0:
         print("📅 Seeding schedule...")
