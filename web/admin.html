@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - МХТ-223</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.02);
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Modal specific overrides */
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="back-link">← На главную</a>
+                <h1>⚙️ Админ-панель</h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="admin-controls">
+                <button class="tab-btn active" data-tab="schedule">Расписание</button>
+                <button class="tab-btn" data-tab="teachers">Преподаватели</button>
+                <button class="tab-btn" data-tab="announcements">Объявления</button>
+            </div>
+
+            <!-- Schedule Section -->
+            <div id="schedule" class="admin-section active">
+                <button class="btn-add" id="add-lesson-btn">+ Добавить пару</button>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>День</th>
+                                <th>Пара</th>
+                                <th>Предмет</th>
+                                <th>Тип</th>
+                                <th>Ауд.</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-table-body">
+                            <!-- Rows loaded by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Teachers Section -->
+            <div id="teachers" class="admin-section">
+                <button class="btn-add" id="add-teacher-btn">+ Добавить преподавателя</button>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Предмет</th>
+                            <th>Рейтинг</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachers-table-body">
+                        <!-- Rows loaded by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Announcements Section -->
+            <div id="announcements" class="admin-section">
+                <div class="card" style="padding: 20px;">
+                    <h3>📣 Управление баннером</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">
+                        Оставьте пустым, чтобы отключить баннер.
+                    </p>
+                    <div class="form-group">
+                        <input type="text" id="announcement-input"
+                            placeholder="Текст объявления (например: Завтра пары отменены!)">
+                    </div>
+                    <button class="btn-add" id="save-announcement-btn" style="margin-top: 10px;">Сохранить
+                        объявленние</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Lesson Modal -->
+    <div id="lesson-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-bottom: 20px;">Добавить пару</h2>
+            <form id="lesson-form">
+                <div class="form-group">
+                    <label>День недели</label>
+                    <select name="day" required>
+                        <option value="monday">Понедельник</option>
+                        <option value="tuesday">Вторник</option>
+                        <option value="wednesday">Среда</option>
+                        <option value="thursday">Четверг</option>
+                        <option value="friday">Пятница</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Номер пары</label>
+                    <select name="pair" required>
+                        <option value="1">1 пара (08:00)</option>
+                        <option value="2">2 пара (09:30)</option>
+                        <option value="3">3 пара (11:00)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Предмет</label>
+                    <input type="text" name="subject" required list="subjects-list">
+                    <datalist id="subjects-list">
+                        <!-- Populated by JS -->
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>Тип</label>
+                    <select name="type" required>
+                        <option value="lecture">Лекция</option>
+                        <option value="seminar">Семинар</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Преподаватель</label>
+                    <input type="text" name="teacher" list="teachers-list">
+                    <datalist id="teachers-list">
+                        <!-- Populated by JS -->
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>Аудитория</label>
+                    <input type="text" name="room" required>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="submit-btn">Добавить</button>
+                    <button type="button" class="back-btn" id="close-lesson-modal">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="teacher-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2 style="color: var(--text-main); margin-bottom: 20px;">Добавить преподавателя</h2>
+            <form id="teacher-form">
+                <div class="form-group">
+                    <label>ФИО Преподавателя</label>
+                    <input type="text" name="name" required placeholder="Например: Иванов Иван Иванович">
+                </div>
+                <div class="form-group">
+                    <label>Предмет (основной)</label>
+                    <input type="text" name="subject" placeholder="Например: Математика">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="submit-btn">Добавить</button>
+                    <button type="button" class="back-btn" id="close-teacher-modal">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/static/admin.js"></script>
+</body>
+
+</html>

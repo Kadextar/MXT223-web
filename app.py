@@ -61,7 +61,9 @@ async def init_db():
             id {id_type},
             telegram_id TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
+            password TEXT NOT NULL,
             name TEXT NOT NULL,
+            is_admin BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """
@@ -346,6 +348,10 @@ def ratings():
 def profile():
     return FileResponse(BASE_DIR / "web" / "profile.html")
 
+@app.get("/admin.html")
+def admin_page():
+    return FileResponse(BASE_DIR / "web" / "admin.html")
+
 @app.get("/subjects.html")
 def subjects():
     return FileResponse(BASE_DIR / "web" / "subjects.html")
@@ -561,6 +567,7 @@ async def get_schedule_data():
         schedule = []
         for row in rows:
             schedule.append({
+                "id": row["id"],
                 "day": row["day_of_week"],
                 "pair": row["pair_number"],
                 "subject": row["subject"],
@@ -586,6 +593,7 @@ async def get_schedule_cached():
         schedule = []
         for row in rows:
             schedule.append({
+                "id": row["id"],
                 "day": row["day_of_week"],
                 "pair": row["pair_number"],
                 "subject": row["subject"],
@@ -610,6 +618,7 @@ async def get_schedule_nocache():
         schedule = []
         for row in rows:
             schedule.append({
+                "id": row["id"],
                 "day": row["day_of_week"],
                 "pair": row["pair_number"],
                 "subject": row["subject"],
@@ -669,6 +678,144 @@ async def debug_check_db():
         }
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/api/debug/migrate-admin")
+async def debug_migrate_admin():
+    """Add is_admin column to students table"""
+    try:
+        # Check if column exists
+        query = "PRAGMA table_info(students)"
+        columns = await database.fetch_all(query=query)
+        for col in columns:
+            if col["name"] == "is_admin":
+                return {"status": "ok", "message": "Column is_admin already exists"}
+        
+        # Add column
+        await database.execute("ALTER TABLE students ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
+        
+        # Make specific user admin (optional, for bootstrap)
+        await database.execute("UPDATE students SET is_admin = TRUE WHERE telegram_id = '1214641616'") # Azamat
+        
+        return {"status": "ok", "message": "Added is_admin column and promoted Azamat"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+# --- Admin API ---
+
+async def require_admin(authorization: str = Header(None)):
+    """Dependency to check if user is admin"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        from utils.jwt import verify_token, is_jwt_token
+        
+        token = authorization.replace("Bearer ", "")
+        
+        if is_jwt_token(token):
+            payload = verify_token(token, "access")
+            if not payload:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            telegram_id = payload.get("sub")
+        else:
+            telegram_id = token
+            
+        student = await database.fetch_one(
+            "SELECT * FROM students WHERE telegram_id = :tid", 
+            {"tid": telegram_id}
+        )
+        
+        if not student:
+            raise HTTPException(status_code=401, detail="User not found")
+            
+        if not student["is_admin"]:
+            raise HTTPException(status_code=403, detail="Admin privileges required")
+            
+        return student
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Admin check error: {e}")
+        raise HTTPException(status_code=500, detail="Server error")
+
+from fastapi import Depends
+
+@app.get("/api/admin/check")
+async def check_admin_status(user = Depends(require_admin)):
+    """Verify admin status"""
+    return {"is_admin": True, "name": user["name"]}
+
+@app.post("/api/admin/schedule")
+async def add_schedule_item(item: dict, user = Depends(require_admin)):
+    """Add new lesson to schedule"""
+    try:
+        # Basic validation
+        insert_query = """
+            INSERT INTO schedule (day_of_week, pair_number, subject, lesson_type, teacher, room, week_start, week_end)
+            VALUES (:day, :pair, :subject, :type, :teacher, :room, :week_start, :week_end)
+        """
+        await database.execute(query=insert_query, values=item)
+        
+        # Clear cache
+        from utils.cache import clear_cache
+        clear_cache()
+        
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.delete("/api/admin/schedule/{lesson_id}")
+async def delete_schedule_item(lesson_id: int, user = Depends(require_admin)):
+    """Delete lesson from schedule"""
+    try:
+        await database.execute("DELETE FROM schedule WHERE id = :id", {"id": lesson_id})
+        
+        # Clear cache
+        from utils.cache import clear_cache
+        clear_cache()
+        
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/admin/teachers")
+async def add_teacher(item: dict, user = Depends(require_admin)):
+    """Add new teacher"""
+    try:
+        query = """
+            INSERT INTO teachers (name, subject) 
+            VALUES (:name, :subject)
+        """
+        await database.execute(query=query, values=item)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.delete("/api/admin/teachers/{teacher_id}")
+async def delete_teacher(teacher_id: int, user = Depends(require_admin)):
+    """Delete teacher"""
+    try:
+        await database.execute("DELETE FROM teachers WHERE id = :id", {"id": teacher_id})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/admin/announcement")
+async def update_announcement(data: dict, user = Depends(require_admin)):
+    """Update announcement banner"""
+    try:
+        # Deactivate all previous
+        await database.execute("UPDATE announcements SET is_active = FALSE")
+        
+        # Add new if message provided
+        if data.get("message"):
+            await database.execute(
+                "INSERT INTO announcements (message, is_active) VALUES (:msg, TRUE)",
+                {"msg": data["message"]}
+            )
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @app.get("/api/announcement")
