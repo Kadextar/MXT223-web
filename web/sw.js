@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v2';
+const CACHE_NAME = 'mxt223-schedule-v3';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

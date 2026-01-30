@@ -194,13 +194,16 @@
     <script src="/static/theme.js"></script>
     <script src="/static/search.js"></script>
     <script src="/static/install.js"></script>
-    <script type="module" src="/static/app.js"></script>
+    <script type="module" src="/static/app.js?v=3"></script>
     <script src="/static/menu.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered!', reg))
+                    .then(reg => {
+                        console.log('SW registered!', reg);
+                        reg.update(); // Force SW update check
+                    })
                     .catch(err => console.log('SW failed', err));
             });
         }
