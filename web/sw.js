@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v14'; // Bump version for login loop fix
+const CACHE_NAME = 'mxt223-schedule-v15'; // Bump version for guest profile
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

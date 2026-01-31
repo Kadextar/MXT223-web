@@ -1,10 +1,14 @@
 // Profile Page JavaScript
 
 // Check authentication
+// Check authentication
 const token = localStorage.getItem('access_token');
+// Removed hard redirect to allow Guest Mode UI
+/*
 if (!token) {
     window.location.href = '/login.html';
 }
+*/
 
 // Token refresh function
 async function refreshAccessToken() {
@@ -34,8 +38,28 @@ async function refreshAccessToken() {
 }
 
 // Load student info
+// Load student info
 async function loadStudentInfo() {
-    if (!token) return; // Double check
+    // If no token, show Guest State instead of redirecting
+    if (!token) {
+        const container = document.querySelector('.profile-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="profile-card" style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">👋</div>
+                    <h2>Гостевой режим</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 25px;">
+                        Вы просматриваете расписание как гость.<br>
+                        Авторизуйтесь, чтобы настроить профиль.
+                    </p>
+                    <a href="/login.html" class="submit-btn" style="display: inline-block; text-decoration: none; max-width: 250px;">
+                        Войти в аккаунт
+                    </a>
+                </div>
+            `;
+        }
+        return;
+    }
 
     try {
         const response = await fetch('/api/me', {
@@ -49,12 +73,12 @@ async function loadStudentInfo() {
             // Try to refresh token
             const refreshed = await refreshAccessToken();
             if (refreshed) {
-                // Retry with new token
                 window.location.reload();
                 return;
             }
 
-            // Refresh failed, redirect to login
+            // Refresh failed - Treat as Guest (or redirect if strict)
+            // For now, let's redirect to login if token was invalid
             localStorage.clear();
             window.location.href = '/login.html';
             return;
