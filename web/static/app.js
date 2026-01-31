@@ -9,11 +9,10 @@ const AUTHORIZED_STUDENTS = [
 const token = localStorage.getItem('access_token');
 // We allow guests (no token) to view the schedule, 
 // BUT if we want to force login for everyone, uncomment below:
-/*
+// Strict Auth: Redirect to login if no token
 if (!token) {
-    window.location.href = '/login.html';
+    window.location.replace('/login.html');
 }
-*/
 // Current logic: We only redirect if we strictly require auth. 
 // For now, let's remove the student_id check entirely as it's causing loops.
 // The app can work in "Guest Mode" (Student) or "User Mode" (Name).

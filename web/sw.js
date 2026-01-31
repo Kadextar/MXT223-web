@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v15'; // Bump version for guest profile
+const CACHE_NAME = 'mxt223-schedule-v16'; // Bump version for strict auth
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
