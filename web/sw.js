@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v17'; // Bump version for academics page
+const CACHE_NAME = 'mxt223-schedule-v18'; // Bump version for detailed subjects info
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
