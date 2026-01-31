@@ -25,7 +25,7 @@ async function initAcademics() {
 }
 
 // Metadata for subjects
-const SUBJECTS_DATA = [
+export const SUBJECTS_DATA = [
     {
         id: 'strat_man',
         name: 'Стратегический менеджмент в гостиничном хозяйстве',

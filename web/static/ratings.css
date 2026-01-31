@@ -1,172 +1,78 @@
-/* Ratings Page Glass Styles */
+/* Ratings Page Styles - Light Frost */
 
-/* Teachers Grid */
+/* Inherit Global Styles */
+
 .teachers-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
-    padding-bottom: 100px;
-    /* Space for nav */
-}
-
-/* Teacher Card */
-.teacher-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-radius: 24px;
-    padding: 24px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
+    gap: 16px;
+    padding-bottom: 80px;
 }
 
-.teacher-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    border-color: var(--glass-highlight);
+/* Updated to match Academics/Lesson Card style */
+.teacher-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s;
 }
 
-.teacher-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
-    opacity: 0.8;
+.teacher-card:active {
+    transform: scale(0.98);
 }
 
 .teacher-name {
-    margin: 10px 0 5px;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: white;
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: var(--text-main);
+    font-weight: 600;
 }
 
-.teacher-subject {
+.teacher-names {
     color: var(--text-muted);
     font-size: 0.9rem;
-    margin-bottom: 20px;
-}
-
-/* Rating Badge */
-.teacher-rating {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 8px 16px;
-    border-radius: 50px;
     margin-bottom: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    line-height: 1.4;
 }
 
-.rating-score {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
+.rate-actions {
+    display: flex;
+    gap: 10px;
 }
 
-.rating-grade {
-    font-size: 1.2rem;
-    font-weight: 700;
-}
-
-.rating-count {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-}
-
-/* Rate Button */
 .rate-btn {
-    width: 100%;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.rate-btn:hover {
+    flex: 1;
     background: var(--primary);
-    border-color: var(--primary);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-}
-
-/* Grades Colors */
-.grade-5 {
-    color: #4ade80;
-    text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
-}
-
-.grade-4 {
-    color: #a3e635;
-}
-
-.grade-3 {
-    color: #facc15;
-}
-
-.grade-2 {
-    color: #f87171;
-}
-
-/* Modal & Form Styles */
-.lesson-selection {
-    text-align: left;
-}
-
-.info-text {
-    color: var(--text-muted);
-    margin-bottom: 15px;
-}
-
-.lessons-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.lesson-card.modal-item {
-    cursor: pointer;
-    border: 1px solid var(--card-border);
-}
-
-.lesson-card.modal-item:hover {
-    border-color: var(--primary);
-    background: rgba(59, 130, 246, 0.1);
-}
-
-.lesson-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: 500;
     font-size: 0.9rem;
-    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-.lesson-status.completed {
-    color: #4ade80;
+.rate-btn.outline {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
 }
 
-.lesson-status.in-progress {
-    color: #facc15;
+.rate-btn:active {
+    opacity: 0.8;
 }
 
-/* Emoji Rating */
+/* Modal Styles */
+/* ... reuse styles.css modal ... */
+.modal-content {
+    background: #ffffff;
+    border-radius: 24px;
+}
+
 .emoji-rating {
     display: flex;
     justify-content: space-between;
@@ -178,23 +84,13 @@
     border: none;
     font-size: 2rem;
     cursor: pointer;
-    filter: grayscale(100%);
-    opacity: 0.6;
-    transition: all 0.3s;
-    transform: scale(0.9);
-}
-
-.emoji-btn:hover {
-    transform: scale(1.1);
-    opacity: 0.8;
-    filter: grayscale(0%);
+    transition: transform 0.2s, opacity 0.2s;
+    opacity: 0.5;
 }
 
 .emoji-btn.active {
-    filter: grayscale(0%);
-    opacity: 1;
     transform: scale(1.2);
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    opacity: 1;
 }
 
 .rating-value {
@@ -202,73 +98,38 @@
     font-weight: 600;
     color: var(--primary);
     margin-bottom: 20px;
-    min-height: 1.5em;
 }
 
-/* Tags Grid */
 .tags-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 .tag-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--card-border);
-    color: var(--text-muted);
-    padding: 8px 16px;
+    background: #f1f5f9;
+    border: none;
+    padding: 8px 12px;
     border-radius: 20px;
-    cursor: pointer;
     font-size: 0.85rem;
-    transition: all 0.2s;
-}
-
-.tag-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    color: #64748b;
+    cursor: pointer;
 }
 
 .tag-btn.active {
+    background: #eff6ff;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.submit-btn {
+    width: 100%;
     background: var(--primary);
     color: white;
-    border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-}
-
-.back-btn {
-    background: transparent;
-    color: var(--text-muted);
+    padding: 14px;
+    border-radius: 16px;
     border: none;
-    cursor: pointer;
-    display: block;
-    margin: 20px auto 0;
-    font-size: 0.9rem;
-}
-
-.back-btn:hover {
-    color: white;
-    text-decoration: underline;
-}
-
-/* Loading Spinner */
-.loading {
-    text-align: center;
-    padding: 60px 0;
-    color: var(--text-muted);
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    font-weight: 600;
+    font-size: 1rem;
+    margin-top: 20px;
 }
