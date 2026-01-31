@@ -473,11 +473,14 @@ function updateGreetingTime() {
     const greetingEl = document.getElementById('greeting-time');
     if (!greetingEl) return;
 
-    let greeting = 'Good Morning';
+    let greeting = 'Доброе утро';
     if (hour >= 12 && hour < 18) {
-        greeting = 'Good Afternoon';
+        greeting = 'Добрый день';
     } else if (hour >= 18) {
-        greeting = 'Good Evening';
+        greeting = 'Добрый вечер';
+    } else if (hour < 6) {
+        // Late night / Early morning
+        greeting = 'Доброй ночи';
     }
     greetingEl.textContent = greeting;
 }

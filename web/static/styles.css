@@ -1243,7 +1243,7 @@ body.light-mode .type-badge {
 }
 
 /* Fix: Premium Time Badge (Clean & Sharp) */
-body.light-mode .lesson-time {
+body.light-mode .time-badge {
     color: #1e293b !important;
     /* Dark Slate - High Contrast */
     background: transparent !important;
@@ -1257,14 +1257,16 @@ body.light-mode .lesson-time {
     display: flex;
     align-items: center;
     gap: 6px;
+    box-shadow: none !important;
+    /* Remove any shadow */
 }
 
 /* Add a green dot to indicate time */
-body.light-mode .lesson-time::before {
+body.light-mode .time-badge::before {
     content: '';
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background-color: #10b981;
     /* Emerald Green */
     border-radius: 50%;
@@ -1272,8 +1274,10 @@ body.light-mode .lesson-time::before {
 
 /* Fix: Tighter Spacing */
 .lesson-card {
-    margin-bottom: 16px !important;
-    /* Reduced from 30px */
+    margin-bottom: 10px !important;
+    /* Reduced further from 16px */
+    padding: 16px 20px !important;
+    /* Slightly more compact padding */
 }
 
 /* Fix: Remove Empty Oval */
