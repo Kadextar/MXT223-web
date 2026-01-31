@@ -1280,6 +1280,14 @@ body.light-mode .time-badge::before {
     /* Slightly more compact padding */
 }
 
+/* Fix: Card Header Alignment */
+.card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 12px !important;
+}
+
 /* Fix: Remove Empty Oval */
 .live-widget.hidden {
     display: none !important;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v8'; // Bump version for Russian greeting & CSS fix
+const CACHE_NAME = 'mxt223-schedule-v9'; // Bump version for flex alignment
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

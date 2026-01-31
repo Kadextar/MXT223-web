@@ -455,6 +455,7 @@ async function fetchUserProfile() {
 
         if (response.ok) {
             const data = await response.json();
+            console.log('Profile Fetched:', data); // Debug
             if (data.name) {
                 // Update Name
                 const nameEl = document.getElementById('user-name');
@@ -462,6 +463,8 @@ async function fetchUserProfile() {
                 // Cache it for next time to be instant
                 localStorage.setItem('user_name', data.name);
             }
+        } else {
+            console.warn('Profile fetch failed:', response.status);
         }
     } catch (e) {
         console.error('Failed to fetch profile:', e);
