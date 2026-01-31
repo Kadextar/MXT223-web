@@ -138,17 +138,18 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
 });
 
 // Logout handler
-document.getElementById('logout-btn').addEventListener('click', () => {
-    if (confirm('Вы уверены, что хотите выйти?')) {
-        // Clear ALL auth data
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_name'); // Clear cached name
-        localStorage.removeItem('auth_token'); // Just in case old one exists
+document.getElementById('logout-btn').addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent any default behavior
 
-        // Force reload to login page
-        window.location.href = '/login.html';
-    }
+    // Direct logout without confirm dialog (since it was causing issues for user)
+    // Clear ALL auth data
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('auth_token');
+
+    // Use replace to prevent going back
+    window.location.replace('/login.html');
 });
 
 // Show message helper

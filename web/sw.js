@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v10'; // Bump version for logout fix
+const CACHE_NAME = 'mxt223-schedule-v11'; // Bump version for direct logout
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
