@@ -322,7 +322,11 @@ function updateWeek(offset) {
     if (state.currentWeek < 1) state.currentWeek = 1;
     if (state.currentWeek > 20) state.currentWeek = 20;
 
+    // Fix: Always reset to Monday when switching weeks
+    state.selectedDay = 'monday';
+
     renderWeekInfo();
+    renderTabs(); // Need to re-render tabs to show Monday active
     renderSchedule();
     updateLiveStatus();
 }
@@ -377,6 +381,10 @@ async function init() {
     // Загружаем объявление
     loadAnnouncement();
 
+    // Greeting Updates
+    updateGreetingTime();
+    fetchUserProfile();
+
     // Listeners
     // Listeners for Week Navigation
     const currentWeekBtn = document.getElementById('current-week-btn');
@@ -425,6 +433,46 @@ async function init() {
 }
 
 // --- Announcement Loading ---
+
+
+// --- User Profile & Greeting ---
+async function fetchUserProfile() {
+    try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+
+        const response = await fetch('/api/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.name) {
+                // Update Name
+                const nameEl = document.getElementById('user-name');
+                if (nameEl) nameEl.textContent = data.name;
+            }
+        }
+    } catch (e) {
+        console.error('Failed to fetch profile:', e);
+    }
+}
+
+function updateGreetingTime() {
+    const hour = new Date().getHours();
+    const greetingEl = document.getElementById('greeting-time');
+    if (!greetingEl) return;
+
+    let greeting = 'Good Morning';
+    if (hour >= 12 && hour < 18) {
+        greeting = 'Good Afternoon';
+    } else if (hour >= 18) {
+        greeting = 'Good Evening';
+    }
+    greetingEl.textContent = greeting;
+}
+
+// Call these in init
 async function loadAnnouncement() {
     try {
         const response = await fetch('/api/announcement');

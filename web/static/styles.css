@@ -1221,3 +1221,37 @@ body.light-mode .days-tabs .tab.active {
     background: #3b82f6 !important;
     color: #ffffff !important;
 }
+
+/* Fix: Rounded Type Badge */
+.type-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-muted);
+}
+
+body.light-mode .type-badge {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-muted-light);
+}
+
+/* Fix: Lesson Time Color (Darker Green/Blue) */
+body.light-mode .lesson-time {
+    color: #15803d !important; /* Darker green */
+    background: rgba(22, 163, 74, 0.1) !important;
+    font-weight: 700 !important;
+}
+
+/* Fix: Remove Empty Oval */
+.live-widget.hidden {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+}
