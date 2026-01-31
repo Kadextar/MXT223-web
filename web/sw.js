@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v25'; // Bump for ratings final polish
+const CACHE_NAME = 'mxt223-schedule-v27'; // Bump for cleanup and visual fixes
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

@@ -32,14 +32,6 @@ def academics_page():
 def admin_page():
     return FileResponse(BASE_DIR / "web" / "admin.html")
 
-@router.get("/subjects.html")
-def subjects():
-    return FileResponse(BASE_DIR / "web" / "subjects.html")
-
-@router.get("/exams.html")
-def exams():
-    return FileResponse(BASE_DIR / "web" / "exams.html")
-
 @router.get("/manifest.json")
 def manifest():
     return FileResponse(BASE_DIR / "web" / "manifest.json", media_type="application/manifest+json")
