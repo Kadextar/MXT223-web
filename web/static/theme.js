@@ -2,7 +2,7 @@
 const THEME_KEY = 'mxt223-theme';
 
 function getTheme() {
-    return localStorage.getItem(THEME_KEY) || 'dark';
+    return localStorage.getItem(THEME_KEY) || 'light';
 }
 
 function setTheme(theme) {

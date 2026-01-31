@@ -134,22 +134,99 @@ body.dark-mode .profile-nav {
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
-/* Light Mode Global Overrides */
+/* Light Mode Global Overrides - AGGRESSIVE CONTRAST */
 body.light-mode {
-    background: var(--bg-light);
-    color: var(--text-dark);
+    background: #eef2f6;
+    color: #0f172a;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    /* More opaque */
+    --card-border: rgba(0, 0, 0, 0.1);
 }
 
 body.light-mode .background-globes {
-    opacity: 0.5;
-    /* Softer orbs for light mode */
+    opacity: 0.2;
+    /* Fade backdrop more */
     background: #eef2f6;
 }
 
-body.light-mode .globe {
-    filter: blur(80px);
-    opacity: 0.6;
+/* Fix Greeting Header */
+body.light-mode .header-greeting-container .greeting-date {
+    color: #0f172a !important;
+    text-shadow: none !important;
 }
+
+body.light-mode .header-greeting-container .greeting-text {
+    color: #475569 !important;
+}
+
+/* Fix Week Navigation */
+body.light-mode .week-nav {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-mode .week-nav .nav-btn,
+body.light-mode .week-nav .current-week-label {
+    color: #0f172a !important;
+    font-weight: 600 !important;
+}
+
+/* Fix Day Tabs */
+body.light-mode .tab {
+    background: #ffffff !important;
+    color: #64748b !important;
+    border: 1px solid #e2e8f0 !important;
+    font-weight: 500 !important;
+}
+
+body.light-mode .tab.active {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+    border-color: #3b82f6 !important;
+}
+
+/* Fix Lesson Cards */
+body.light-mode .lesson-card {
+    background: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid #e2e8f0 !important;
+    backdrop-filter: none !important;
+    /* Remove blur to ensure clarity */
+}
+
+body.light-mode .lesson-subject {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .lesson-time {
+    background: rgba(37, 99, 235, 0.1) !important;
+    color: #1d4ed8 !important;
+    /* Strong Blue */
+    font-weight: 600 !important;
+}
+
+body.light-mode .type-badge {
+    color: #475569 !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.light-mode .lesson-details {
+    color: #475569 !important;
+}
+
+body.light-mode .lesson-room,
+body.light-mode .lesson-teacher {
+    color: #334155 !important;
+}
+
+
 
 * {
     margin: 0;
@@ -1098,4 +1175,49 @@ body.light-mode .lesson-room {
     font-weight: 600;
     cursor: pointer;
     font-size: 1rem;
+}
+
+/* FINAL LIGHT MODE OVERRIDES - FORCE HIGH CONTRAST */
+body.light-mode {
+    --text-main: #0f172a !important;
+    --text-muted: #334155 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .greeting-date,
+body.light-mode .header-greeting-container .greeting-date,
+body.light-mode #current-date {
+    color: #000000 !important;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    text-shadow: none !important;
+    font-weight: 800 !important;
+}
+
+body.light-mode .lesson-subject {
+    color: #000000 !important;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode .lesson-time {
+    color: #1a56db !important;
+    background: rgba(37, 99, 235, 0.1) !important;
+}
+
+body.light-mode .week-nav,
+body.light-mode .days-tabs .tab {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .week-nav .current-week-label,
+body.light-mode .days-tabs .tab {
+    color: #334155 !important;
+}
+
+body.light-mode .days-tabs .tab.active {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
 }
