@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v5'; // Bump version
+const CACHE_NAME = 'mxt223-schedule-v6'; // Bump version to force UX update
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
