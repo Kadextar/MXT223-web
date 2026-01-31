@@ -126,8 +126,8 @@ function initFloatingNav() {
             <a href="/" class="nav-link" title="Меню">
                 <i class="fas fa-th-large"></i>
             </a>
-            <a href="/schedule.html" class="nav-link" title="Расписание">
-                <i class="fas fa-calendar-alt"></i>
+            <a href="/academics.html" class="nav-link" title="Предметы">
+                <i class="fas fa-book"></i>
             </a>
             <a href="/ratings.html" class="nav-link" title="Рейтинг">
                 <i class="fas fa-star"></i>

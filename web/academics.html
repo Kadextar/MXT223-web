@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учеба - МХТ-223</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/academics.css">
+    <meta name="theme-color" content="#eef2f6">
+</head>
+
+<body class="light-mode">
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+        <div class="globe globe-3"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <span class="badge">MXT-223</span>
+                <h1>Учёба</h1>
+                <p class="subtitle">Предметы и преподаватели</p>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="academics-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; padding: 0 20px;">
+            <button class="tab-btn active" onclick="switchTab('subjects')"
+                style="flex: 1; padding: 10px; border-radius: 12px; border: none; background: white; font-weight: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.05); color: var(--text-muted);">Предметы</button>
+            <button class="tab-btn" onclick="switchTab('teachers')"
+                style="flex: 1; padding: 10px; border-radius: 12px; border: none; background: rgba(255,255,255,0.5); font-weight: 500; color: var(--text-muted);">Преподаватели</button>
+            <button class="tab-btn" onclick="switchTab('exams')"
+                style="flex: 1; padding: 10px; border-radius: 12px; border: none; background: rgba(255,255,255,0.5); font-weight: 500; color: var(--text-muted);">Экзамены</button>
+        </div>
+
+        <main class="academics-container" style="padding: 0 20px 80px;">
+            <!-- Subjects Tab -->
+            <section id="subjects-tab" class="tab-content active">
+                <div id="subjects-list" class="grid-list">
+                    <!-- Injected by JS -->
+                    <div class="empty-state">
+                        <p>Загрузка предметов...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Teachers Tab -->
+            <section id="teachers-tab" class="tab-content" style="display: none;">
+                <div id="teachers-list" class="grid-list">
+                    <!-- Injected by JS -->
+                </div>
+            </section>
+
+            <!-- Exams Tab -->
+            <section id="exams-tab" class="tab-content" style="display: none;">
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <p>Экзаменов пока нет</p>
+                    <p class="subtitle">Расписание сессии появится позже</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="profile-nav">
+        <a href="/" class="nav-link" title="Меню">
+            <i class="fas fa-th-large"></i>
+        </a>
+        <a href="/academics.html" class="nav-link active" title="Предметы">
+            <i class="fas fa-book"></i>
+        </a>
+        <a href="/ratings.html" class="nav-link" title="Рейтинг">
+            <i class="fas fa-star"></i>
+        </a>
+        <a href="/profile.html" class="nav-link" title="Профиль">
+            <i class="fas fa-user"></i>
+        </a>
+    </nav>
+
+    <script type="module" src="/static/academics.js"></script>
+    <script>
+        // Simple client-side tab switcher
+        window.switchTab = function (tabName) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            // Show target
+            document.getElementById(tabName + '-tab').style.display = 'block';
+
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.style.background = 'rgba(255,255,255,0.5)';
+                btn.classList.remove('active');
+            });
+            // Highlight clicked button (approximate, better done by passing event or ID)
+            const btns = document.querySelectorAll('.tab-btn');
+            if (tabName === 'subjects') btns[0].style.background = 'white';
+            if (tabName === 'teachers') btns[1].style.background = 'white';
+            if (tabName === 'exams') btns[2].style.background = 'white';
+        }
+    </script>
+</body>
+
+</html>

@@ -37,3 +37,26 @@ export function getLessonsForDay(dayOfWeek, currentWeek) {
     console.log(`✅ Filtered lessons: ${filtered.length}`);
     return filtered;
 }
+
+export function getUniqueSubjects() {
+    const subjectsMap = {};
+
+    scheduleData.forEach(lesson => {
+        if (!subjectsMap[lesson.subject]) {
+            subjectsMap[lesson.subject] = {
+                name: lesson.subject,
+                type: lesson.type, // lecture/seminar (might be mixed)
+                teachers: new Set(),
+                rooms: new Set()
+            };
+        }
+        if (lesson.teacher) subjectsMap[lesson.subject].teachers.add(lesson.teacher);
+        if (lesson.room) subjectsMap[lesson.subject].rooms.add(lesson.room);
+    });
+
+    return Object.values(subjectsMap).map(s => ({
+        ...s,
+        teachers: Array.from(s.teachers),
+        rooms: Array.from(s.rooms)
+    }));
+}
