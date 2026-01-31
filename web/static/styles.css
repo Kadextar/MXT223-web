@@ -1,9 +1,17 @@
 :root {
-    /* Dark Glass Theme */
+    /* Dark Glass Theme (Default) */
     --bg-dark: #050510;
     --card-bg: rgba(255, 255, 255, 0.03);
     --card-border: rgba(255, 255, 255, 0.1);
     --glass-highlight: rgba(255, 255, 255, 0.05);
+
+    /* Light Frost Theme */
+    --bg-light: #eef2f6;
+    --card-light: rgba(255, 255, 255, 0.65);
+    --card-border-light: rgba(255, 255, 255, 0.4);
+    --text-dark: #1e293b;
+    --text-muted-light: #64748b;
+    --glass-shadow-light: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 
     /* Neon Accents */
     --primary: #3b82f6;
@@ -22,7 +30,126 @@
     --neon-glow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
-/* Light theme support removed for this concept (Dark Mode Only) */
+/* Dashboard Grid Styles */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.frost-card {
+    background: var(--card-light);
+    border: 1px solid var(--card-border-light);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 30px;
+    /* Extra rounded */
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: var(--glass-shadow-light);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    aspect-ratio: 1/1;
+    /* Square cards */
+}
+
+body.light-mode .frost-card {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .frost-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.frost-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+}
+
+.frost-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 10px rgba(59, 130, 246, 0.3));
+}
+
+.frost-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+body.dark-mode .frost-title {
+    color: white;
+}
+
+/* Icon-Only Nav Override */
+.profile-nav {
+    border-radius: 50px;
+    padding: 10px 20px;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .profile-nav {
+    background: rgba(15, 15, 20, 0.6);
+    border-color: var(--card-border);
+}
+
+.nav-link span {
+    display: none;
+    /* Hide text labels */
+}
+
+.nav-link {
+    padding: 12px;
+    border-radius: 50%;
+    /* Circle icons */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.nav-link.active {
+    background: var(--primary);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* Light Mode Global Overrides */
+body.light-mode {
+    background: var(--bg-light);
+    color: var(--text-dark);
+}
+
+body.light-mode .background-globes {
+    opacity: 0.5;
+    /* Softer orbs for light mode */
+    background: #eef2f6;
+}
+
+body.light-mode .globe {
+    filter: blur(80px);
+    opacity: 0.6;
+}
 
 * {
     margin: 0;
@@ -800,6 +927,113 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
+}
+
+/* Lesson Cards */
+.lesson-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 30px;
+    /* Spacing between days */
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .lesson-card {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: var(--text-dark);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--glass-highlight);
+}
+
+body.light-mode .lesson-card:hover {
+    box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
+    border-color: white;
+}
+
+/* Day Header */
+.day-header {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+body.light-mode .day-header {
+    color: var(--text-muted-light);
+}
+
+.day-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode .day-header::after {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.lesson-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.lesson-time {
+    font-family: 'SF Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--primary);
+    font-weight: 600;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.lesson-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+body.light-mode .lesson-title {
+    color: var(--text-dark);
+}
+
+.lesson-room {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+body.light-mode .lesson-room {
+    color: var(--text-muted-light);
+}
+
+.lesson-room i {
+    font-size: 0.8rem;
+    opacity: 0.7;
 }
 
 .modal-content {

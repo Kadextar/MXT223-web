@@ -8,17 +8,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome (Standard CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/menu.css">
     <link rel="stylesheet" href="/static/search.css">
     <link rel="stylesheet" href="/static/install.css">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#eef2f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <!-- FontAwesome placeholder -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <!-- GLOBAL ERROR HANDLER FOR DEBUGGING -->
     <script>
@@ -28,33 +28,71 @@
                 location: `${url}:${line}:${col}`,
                 stack: error ? error.stack : 'N/A'
             });
-
-            // Don't show red banner - it's too intrusive
-            // Just update the loading state if schedule fails
+            // Only show simple error in empty state
             const loading = document.querySelector('.empty-state p');
-            if (loading && loading.textContent === 'Загрузка...') {
+            if (loading && loading.textContent.includes('Загрузка')) {
                 loading.textContent = "Ошибка загрузки. Обновите страницу.";
             }
-
-            return false; // Allow default error handling
         };
-
-        window.addEventListener('unhandledrejection', function (event) {
-            console.error('🚨 Unhandled Promise Rejection:', event.reason);
-
-            const loading = document.querySelector('.empty-state p');
-            if (loading && loading.textContent === 'Загрузка...') {
-                loading.textContent = "Ошибка загрузки. Обновите страницу.";
-            }
-        });
     </script>
+    <style>
+        /* Light Frost Schedule Overrides */
+        body.light-mode {
+            background: #eef2f6;
+            color: #1e293b;
+        }
+
+        .header-greeting-container {
+            padding: 20px 20px 10px;
+            background: transparent;
+        }
+
+        .greeting-date {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .greeting-text {
+            font-size: 1.1rem;
+            color: var(--text-muted-light);
+            font-weight: 500;
+        }
+
+        /* Hide old header */
+        .headers-container {
+            display: none;
+        }
+
+        /* Week Navigation - Glass Pill */
+        .week-nav {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            margin: 10px 20px 20px;
+            padding: 5px;
+        }
+
+        .week-btn {
+            color: var(--text-muted-light);
+        }
+
+        .week-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
 </head>
 
-<body>
+<body class="light-mode">
     <div class="background-globes">
-        <div class="globe globe-1"></div>
-        <div class="globe globe-2"></div>
-        <div class="globe globe-3"></div>
+        <div class="globe globe-1" style="background: rgba(59, 130, 246, 0.3);"></div>
+        <div class="globe globe-2" style="background: rgba(139, 92, 246, 0.3);"></div>
+        <div class="globe globe-3" style="background: rgba(0, 255, 157, 0.2);"></div>
     </div>
 
     <!-- Announcement Banner -->
@@ -67,66 +105,10 @@
     </div>
 
     <div class="app-container">
-        <!-- Hamburger Menu Button -->
-        <button class="menu-btn" id="menu-btn">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-
-        <!-- Menu Overlay -->
-        <div class="menu-overlay" id="menu-overlay"></div>
-
-        <!-- Side Menu -->
-        <nav class="side-menu" id="side-menu">
-            <button class="menu-close" id="menu-close">×</button>
-            <div class="menu-header">
-                <h2>МХТ-223</h2>
-                <p>Меню навигации</p>
-            </div>
-            <ul>
-                <li><a href="/ratings.html">⭐ Рейтинг преподавателей</a></li>
-                <li><a href="/subjects.html">📚 Предметы</a></li>
-                <li><a href="/exams.html">📝 Экзамены</a></li>
-                <li><a href="/profile.html">👤 Профиль</a></li>
-                <li><a href="/api/calendar.ics" download="mxt223-schedule.ics">📅 Скачать календарь</a></li>
-            </ul>
-            <div class="theme-toggle">
-                <button id="theme-toggle-btn">
-                    <span class="theme-icon">☀️</span>
-                    <span class="theme-text">Светлая тема</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Search Modal -->
-        <div id="search-modal" class="search-modal hidden">
-            <div class="search-overlay" onclick="closeSearch()"></div>
-            <div class="search-container">
-                <div class="search-header">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" placeholder="Поиск предметов, преподавателей, аудиторий..."
-                        autocomplete="off" />
-                    <button class="search-close-btn" onclick="closeSearch()">✕</button>
-                </div>
-                <div class="search-results" id="search-results">
-                    <!-- Results will be inserted here -->
-                </div>
-                <div class="search-footer">
-                    <span><kbd>↑</kbd> <kbd>↓</kbd> навигация</span>
-                    <span><kbd>Enter</kbd> выбрать</span>
-                    <span><kbd>Esc</kbd> закрыть</span>
-                </div>
-            </div>
-        </div>
-
-        <header class="header">
-            <div class="header-content">
-                <span class="badge">MXT-223</span>
-                <span class="semester-badge">6-й семестр • 2025/2026</span>
-                <h1>Расписание</h1>
-                <p class="subtitle" id="current-date">Загрузка даты...</p>
-            </div>
+        <!-- New "Apple Style" Header -->
+        <header class="header-greeting-container">
+            <h1 class="greeting-date" id="current-date">Wednesday,<br>October 25</h1>
+            <p class="greeting-text">Good Morning, Student.</p>
         </header>
 
         <nav class="week-nav">
@@ -135,13 +117,9 @@
             <button class="nav-btn next-week" id="next-week-btn">→</button>
         </nav>
 
-        <div class="days-tabs" id="days-tabs">
+        <div class="days-tabs" id="days-tabs"
+            style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;">
             <!-- Tabs will be generated by JS -->
-            <button class="tab active" data-day="monday">Пн</button>
-            <button class="tab" data-day="tuesday">Вт</button>
-            <button class="tab" data-day="wednesday">Ср</button>
-            <button class="tab" data-day="thursday">Чт</button>
-            <button class="tab" data-day="friday">Пт</button>
         </div>
 
         <div id="live-status" class="live-widget hidden">
@@ -194,25 +172,20 @@
     </div>
 
     <!-- Scripts -->
+    <!-- Scripts -->
     <script src="/static/theme.js"></script>
     <script src="/static/search.js"></script>
     <script src="/static/install.js"></script>
-    <script type="module" src="/static/app.js?v=3"></script>
-    <script src="/static/menu.js"></script>
+    <!-- app.js is the main controller -->
+    <script type="module" src="/static/app.js?v=4"></script>
+
     <script>
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
                 try {
                     const reg = await navigator.serviceWorker.register('/sw.js');
                     console.log('SW registered!', reg);
-                    // Update check - must be async and handle null registration
-                    if (reg && typeof reg.update === 'function') {
-                        try {
-                            await reg.update();
-                        } catch (updateErr) {
-                            console.warn('SW update check failed (non-critical):', updateErr.message);
-                        }
-                    }
                 } catch (err) {
                     console.log('SW registration failed:', err);
                 }

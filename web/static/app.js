@@ -110,23 +110,24 @@ function renderTabs() {
 }
 /* Note: The main navigation handled in HTML structure, checking if we need to inject the bottom nav */
 function initFloatingNav() {
-    // Check if nav exists, if not create it (for index.html mainly)
+    // Check if nav exists
     let nav = document.querySelector('.profile-nav');
     if (!nav) {
         nav = document.createElement('nav');
         nav.className = 'profile-nav';
+        // Icon-only Navigation
         nav.innerHTML = `
-            <a href="/index.html" class="nav-link active">
-                <i class="fas fa-calendar-alt"></i> <span>Расписание</span>
+            <a href="/" class="nav-link" title="Меню">
+                <i class="fas fa-th-large"></i>
             </a>
-            <a href="/subjects.html" class="nav-link">
-                <i class="fas fa-book"></i> <span>Предметы</span>
+            <a href="/schedule.html" class="nav-link" title="Расписание">
+                <i class="fas fa-calendar-alt"></i>
             </a>
-            <a href="/ratings.html" class="nav-link">
-                <i class="fas fa-star"></i> <span>Рейтинг</span>
+            <a href="/ratings.html" class="nav-link" title="Рейтинг">
+                <i class="fas fa-star"></i>
             </a>
-            <a href="/profile.html" class="nav-link">
-                <i class="fas fa-user"></i> <span>Профиль</span>
+            <a href="/profile.html" class="nav-link" title="Профиль">
+                <i class="fas fa-user"></i>
             </a>
         `;
         document.body.appendChild(nav);
@@ -134,8 +135,12 @@ function initFloatingNav() {
 
     // Highlight active link
     const path = window.location.pathname;
+    const isHome = path === '/' || path === '/index.html';
+
     nav.querySelectorAll('.nav-link').forEach(link => {
-        if (link.getAttribute('href') === path || (path === '/' && link.getAttribute('href') === '/index.html')) {
+        const href = link.getAttribute('href');
+
+        if (href === path || (isHome && href === '/')) {
             link.classList.add('active');
         } else {
             link.classList.remove('active');
@@ -373,8 +378,36 @@ async function init() {
     loadAnnouncement();
 
     // Listeners
-    dom.prevWeekBtn.onclick = () => updateWeek(-1);
-    dom.nextWeekBtn.onclick = () => updateWeek(1);
+    // Listeners for Week Navigation
+    const currentWeekBtn = document.getElementById('current-week-btn');
+    const nextWeekBtn = document.getElementById('next-week-btn');
+
+    if (currentWeekBtn && nextWeekBtn) {
+        currentWeekBtn.onclick = () => {
+            const now = new Date();
+            state.currentWeek = getWeekNumber(now);
+            currentWeekBtn.classList.add('active');
+            nextWeekBtn.classList.remove('active');
+            renderWeekInfo();
+            renderSchedule();
+            updateLiveStatus();
+        };
+
+        nextWeekBtn.onclick = () => {
+            const now = new Date();
+            const currentRealWeek = getWeekNumber(now);
+            state.currentWeek = currentRealWeek + 1;
+            nextWeekBtn.classList.add('active');
+            currentWeekBtn.classList.remove('active');
+            renderWeekInfo();
+            renderSchedule();
+            updateLiveStatus();
+        };
+    } else if (dom.prevWeekBtn && dom.nextWeekBtn) {
+        // Fallback for old buttons if they exist
+        dom.prevWeekBtn.onclick = () => updateWeek(-1);
+        dom.nextWeekBtn.onclick = () => updateWeek(1);
+    }
 
     // Close banner
     const closeBannerBtn = document.getElementById('close-banner-btn');
