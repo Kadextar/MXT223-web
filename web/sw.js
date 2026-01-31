@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v13'; // Bump version for stuck nav fix
+const CACHE_NAME = 'mxt223-schedule-v14'; // Bump version for login loop fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

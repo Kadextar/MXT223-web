@@ -57,7 +57,8 @@ loginForm.addEventListener('submit', async function (e) {
 });
 
 // If already logged in, redirect
-const studentId = localStorage.getItem('student_id');
-if (studentId) {
-    window.location.href = '/';
+// If already logged in, redirect
+const token = localStorage.getItem('access_token');
+if (token) {
+    window.location.replace('/');
 }
