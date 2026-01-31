@@ -24,6 +24,10 @@ def ratings():
 def profile():
     return FileResponse(BASE_DIR / "web" / "profile.html")
 
+@router.get("/academics.html")
+def academics_page():
+    return FileResponse(BASE_DIR / "web" / "academics.html")
+
 @router.get("/admin.html")
 def admin_page():
     return FileResponse(BASE_DIR / "web" / "admin.html")
