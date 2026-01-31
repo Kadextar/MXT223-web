@@ -33,31 +33,29 @@
     <div class="app-container">
         <header class="header">
             <div class="header-content">
-                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
+                <!-- <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
                     <a href="/" class="back-link">← Расписание</a>
-                    <!-- <a href="/profile.html" class="back-link">👤 Профиль</a> -->
-                </div>
-                <!-- <span class="badge">MXT-223</span> -->
+                </div> -->
                 <h1>Оценка занятий</h1>
                 <p class="subtitle">Анонимная оценка качества обучения</p>
             </div>
         </header>
 
         <main class="main-content">
-            <!-- Teachers List -->
-            <div id="teachers-container" class="teachers-grid">
-                <!-- Teachers will be loaded here -->
+            <!-- Loading State -->
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Загрузка предметов...</p>
             </div>
 
-            <!-- Loading State -->
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p>Загрузка преподавателей...</p>
+            <!-- Items List -->
+            <div id="teachers-container" class="teachers-grid">
+                <!-- Items will be loaded here -->
             </div>
 
             <!-- Empty State -->
             <div id="empty-state" class="empty-state hidden">
-                <p>📚 Преподаватели еще не добавлены</p>
+                <p>📚 Все предметы изучены</p>
             </div>
         </main>
         </main>

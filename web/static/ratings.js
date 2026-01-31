@@ -24,27 +24,28 @@ let selectedTags = [];
 // Load Content
 async function loadContent() {
     loading.classList.remove('hidden');
+    emptyState.classList.add('hidden');
     teachersContainer.innerHTML = '';
 
     // Simulate delay for "fetching"
     setTimeout(() => {
         renderSubjects();
         loading.classList.add('hidden');
-    }, 500);
+    }, 300);
 }
 
 function renderSubjects() {
-    // Filter out items that are not useful for rating (like 'enlightenment' if needed, but let's keep all valid ones)
-    // Actually, 'enlightenment' has 0 hours/credits, maybe skip it?
-    // User said "Enlightenment is Obligatory", so maybe keep it if it has a teacher. It has 0 lectures/seminars.
-    // Let's filter items with > 0 lectures or seminars or Practice/Coursework
-
     const validSubjects = SUBJECTS_DATA.filter(s =>
         (s.lectures > 0 || s.seminars > 0) &&
         !s.isPractice &&
         !s.isCoursework &&
         s.id !== 'enlightenment'
     );
+
+    if (validSubjects.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+    }
 
     validSubjects.forEach(sub => {
         const card = createSubjectCard(sub);
@@ -54,49 +55,33 @@ function renderSubjects() {
 
 function createSubjectCard(sub) {
     const card = document.createElement('div');
-    card.className = 'info-card teacher-card'; // Reuse info-card from academics style if possible, but we are in ratings.css which has teacher-card
-    // We will inject styles to match Light Frost in css later.
-
-    // Get stats from local storage
-    const storageKey = `rating_${sub.id}`;
-    const savedRating = JSON.parse(localStorage.getItem(storageKey) || 'null'); // { lecture: float, seminar: float, count: int }
+    card.className = 'info-card teacher-card';
 
     // Actions
     let actionsHTML = '';
 
-    if (sub.isPractice) {
-        actionsHTML = `
-            <button class="rate-btn" onclick="openRatingModal('${sub.id}', '${sub.name}', 'practice')">
-                Оценить практику
+    // Always show Lecture/Seminar for standard subjects
+    actionsHTML = `
+        <div class="rate-actions">
+            <button class="rate-btn outline" onclick="openRatingModal('${sub.id}', '${sub.name}', 'lecture')">
+                Оценить лекции
             </button>
-        `;
-    } else if (sub.isCoursework) {
-        actionsHTML = `
-            <button class="rate-btn" onclick="openRatingModal('${sub.id}', '${sub.name}', 'coursework')">
-                Оценить курсовую
+            <button class="rate-btn outline" onclick="openRatingModal('${sub.id}', '${sub.name}', 'seminar')">
+                Оценить семинары
             </button>
-        `;
-    } else {
-        // Lecture and Seminar buttons
-        actionsHTML = `
-            <div class="rate-actions">
-                <button class="rate-btn outline" onclick="openRatingModal('${sub.id}', '${sub.name}', 'lecture')">
-                    Оценить лекции
-                </button>
-                <button class="rate-btn outline" onclick="openRatingModal('${sub.id}', '${sub.name}', 'seminar')">
-                    Оценить семинары
-                </button>
-            </div>
-        `;
-    }
+        </div>
+    `;
 
-    // Teacher names
+    // Teacher names logic
     let teacherInfo = '';
     if (sub.teachers) {
         if (sub.teachers.lecture && sub.teachers.seminar) {
-            teacherInfo = `<p class="teacher-names">Лек: ${sub.teachers.lecture}<br>Сем: ${sub.teachers.seminar}</p>`;
+            teacherInfo = `<div class="teacher-names">
+                <div><span style="opacity:0.7">Лек:</span> ${sub.teachers.lecture}</div>
+                <div><span style="opacity:0.7">Сем:</span> ${sub.teachers.seminar}</div>
+            </div>`;
         } else if (sub.teachers.lecture) {
-            teacherInfo = `<p class="teacher-names">Ведет: ${sub.teachers.lecture}</p>`;
+            teacherInfo = `<div class="teacher-names">Ведет: ${sub.teachers.lecture}</div>`;
         }
     }
 
@@ -104,7 +89,7 @@ function createSubjectCard(sub) {
         <h3 class="teacher-name">${sub.name}</h3>
         <span class="badge" style="margin-bottom: 10px; display: inline-block;">${sub.type}</span>
         ${teacherInfo}
-        <div style="margin-top: 15px;">
+        <div style="margin-top: auto;">
             ${actionsHTML}
         </div>
     `;
@@ -121,17 +106,13 @@ window.openRatingModal = function (subjectId, subjectName, type) {
     let typeName = 'Занятие';
     if (type === 'lecture') typeName = 'Лекции';
     if (type === 'seminar') typeName = 'Семинары';
-    if (type === 'practice') typeName = 'Практику';
-    if (type === 'coursework') typeName = 'Курсовую работу';
 
     document.getElementById('modal-teacher-name').textContent = subjectName;
     document.getElementById('modal-subject').textContent = `Оцениваем: ${typeName}`;
 
-    // Hide lesson selection (legacy), Show Form directly
+    // Show Form directly
     document.getElementById('lesson-selection').classList.add('hidden');
     document.getElementById('rating-form').classList.remove('hidden');
-
-    // Hide "Selected Info" (Legacy)
     document.getElementById('selected-lesson-info').style.display = 'none';
 
     // Reset Form
@@ -153,7 +134,7 @@ function closeModal() {
 
 closeModalBtn.addEventListener('click', closeModal);
 modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
-document.getElementById('back-to-lessons').style.display = 'none'; // Hide legacy back button
+document.getElementById('back-to-lessons').style.display = 'none';
 
 // Emoji Rating
 document.querySelectorAll('.emoji-btn').forEach(btn => {
@@ -197,7 +178,6 @@ ratingForm.addEventListener('submit', function (e) {
         return;
     }
 
-    // Save to LocalStorage (Simulation)
     const review = {
         subjectId: currentSubject,
         type: currentType,
@@ -207,7 +187,6 @@ ratingForm.addEventListener('submit', function (e) {
         date: new Date().toISOString()
     };
 
-    // Store in a list
     const reviews = JSON.parse(localStorage.getItem('my_reviews') || '[]');
     reviews.push(review);
     localStorage.setItem('my_reviews', JSON.stringify(reviews));
