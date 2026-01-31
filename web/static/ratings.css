@@ -1,23 +1,30 @@
 /* Ratings Page Styles - Light Frost */
 
-/* Inherit Global Styles */
+/* Base overrides to match app look */
+.app-container {
+    padding-bottom: 80px;
+    /* Space for nav */
+}
 
 .teachers-grid {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding-bottom: 80px;
+    gap: 10px;
+    /* Compact like Schedule */
+    padding: 0 20px 20px;
 }
 
-/* Updated to match Academics/Lesson Card style */
+/* Match lesson-card exactly */
 .teacher-card {
     background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 20px;
-    padding: 20px;
+    padding: 16px 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 .teacher-card:active {
@@ -25,45 +32,64 @@
 }
 
 .teacher-name {
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
     font-size: 1.1rem;
     color: var(--text-main);
     font-weight: 600;
+    line-height: 1.3;
+}
+
+.badge {
+    align-self: flex-start;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 12px !important;
 }
 
 .teacher-names {
     color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    line-height: 1.4;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .rate-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    margin-top: auto;
 }
 
 .rate-btn {
     flex: 1;
-    background: var(--primary);
-    color: white;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
     border: none;
-    padding: 10px;
-    border-radius: 12px;
-    font-weight: 500;
-    font-size: 0.9rem;
+    padding: 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
     cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.rate-btn.outline {
-    background: transparent;
-    border: 1px solid var(--primary);
-    color: var(--primary);
+    transition: all 0.2s;
+    text-align: center;
 }
 
 .rate-btn:active {
-    opacity: 0.8;
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.rate-btn.outline {
+    /* Previously outlined, now soft filled for better touch targets */
+    background: rgba(59, 130, 246, 0.08);
+}
+
+/* Header fix */
+.header-greeting-container {
+    padding: 20px 20px 10px;
 }
 
 /* Modal Styles */

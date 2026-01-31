@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v22'; // Bump version for subject evaluation update
+const CACHE_NAME = 'mxt223-schedule-v23'; // Bump version for ratings styling and fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
