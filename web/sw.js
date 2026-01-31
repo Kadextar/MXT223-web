@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v9'; // Bump version for flex alignment
+const CACHE_NAME = 'mxt223-schedule-v10'; // Bump version for logout fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

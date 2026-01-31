@@ -140,7 +140,13 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
 // Logout handler
 document.getElementById('logout-btn').addEventListener('click', () => {
     if (confirm('Вы уверены, что хотите выйти?')) {
-        localStorage.removeItem('auth_token');
+        // Clear ALL auth data
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user_name'); // Clear cached name
+        localStorage.removeItem('auth_token'); // Just in case old one exists
+
+        // Force reload to login page
         window.location.href = '/login.html';
     }
 });
