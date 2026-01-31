@@ -1226,8 +1226,8 @@ body.light-mode .days-tabs .tab.active {
 .type-badge {
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background: rgba(255, 255, 255, 0.2);
@@ -1237,15 +1237,43 @@ body.light-mode .days-tabs .tab.active {
 
 body.light-mode .type-badge {
     background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-    color: var(--text-muted-light);
+    /* Very subtle grey */
+    border: none;
+    color: #64748b;
 }
 
-/* Fix: Lesson Time Color (Darker Green/Blue) */
+/* Fix: Premium Time Badge (Clean & Sharp) */
 body.light-mode .lesson-time {
-    color: #15803d !important; /* Darker green */
-    background: rgba(22, 163, 74, 0.1) !important;
+    color: #1e293b !important;
+    /* Dark Slate - High Contrast */
+    background: transparent !important;
     font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    padding: 0 !important;
+    /* Remove background padding */
+    border: none !important;
+    font-family: 'Outfit', sans-serif !important;
+    /* Match system font */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Add a green dot to indicate time */
+body.light-mode .lesson-time::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    /* Emerald Green */
+    border-radius: 50%;
+}
+
+/* Fix: Tighter Spacing */
+.lesson-card {
+    margin-bottom: 16px !important;
+    /* Reduced from 30px */
 }
 
 /* Fix: Remove Empty Oval */

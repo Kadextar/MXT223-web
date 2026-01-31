@@ -439,6 +439,14 @@ async function init() {
 async function fetchUserProfile() {
     try {
         const token = localStorage.getItem('access_token');
+        // If no token, maybe we are in dev mode or just logged in. 
+        // Try getting name from localStorage if available as fallback
+        const cachedName = localStorage.getItem('user_name');
+        if (cachedName) {
+            const nameEl = document.getElementById('user-name');
+            if (nameEl) nameEl.textContent = cachedName;
+        }
+
         if (!token) return;
 
         const response = await fetch('/api/me', {
@@ -451,6 +459,8 @@ async function fetchUserProfile() {
                 // Update Name
                 const nameEl = document.getElementById('user-name');
                 if (nameEl) nameEl.textContent = data.name;
+                // Cache it for next time to be instant
+                localStorage.setItem('user_name', data.name);
             }
         }
     } catch (e) {
