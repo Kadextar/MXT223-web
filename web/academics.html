@@ -30,13 +30,12 @@
     </header>
 
     <!-- Tabs -->
-    <div class="academics-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; padding: 0 20px;">
-        <button class="tab-btn active" onclick="switchTab('subjects')"
-            style="flex: 1; padding: 10px; border-radius: 12px; border: none; background: white; font-weight: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.05); color: var(--text-muted);">Предметы</button>
-        <button class="tab-btn" onclick="switchTab('teachers')"
-            style="flex: 1; padding: 10px; border-radius: 12px; border: none; background: rgba(255,255,255,0.5); font-weight: 500; color: var(--text-muted);">Преподаватели</button>
-        <button class="tab-btn" onclick="switchTab('exams')"
-            style="flex: 1; padding: 10px; border-radius: 12px; border: none; background: rgba(255,255,255,0.5); font-weight: 500; color: var(--text-muted);">Экзамены</button>
+    <div class="academics-tabs">
+        <div class="tabs-pill">
+            <button class="tab-btn active" onclick="switchTab('subjects')">Предметы</button>
+            <button class="tab-btn" onclick="switchTab('teachers')">Преподаватели</button>
+            <button class="tab-btn" onclick="switchTab('exams')">Экзамены</button>
+        </div>
     </div>
 
     <main class="academics-container" style="padding: 0 20px 80px;">
@@ -95,14 +94,17 @@
 
             // Update buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.style.background = 'rgba(255,255,255,0.5)';
                 btn.classList.remove('active');
             });
-            // Highlight clicked button (approximate, better done by passing event or ID)
+
+            // Highlight clicked button
+            // Find button by text or data attribute would be better, but loop index is fragile.
+            // Let's rely on the onclick trigger adding 'active' to event target if possible, 
+            // but since we call function, let's just use mapping or search.
             const btns = document.querySelectorAll('.tab-btn');
-            if (tabName === 'subjects') btns[0].style.background = 'white';
-            if (tabName === 'teachers') btns[1].style.background = 'white';
-            if (tabName === 'exams') btns[2].style.background = 'white';
+            if (tabName === 'subjects') btns[0].classList.add('active');
+            if (tabName === 'teachers') btns[1].classList.add('active');
+            if (tabName === 'exams') btns[2].classList.add('active');
         }
     </script>
 </body>
