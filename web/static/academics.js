@@ -41,40 +41,54 @@ const SUBJECTS_DATA = [
     },
     {
         id: 'econ',
-        name: 'Экономика гостиничного предприятия',
+        name: 'Мировая экономика и международные экономические отношения',
         type: 'Обязательный',
         credits: 6,
         hours: 180,
         lectures: 18,
         seminars: 18,
-        // Will try to fill from schedule if empty, or user can update later
+        teachers: {
+            lecture: 'Халимов Шахбоз Халимович',
+            seminar: 'Амриева Шахзода Шухратовна'
+        }
     },
     {
         id: 'quality',
-        name: 'Управление качеством гостиничных услуг',
+        name: 'Качество и безопасность в гостиничной деятельности',
         type: 'Обязательный',
         credits: 6,
         hours: 180,
         lectures: 18,
         seminars: 18,
+        teachers: {
+            lecture: 'Махмудова Азиза Пирмаматовна',
+            seminar: 'Мир-Джафарова Азиза Джавохировна'
+        }
     },
     {
         id: 'hotel_business',
-        name: 'Организация гостиничного бизнеса',
+        name: 'Международный гостиничный бизнес',
         type: 'Обязательный',
         credits: 5,
         hours: 150,
         lectures: 18,
         seminars: 18,
+        teachers: {
+            lecture: 'Амриддинова Райхона Садриддиновна',
+            seminar: 'Мейлиев Абдугани Наджмиддинович'
+        }
     },
     {
         id: 'coursework',
-        name: 'Курсовая работа (Организация гостиничного бизнеса)',
+        name: 'Курсовая работа (Международный гостиничный бизнес)',
         type: 'Курсовая работа',
         credits: 1,
         hours: 30,
         isCoursework: true,
-        // Teacher same as Hotel Business Lecture usually
+        // Usually same teacher as lecture
+        teachers: {
+            lecture: 'Амриддинова Райхона Садриддиновна'
+        }
     },
     {
         id: 'practice',
@@ -83,7 +97,6 @@ const SUBJECTS_DATA = [
         credits: 6,
         hours: 180,
         isPractice: true
-        // Teachers unknown
     },
     {
         id: 'enlightenment',
