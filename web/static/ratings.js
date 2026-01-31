@@ -40,7 +40,10 @@ function renderSubjects() {
     // Let's filter items with > 0 lectures or seminars or Practice/Coursework
 
     const validSubjects = SUBJECTS_DATA.filter(s =>
-        (s.lectures > 0 || s.seminars > 0 || s.isPractice || s.isCoursework) && s.id !== 'enlightenment'
+        (s.lectures > 0 || s.seminars > 0) &&
+        !s.isPractice &&
+        !s.isCoursework &&
+        s.id !== 'enlightenment'
     );
 
     validSubjects.forEach(sub => {
