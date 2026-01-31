@@ -332,8 +332,21 @@ function updateWeek(offset) {
 }
 
 async function init() {
-    // Load schedule data from API
-    // TEMP: Using nocache endpoint as workaround for persistent cache issue
+    // 1. Initialize Navigation IMMEDIATELY
+    initFloatingNav();
+
+    // 2. Load User Profile & Greeting IMMEDIATELY (Cached or Network)
+    updateGreetingTime();
+    fetchUserProfile();
+
+    // 3. Load Announcement
+    loadAnnouncement();
+
+    // 4. Live Update initialization
+    updateLiveStatus();
+    setInterval(updateLiveStatus, 30000); // Every 30 sec
+
+    // 5. Load Schedule (This might be slow, so do it last to not block UI)
     try {
         const response = await fetch('/api/debug/schedule-nocache');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -353,7 +366,7 @@ async function init() {
                     <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; border-radius: 8px; border: none; background: var(--primary); color: white;">Попробовать снова</button>
                 </div>
             `;
-            return; // Stop initialization
+            // Even if schedule fails, we don't want to stop the script
         }
     }
 
@@ -371,21 +384,6 @@ async function init() {
     renderTabs();
     renderSchedule();
 
-    // Initialize new floating navigation
-    initFloatingNav();
-
-    // Запускаем Live Update
-    updateLiveStatus();
-    setInterval(updateLiveStatus, 30000); // Каждые 30 сек
-
-    // Загружаем объявление
-    loadAnnouncement();
-
-    // Greeting Updates
-    updateGreetingTime();
-    fetchUserProfile();
-
-    // Listeners
     // Listeners for Week Navigation
     const currentWeekBtn = document.getElementById('current-week-btn');
     const nextWeekBtn = document.getElementById('next-week-btn');

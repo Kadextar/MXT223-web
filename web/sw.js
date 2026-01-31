@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v12'; // Bump version for student_id fix
+const CACHE_NAME = 'mxt223-schedule-v13'; // Bump version for stuck nav fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
