@@ -42,7 +42,7 @@ const SUBJECTS_DATA = [
     {
         id: 'econ',
         name: 'Мировая экономика и международные экономические отношения',
-        type: 'Обязательный',
+        type: 'Выборочный',
         credits: 6,
         hours: 180,
         lectures: 18,
@@ -81,7 +81,7 @@ const SUBJECTS_DATA = [
     {
         id: 'coursework',
         name: 'Курсовая работа (Международный гостиничный бизнес)',
-        type: 'Курсовая работа',
+        type: 'Обязательный',
         credits: 1,
         hours: 30,
         isCoursework: true,
@@ -93,7 +93,7 @@ const SUBJECTS_DATA = [
     {
         id: 'practice',
         name: 'Квалификационная практика',
-        type: 'Практика',
+        type: 'Обязательный',
         credits: 6,
         hours: 180,
         isPractice: true
@@ -101,7 +101,7 @@ const SUBJECTS_DATA = [
     {
         id: 'enlightenment',
         name: 'Урок просвещения',
-        type: 'Дополнительный',
+        type: 'Обязательный',
         credits: 0,
         hours: 0,
         lectures: 0,

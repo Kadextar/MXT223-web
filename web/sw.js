@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v20'; // Bump version for unified styling
+const CACHE_NAME = 'mxt223-schedule-v21'; // Bump version for subject types update
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
