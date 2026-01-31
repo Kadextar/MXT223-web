@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v4';
+const CACHE_NAME = 'mxt223-schedule-v5'; // Bump version
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -23,13 +23,31 @@ self.addEventListener('install', (event) => {
 
 // Fetch Event
 self.addEventListener('fetch', (event) => {
+    // Network First strategy for HTML (documents)
+    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+        event.respondWith(
+            fetch(event.request)
+                .then((response) => {
+                    // Update cache with new version if successful
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                    return response;
+                })
+                .catch(() => {
+                    return caches.match(event.request);
+                })
+        );
+        return;
+    }
+
+    // Cache First for other assets (styles, scripts, images)
     event.respondWith(
         caches.match(event.request).then((response) => {
-            // Если есть в кэше — возвращаем
             if (response) {
                 return response;
             }
-            // Нет в кэше — качаем из сети
             return fetch(event.request);
         })
     );
