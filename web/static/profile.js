@@ -147,6 +147,7 @@ document.getElementById('logout-btn').addEventListener('click', (e) => {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_name');
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('student_id'); // KEY FIX: Clear legacy auth ID
 
     // Use replace to prevent going back
     window.location.replace('/login.html');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v11'; // Bump version for direct logout
+const CACHE_NAME = 'mxt223-schedule-v12'; // Bump version for student_id fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
