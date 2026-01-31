@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v27'; // Bump for cleanup and visual fixes
+const CACHE_NAME = 'mxt223-schedule-v28'; // Bump for css syntax fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
