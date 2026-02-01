@@ -377,42 +377,42 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-h1 {
-    font-size: 2.5rem;
+/* Modern Header Styles */
+.header-greeting-container {
+    padding: 30px 20px 20px;
+    /* More top spacing */
+    text-align: left;
+    /* Ensure alignment */
+}
+
+h1.greeting-date {
+    font-size: 2.2rem;
+    /* Slightly smaller but cleaner */
     font-weight: 700;
     color: white;
-    /* Force White */
-    line-height: 1.2;
-    margin-bottom: 4px;
-    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-    /* Pop against dark */
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    /* Tighter tracking looks more premium */
+    margin-bottom: 8px;
+    /* More breathing room */
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    /* Stronger shadow/glow */
 }
 
-/* Light theme specific overrides */
-[data-theme="light"] h1 {
-    background: linear-gradient(to right, #0f172a, #475569);
-    background-clip: text;
-    background-clip: text;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.greeting-text {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    /* Soft white */
+    font-weight: 400;
+    /* Regular weight for contrast */
+    letter-spacing: 0.3px;
 }
 
-.subtitle {
-    color: var(--text-muted);
-    font-size: 1rem;
-}
-
-.week-info {
-    margin-top: 8px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    border: 1px solid var(--card-border);
+background: rgba(255, 255, 255, 0.05);
+padding: 4px 12px;
+border-radius: 12px;
+font-size: 0.85rem;
+border: 1px solid var(--card-border);
 }
 
 .calendar-btn {
