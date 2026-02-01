@@ -10,105 +10,52 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css?v=37">
-    <link rel="stylesheet" href="/static/ratings.css?v=37">
+    <link rel="stylesheet" href="/static/ratings.css?v=38">
     <link rel="stylesheet" href="/static/academics.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#eef2f6">
-    <style>
-        /* Nuclear Option: Force Styles Inline */
-        .header h1 {
-            color: #1e293b !important;
-        }
+    <header class="header-greeting-container">
+        <h1 class="greeting-date">Оценка занятий</h1>
+        <p class="greeting-text">
+            Анонимная оценка качества обучения
+        </p>
+    </header>
 
-        .header .subtitle {
-            color: #64748b !important;
-        }
-
-        #loading.hidden,
-        #empty-state.hidden,
-        .tab-content.hidden {
-            display: none !important;
-        }
-
-        .profile-nav .nav-link {
-            color: #94a3b8 !important;
-        }
-
-        .profile-nav .nav-link.active {
-            color: #3b82f6 !important;
-        }
-
-        /* Specific Tab Overrides */
-        .academics-tabs {
-            top: 0;
-            position: sticky;
-            z-index: 100;
-            margin-bottom: 10px;
-        }
-
-        #evaluation-view,
-        #leaderboard-view {
-            padding-bottom: 80px;
-        }
-    </style>
-</head>
-
-<body class="">
-    <div class="background-globes">
-        <div class="globe globe-1"></div>
-        <div class="globe globe-2"></div>
-        <div class="globe globe-3"></div>
+    <!-- Tabs -->
+    <div class="academics-tabs">
+        <div class="tabs-pill">
+            <button class="tab-btn active" id="tab-btn-eval" data-tab="evaluation">Оценка</button>
+            <button class="tab-btn" id="tab-btn-rate" data-tab="leaderboard">Рейтинг</button>
+        </div>
     </div>
 
-    <div class="app-container">
-        <header class="header">
-            <div class="header-content">
-                <h1
-                    style="color: #1e293b !important; -webkit-text-fill-color: initial !important; background: none !important;">
-                    Оценка занятий
-                </h1>
-                <p class="subtitle"
-                    style="color: #64748b !important; -webkit-text-fill-color: initial !important; background: none !important;">
-                    Анонимная оценка качества обучения
-                </p>
-            </div>
-        </header>
-
-        <!-- Tabs -->
-        <div class="academics-tabs">
-            <div class="tabs-pill">
-                <button class="tab-btn active" id="tab-btn-eval" data-tab="evaluation">Оценка</button>
-                <button class="tab-btn" id="tab-btn-rate" data-tab="leaderboard">Рейтинг</button>
-            </div>
+    <main class="main-content" style="padding-top: 0;">
+        <!-- Loading State -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Загрузка предметов...</p>
         </div>
 
-        <main class="main-content" style="padding-top: 0;">
-            <!-- Loading State -->
-            <div id="loading" class="loading hidden">
-                <div class="spinner"></div>
-                <p>Загрузка предметов...</p>
+        <!-- TAB 1: Evaluation (List of Subjects) -->
+        <section id="evaluation-view" class="tab-content">
+            <div id="teachers-container" class="teachers-grid">
+                <!-- Items will be loaded here -->
             </div>
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <p>📚 Все предметы изучены</p>
+            </div>
+        </section>
 
-            <!-- TAB 1: Evaluation (List of Subjects) -->
-            <section id="evaluation-view" class="tab-content">
-                <div id="teachers-container" class="teachers-grid">
-                    <!-- Items will be loaded here -->
+        <!-- TAB 2: Leaderboard -->
+        <section id="leaderboard-view" class="tab-content hidden">
+            <div class="leaderboard-section" style="margin-top: 10px;">
+                <div id="leaderboard-list" class="leaderboard-list">
+                    <div class="leader-empty">Загрузка рейтинга...</div>
                 </div>
-                <!-- Empty State -->
-                <div id="empty-state" class="empty-state hidden">
-                    <p>📚 Все предметы изучены</p>
-                </div>
-            </section>
-
-            <!-- TAB 2: Leaderboard -->
-            <section id="leaderboard-view" class="tab-content hidden">
-                <div class="leaderboard-section" style="margin-top: 10px;">
-                    <div id="leaderboard-list" class="leaderboard-list">
-                        <div class="leader-empty">Загрузка рейтинга...</div>
-                    </div>
-                </div>
-            </section>
-        </main>
+            </div>
+        </section>
+    </main>
     </div>
 
     <!-- Bottom Nav -->
@@ -188,6 +135,6 @@
     </div>
 
     <script type="module" src="/static/ratings.js?v=37"></script>
-</body>
+    </body>
 
 </html>
