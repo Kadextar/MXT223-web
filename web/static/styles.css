@@ -603,19 +603,22 @@ h1.greeting-date {
 
 /* Greeting Container */
 .header-greeting-container {
-    padding: 20px;
-    text-align: center;
-    /* Force center */
+    padding: 20px 24px;
+    /* More side padding */
+    text-align: left;
+    /* iOS Standard */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    /* Align Start (Left) */
     justify-content: center;
 }
 
 h1.greeting-date {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    /* Align Start (Left) */
     gap: 4px;
     margin-bottom: 4px;
 }

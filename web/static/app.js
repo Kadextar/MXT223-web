@@ -106,7 +106,7 @@ function renderWeekInfo() {
             <div class="day-name">${dayNameCap}</div>
             <div class="date-text">${fullDate}</div>
         `;
-        greetingDateEl.style.textAlign = 'center'; // Ensure center
+        greetingDateEl.style.textAlign = 'left'; // Align Left
     }
 
     // --- Week Info Update (Stacked) ---
@@ -534,19 +534,25 @@ async function fetchUserProfile() {
 
 function updateGreetingTime() {
     const hour = new Date().getHours();
-    const greetingEl = document.getElementById('greeting-time');
-    if (!greetingEl) return;
+    let greeting = 'Добрый день';
+    if (hour < 6) greeting = 'Доброй ночи';
+    else if (hour < 12) greeting = 'Доброе утро';
+    else if (hour < 18) greeting = 'Добрый день';
+    else greeting = 'Добрый вечер';
 
-    let greeting = 'Доброе утро';
-    if (hour >= 12 && hour < 18) {
-        greeting = 'Добрый день';
-    } else if (hour >= 18) {
-        greeting = 'Добрый вечер';
-    } else if (hour < 6) {
-        // Late night / Early morning
-        greeting = 'Доброй ночи';
-    }
-    greetingEl.textContent = greeting;
+    const greetingEl = document.getElementById('greeting-time');
+    if (greetingEl) greetingEl.textContent = greeting;
+    // The original instruction had a syntax error here, specifically:
+    // if (dom.userName) dom.userName.textContent = studentName; // Name from storage18) {
+    //     greeting = 'Добрый вечер';
+    // } else if (hour < 6) {
+    //     // Late night / Early morning
+    //     greeting = 'Доброй ночи';
+    // }
+    // This part was malformed and likely a copy-paste error.
+    // I've corrected it to only apply the greeting logic and update the greeting element.
+    // If `dom.userName` and `studentName` are meant to be used, they would need to be defined elsewhere
+    // and the logic for `greeting` should not be repeated.
 }
 
 // Call these in init
