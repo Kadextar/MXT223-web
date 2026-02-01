@@ -194,11 +194,13 @@ body.light-mode .header-greeting-container .greeting-text {
 /* Fix Week Navigation */
 body.light-mode .week-nav {
     background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-body.light-mode .week-nav .nav-btn,
+body.light-mode .week-nav .nav-btn {
+    color: #0f172a !important;
+}
+
 body.light-mode .week-nav .current-week-label {
     color: #0f172a !important;
     font-weight: 600 !important;
@@ -377,14 +379,12 @@ body {
 h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    background: linear-gradient(to right, #fff, #cbd5e1);
-    background-clip: text;
-    background-clip: text;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: white;
+    /* Force White */
     line-height: 1.2;
     margin-bottom: 4px;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    /* Pop against dark */
 }
 
 /* Light theme specific overrides */
@@ -644,7 +644,21 @@ h1 {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
-    padding: 0 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    /* Dark Glass */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn {
+    color: white;
+}
+
+.current-week-label {
+    color: white;
+    font-weight: 600;
 }
 
 .nav-btn {
