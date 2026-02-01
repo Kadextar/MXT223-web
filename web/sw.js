@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v30'; // Bump to aggressive cache bust
+const CACHE_NAME = 'mxt223-schedule-v31'; // Bump for header text color fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
