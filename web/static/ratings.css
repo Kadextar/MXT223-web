@@ -668,61 +668,61 @@ body.light-mode .section-title {
 }
 
 /* Slider & Input Styles */
-/* Loading & Empty States - Hidden by default to prevent flashing */
+/* Loading & Empty States - Double Check Hidden */
 .loading,
 .empty-state,
 .leader-empty {
-    display: none;
+    display: none !important;
 }
 
-/* Modal Readability Fixes */
+/* Modal Readability & Alignment Fixes */
 .modal-content {
     /* ... existing background/border ... */
-    padding: 30px;
-    /* More padding */
-    text-align: center;
-    /* Generally center content */
+    padding: 24px;
+    text-align: left;
+    /* User explicitly requested NOT middle */
 }
 
 #modal-teacher-name {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     color: white;
-    /* Ensure White */
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     font-weight: 700;
+    text-align: left;
 }
 
 #modal-subject {
-    font-size: 1.1rem;
-    color: #cbd5e1;
-    /* Lighter gray for better readability */
-    margin-bottom: 30px;
+    font-size: 1rem;
+    color: #94a3b8;
+    margin-bottom: 24px;
+    text-align: left;
 }
 
-/* Rating Control - Centered & Neat */
+/* Rating Control - Horizontal Row (Neater) */
 .rating-display-large {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    padding: 16px;
     margin-bottom: 20px;
     width: 100%;
-    /* Fill container */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    /* Horizontal */
     align-items: center;
-    justify-content: center;
+    gap: 20px;
+    justify-content: flex-start;
+    /* Align left */
 }
 
 .rating-emoji {
-    font-size: 4rem;
-    /* Larger */
-    margin-bottom: 10px;
+    font-size: 3rem;
+    margin-bottom: 0;
 }
 
 .rating-text {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     color: #60a5fa;
-    /* Bright Blue */
+    font-weight: 600;
 }
 
 /* Slider Container */
@@ -735,6 +735,7 @@ body.light-mode .section-title {
     padding: 0;
     border: none;
     width: 100%;
+    margin-bottom: 10px;
 }
 
 
