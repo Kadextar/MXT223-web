@@ -208,8 +208,8 @@ function renderContent() {
         const color = colors[Math.floor(Math.random() * colors.length)];
 
         card.innerHTML = `
-            <div class="card-icon" style="background: ${color}20; color: ${color}; border-radius: 50%;">
-                <i class="fas fa-chalkboard-teacher"></i>
+            <div class="card-icon" style="background: ${color}20; color: ${color}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-tie"></i>
             </div>
             <div class="card-content">
                 <h3>${teacher}</h3>

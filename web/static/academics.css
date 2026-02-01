@@ -97,9 +97,9 @@
 
 /* Teachers Box */
 .subject-teachers {
-    background: transparent;
+    background: transparent !important;
     /* Remove "Black Line/Box" effect */
-    /* border-radius: 12px; -- removed background so radius irrelevant */
+    box-shadow: none !important;
     padding: 0;
     /* Remove padding */
     margin-top: 8px;
