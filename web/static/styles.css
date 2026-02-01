@@ -22,7 +22,8 @@
     /* Cyan/Green */
 
     --text-main: #ffffff;
-    --text-muted: rgba(255, 255, 255, 0.6);
+    --text-muted: rgba(255, 255, 255, 0.8);
+    /* Lighter for readability */
 
     --font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 
@@ -639,6 +640,7 @@ h1 {
     }
 }
 
+/* Week Nav (Unified) */
 .week-nav {
     display: flex;
     justify-content: space-between;
@@ -653,18 +655,10 @@ h1 {
 }
 
 .nav-btn {
-    color: white;
-}
-
-.current-week-label {
-    color: white;
-    font-weight: 600;
-}
-
-.nav-btn {
     background: transparent;
     border: none;
-    color: var(--text-main);
+    color: white;
+    /* Force White */
     font-size: 1.2rem;
     cursor: pointer;
     padding: 8px;
@@ -678,7 +672,8 @@ h1 {
 
 .current-week-label {
     font-weight: 600;
-    color: var(--text-muted);
+    color: white;
+    /* Force White */
 }
 
 /* Days Tabs */
