@@ -96,7 +96,7 @@ function renderWeekInfo() {
     const dayName = now.toLocaleDateString('ru-RU', { weekday: 'long' });
     const fullDate = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
     const dayNameCap = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-    
+
     // Assuming dom.greetingDate is a new DOM element that needs to be added to the dom object
     // For now, let's assume it's document.getElementById('greeting-date')
     const greetingDateEl = document.getElementById('greeting-date');
@@ -130,7 +130,7 @@ function renderWeekInfo() {
        Let's check render logic. Usually it's inside `currentWeekBtn` or similar. 
        Actually, `renderWeekInfo` in previous code updated `.current-week-label` span. 
     */
-   
+
     const currentWeekLabel = document.querySelector('.current-week-label');
     if (currentWeekLabel) {
         currentWeekLabel.innerHTML = `
@@ -142,10 +142,7 @@ function renderWeekInfo() {
     }
 
     // Update week date range
-    const weekDateRangeEl = document.getElementById('week-date-range');
-    if (weekDateRangeEl) {
-        weekDateRangeEl.textContent = getWeekDateRange(state.currentWeek);
-    }
+    // (Moved to week-text-container block above)
 }
 
 function renderTabs() {
