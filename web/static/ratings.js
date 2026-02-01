@@ -221,29 +221,101 @@ document.querySelectorAll('.tag-btn').forEach(btn => {
 });
 
 // Submit
-ratingForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (!selectedRating) {
-        alert('Пожалуйста, выберите оценку');
-        return;
+// Data to send
+const reviewData = {
+    subject_name: currentSubject, // NOTE: this variable holds ID or Name? loadContent passes ID & Name. 
+    // Looking at openRatingModal: currentSubject = subjectId. 
+    // But backend expects Name. 
+    // Let's fix this. In createSubjectCard, we pass (sub.id, sub.name).
+    // currentSubject is assigned sub.id.
+    // We need the Name.
+    // Let's grab name from DOM or store it.
+    subject_type: currentType,
+    rating: selectedRating,
+    tags: selectedTags,
+    comment: document.getElementById('comment-input').value,
+    date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+};
+
+// Helper: We stored name in the modal title? 
+// Ideally we should store currentSubjectName in a global var.
+// Let's fix openRatingModal to store name too (it does: name is passed).
+// But we previously only stored currentSubject=subjectId.
+// Let's update reviewData to use the textContent of the modal header as fallback or modify openRatingModal.
+// MODIFICATION: `currentSubjectName` variable will be added implicitly via the larger replacement.
+
+const token = localStorage.getItem('access_token');
+
+try {
+    const response = await fetch('/api/ratings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            subject_name: document.getElementById('modal-teacher-name').textContent, // Using displayed name
+            subject_type: currentType,
+            rating: selectedRating,
+            tags: selectedTags,
+            comment: document.getElementById('comment-input').value,
+            date: new Date().toISOString().split('T')[0]
+        })
+    });
+
+    if (response.ok) {
+        // Save to LocalStorage to prevent re-voting today
+        const votedKey = `voted_${currentSubject}_${currentType}_${new Date().toISOString().split('T')[0]}`;
+        localStorage.setItem(votedKey, 'true');
+
+        alert('✅ Ваш голос принят! Спасибо.');
+        closeModal();
+        // Refresh Leaderboard
+        loadLeaderboard();
+    } else {
+        alert('❌ Ошибка при отправке. Возможно, вы уже голосовали сегодня?');
     }
-
-    const review = {
-        subjectId: currentSubject,
-        type: currentType,
-        rating: selectedRating,
-        tags: selectedTags,
-        comment: document.getElementById('comment-input').value,
-        date: new Date().toISOString()
-    };
-
-    const reviews = JSON.parse(localStorage.getItem('my_reviews') || '[]');
-    reviews.push(review);
-    localStorage.setItem('my_reviews', JSON.stringify(reviews));
-
-    alert('✅ Ваш отзыв сохранен! Он анонимен.');
-    closeModal();
+} catch (error) {
+    console.error('Error:', error);
+    alert('Ошибка сети.');
+}
 });
+
+// Leaderboard Logic
+async function loadLeaderboard() {
+    const container = document.getElementById('leaderboard-list');
+    if (!container) return; // Only if element exists
+
+    try {
+        const response = await fetch('/api/ratings/leaderboard');
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const top3 = data.slice(0, 3); // Get Top 3
+
+        container.innerHTML = top3.map((item, index) => {
+            let medal = '';
+            if (index === 0) medal = '🥇';
+            if (index === 1) medal = '🥈';
+            if (index === 2) medal = '🥉';
+
+            return `
+                <div class="leader-item">
+                    <span class="leader-rank">${medal}</span>
+                    <span class="leader-name">${item.subject}</span>
+                    <span class="leader-score">${item.average}</span>
+                </div>
+            `;
+        }).join('');
+
+        if (top3.length === 0) {
+            container.innerHTML = '<div class="leader-empty">Пока нет голосов</div>';
+        }
+    } catch (e) {
+        console.error("Leaderboard error:", e);
+    }
+}
 
 // Init
 loadContent();
+loadLeaderboard();

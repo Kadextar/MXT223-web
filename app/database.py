@@ -46,7 +46,7 @@ async def init_db():
     """
     await database.execute(query)
     
-    # Teacher Ratings table
+    # Teacher Ratings table (Legacy - keeping for now)
     query = f"""
         CREATE TABLE IF NOT EXISTS teacher_ratings (
             id {id_type},
@@ -58,6 +58,23 @@ async def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(teacher_id, student_hash)
+        )
+    """
+    await database.execute(query)
+
+    # Subject Ratings table (New - for v30+ design)
+    query = f"""
+        CREATE TABLE IF NOT EXISTS subject_ratings (
+            id {id_type},
+            subject_name TEXT NOT NULL,
+            subject_type TEXT NOT NULL, 
+            rating INTEGER NOT NULL,
+            tags TEXT,
+            comment TEXT,
+            student_id TEXT NOT NULL,
+            lesson_date DATE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(subject_name, subject_type, student_id, lesson_date)
         )
     """
     await database.execute(query)

@@ -43,3 +43,6 @@ app.include_router(admin.router)
 app.include_router(push.router)
 app.include_router(api.router)
 app.include_router(pages.router)
+
+from app.routers import ratings
+app.include_router(ratings.router)
