@@ -522,40 +522,12 @@ body.light-mode .section-title {
 }
 
 /* Match lesson-card exactly */
-.teacher-card {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 24px;
-    padding: 24px;
-    /* Increased padding */
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    /* Stack vertically for centering */
-    align-items: center;
-    /* Center horizontally */
-    gap: 16px;
-    animation: fadeInUp 0.5s ease backwards;
-    text-align: center;
-    /* Ensure text is centered */
-}
+/* Teacher Card - Clean Dark Style */
+/* (Already defined above, removing duplicate overwrite) */
 
 /* Icon bigger and centered */
-.card-icon {
-    font-size: 3rem;
-    min-width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 24px;
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5);
-    margin-bottom: 4px;
-    /* Space before title */
-}
+/* Card Icon - Clean */
+/* (Already defined above) */
 
 .card-content {
     flex: 1;
