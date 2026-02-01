@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css?v=37">
-    <link rel="stylesheet" href="/static/ratings.css?v=39">
+    <link rel="stylesheet" href="/static/ratings.css?v=40">
     <link rel="stylesheet" href="/static/academics.css?v=46">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#eef2f6">
@@ -30,10 +30,9 @@
     </div>
 
     <main class="main-content" style="padding-top: 0;">
-        <!-- Loading State -->
-        <div id="loading" class="loading hidden">
+        <!-- Loading State            <!-- Loading State -->
+        <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p>Загрузка предметов...</p>
         </div>
 
         <!-- TAB 1: Evaluation (List of Subjects) -->
@@ -42,8 +41,7 @@
                 <!-- Items will be loaded here -->
             </div>
             <!-- Empty State -->
-            <div id="empty-state" class="empty-state hidden">
-                <p>📚 Все предметы изучены</p>
+            <div id="empty-state" class="empty-state">
             </div>
         </section>
 
@@ -51,7 +49,6 @@
         <section id="leaderboard-view" class="tab-content hidden">
             <div class="leaderboard-section" style="margin-top: 10px;">
                 <div id="leaderboard-list" class="leaderboard-list">
-                    <div class="leader-empty">Загрузка рейтинга...</div>
                 </div>
             </div>
         </section>

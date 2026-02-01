@@ -668,36 +668,75 @@ body.light-mode .section-title {
 }
 
 /* Slider & Input Styles */
-.rating-display-large {
+/* Loading & Empty States - Hidden by default to prevent flashing */
+.loading,
+.empty-state,
+.leader-empty {
+    display: none;
+}
+
+/* Modal Readability Fixes */
+.modal-content {
+    /* ... existing background/border ... */
+    padding: 30px;
+    /* More padding */
     text-align: center;
-    margin-bottom: 24px;
+    /* Generally center content */
+}
+
+#modal-teacher-name {
+    font-size: 1.6rem;
+    color: white;
+    /* Ensure White */
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+#modal-subject {
+    font-size: 1.1rem;
+    color: #cbd5e1;
+    /* Lighter gray for better readability */
+    margin-bottom: 30px;
+}
+
+/* Rating Control - Centered & Neat */
+.rating-display-large {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    /* Fill container */
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
 }
 
 .rating-emoji {
-    font-size: 3.5rem;
-    line-height: 1;
-    animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 4rem;
+    /* Larger */
+    margin-bottom: 10px;
 }
 
 .rating-text {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--primary);
+    font-size: 1.4rem;
+    color: #60a5fa;
+    /* Bright Blue */
 }
 
+/* Slider Container */
 .rating-control-container {
     display: flex;
     align-items: center;
-    gap: 16px;
-    background: #f8fafc;
-    padding: 16px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    gap: 15px;
+    background: transparent;
+    /* Remove boxiness */
+    padding: 0;
+    border: none;
+    width: 100%;
 }
+
 
 /* Range Slider */
 input[type=range] {
