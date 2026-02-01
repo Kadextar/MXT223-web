@@ -248,33 +248,97 @@ input[type=number]:focus {
 .tags-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
+    justify-content: center;
 }
 
 .tag-btn {
-    background: #f1f5f9;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    border-radius: 50px;
+    font-size: 0.9rem;
     color: #64748b;
     cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.tag-btn:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
 }
 
 .tag-btn.active {
-    background: #eff6ff;
-    color: var(--primary);
-    border: 1px solid var(--primary);
+    background: #e0f2fe;
+    /* Soft Blue */
+    color: #0284c7;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Comment Box */
+textarea {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    color: #334155;
+    background: #f8fafc;
+    resize: none;
+    transition: all 0.2s;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Label Styling */
+.form-group label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+    text-align: center;
 }
 
 .submit-btn {
     width: 100%;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), #2563eb);
     color: white;
-    padding: 14px;
-    border-radius: 16px;
+    padding: 16px;
+    border-radius: 20px;
     border: none;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+/* Modal Headers */
+#modal-teacher-name {
+    font-size: 1.5rem;
+    color: #0f172a;
+    margin-bottom: 4px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+#modal-subject {
+    color: #64748b;
+    text-align: center;
+    margin-bottom: 24px;
     font-size: 1rem;
-    margin-top: 20px;
 }

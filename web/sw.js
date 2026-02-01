@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v34'; // Bump for rating slider feature
+const CACHE_NAME = 'mxt223-schedule-v35'; // Bump for modal visual polish
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
