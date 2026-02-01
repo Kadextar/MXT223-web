@@ -36,15 +36,20 @@
     transform: scale(0.98);
 }
 
+/* Neat Numbering Badge */
 .subject-number {
-    font-size: 1.5rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.5);
-    /* Much brighter (was 0.1) */
-    min-width: 30px;
-    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .card-content {
@@ -118,11 +123,14 @@
     margin-bottom: 0;
 }
 
+/* Teacher Labels - Soft White in Dark Mode */
 .subject-teachers .label {
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
-    /* Soft White (was gray) */
     margin-right: 8px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Tabs Default (Dark) */
@@ -131,7 +139,6 @@
     top: 0;
     z-index: 10;
     background: rgba(5, 5, 16, 0.8);
-    /* Dark BG match body */
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding: 10px 20px;
@@ -170,14 +177,17 @@
 
 body.light-mode .subject-card,
 body.light-mode .info-card {
-    background: rgba(255, 255, 255, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     color: #1e293b;
 }
 
+/* Fix Invisible Number in Light Mode */
 body.light-mode .subject-number {
-    color: rgba(0, 0, 0, 0.1);
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
 }
 
 body.light-mode .subject-header h3 {
@@ -185,9 +195,9 @@ body.light-mode .subject-header h3 {
 }
 
 body.light-mode .tag {
-    background: rgba(0, 0, 0, 0.05);
+    background: #f1f5f9;
     color: #64748b;
-    border: none;
+    border: 1px solid #cbd5e1;
 }
 
 body.light-mode .subject-stats {
@@ -195,9 +205,15 @@ body.light-mode .subject-stats {
 }
 
 body.light-mode .subject-teachers {
-    background: rgba(255, 255, 255, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    border: none;
     color: #1e293b;
+}
+
+/* Fix Invisible Labels in Light Mode */
+body.light-mode .subject-teachers .label {
+    color: #94a3b8;
+    /* Muted slate for label */
 }
 
 body.light-mode .academics-tabs {
@@ -206,8 +222,8 @@ body.light-mode .academics-tabs {
 }
 
 body.light-mode .tabs-pill {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
 }
 
 body.light-mode .tab-btn {
@@ -215,9 +231,10 @@ body.light-mode .tab-btn {
 }
 
 body.light-mode .tab-btn.active {
-    background: white;
-    color: var(--primary);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background: #0ea5e9;
+    /* Sky Blue */
+    color: white;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
 }
 
 /* End of Academics Styles */
