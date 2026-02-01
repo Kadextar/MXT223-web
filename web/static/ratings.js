@@ -57,29 +57,53 @@ function createSubjectCard(sub) {
     const card = document.createElement('div');
     card.className = 'info-card teacher-card';
 
+    const icon = getSubjectIcon(sub.name);
+
     // Actions
     let actionsHTML = '';
 
-    // Always show Lecture/Seminar for standard subjects
-    actionsHTML = `
-        <div class="rate-actions">
-            <button class="rate-btn outline" onclick="openRatingModal('${sub.id}', '${sub.name}', 'lecture')">
-                Оценить лекции
-            </button>
-            <button class="rate-btn outline" onclick="openRatingModal('${sub.id}', '${sub.name}', 'seminar')">
-                Оценить семинары
-            </button>
-        </div>
+    // Lecture Button
+    actionsHTML += `
+        <button class="rate-btn lecture-btn" onclick="openRatingModal('${sub.id}', '${sub.name}', 'lecture')">
+            <i class="fas fa-chalkboard-teacher"></i> Лекции
+        </button>
+    `;
+
+    // Seminar Button
+    actionsHTML += `
+        <button class="rate-btn seminar-btn" onclick="openRatingModal('${sub.id}', '${sub.name}', 'seminar')">
+            <i class="fas fa-users"></i> Семинары
+        </button>
     `;
 
     card.innerHTML = `
-        <h3 class="teacher-name">${sub.name}</h3>
-        <div style="margin-top: auto;">
-            ${actionsHTML}
+        <div class="card-icon">${icon}</div>
+        <div class="card-content">
+            <h3 class="subject-title">${sub.name}</h3>
+            <div class="rate-actions">
+                ${actionsHTML}
+            </div>
         </div>
     `;
 
     return card;
+}
+
+function getSubjectIcon(name) {
+    const lower = name.toLowerCase();
+    if (lower.includes('эконом')) return '📊';
+    if (lower.includes('менеджмент') || lower.includes('управл')) return '💼';
+    if (lower.includes('гостинич')) return '🏨';
+    if (lower.includes('туриз')) return '🌍';
+    if (lower.includes('бизнес')) return '🤝';
+    if (lower.includes('маркетинг')) return '📈';
+    if (lower.includes('истори')) return '📜';
+    if (lower.includes('философ')) return '🤔';
+    if (lower.includes('прав') || lower.includes('юрид')) return '⚖️';
+    if (lower.includes('информа')) return '💻';
+    if (lower.includes('язык') || lower.includes('english')) return '🗣️';
+    if (lower.includes('спорт') || lower.includes('физкульт')) return '⚽';
+    return '📚'; // Default
 }
 
 // Modal Functions

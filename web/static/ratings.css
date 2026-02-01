@@ -16,75 +16,106 @@
 
 /* Match lesson-card exactly */
 .teacher-card {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 20px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+    /* Soft glass shadow */
+    transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    /* Row layout for Icon + Content */
+    align-items: center;
+    gap: 16px;
+    animation: fadeInUp 0.5s ease backwards;
 }
 
 .teacher-card:active {
     transform: scale(0.98);
 }
 
-.teacher-name {
-    margin: 0 0 4px 0;
-    font-size: 1.1rem;
+.card-icon {
+    font-size: 2.5rem;
+    min-width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 18px;
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.subject-title {
+    margin: 0;
+    font-size: 1.15rem;
     color: var(--text-main);
-    font-weight: 600;
-    line-height: 1.3;
-}
-
-.badge {
-    align-self: flex-start;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 12px;
-    margin-bottom: 12px !important;
-}
-
-.teacher-names {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin-bottom: 16px;
-    line-height: 1.5;
-    background: rgba(255, 255, 255, 0.4);
-    padding: 8px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
 }
 
 .rate-actions {
     display: flex;
-    gap: 8px;
-    margin-top: auto;
+    gap: 10px;
+    margin-top: 4px;
 }
 
 .rate-btn {
     flex: 1;
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
     border: none;
-    padding: 8px;
-    border-radius: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
-.rate-btn:active {
-    background: rgba(59, 130, 246, 0.2);
+.lecture-btn {
+    background: #e0f2fe;
+    /* Light Blue */
+    color: #0284c7;
 }
 
-.rate-btn.outline {
-    /* Previously outlined, now soft filled for better touch targets */
-    background: rgba(59, 130, 246, 0.08);
+.lecture-btn:active {
+    background: #bae6fd;
+}
+
+.seminar-btn {
+    background: #f3e8ff;
+    /* Light Purple */
+    color: #9333ea;
+}
+
+.seminar-btn:active {
+    background: #e9d5ff;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Header fix */

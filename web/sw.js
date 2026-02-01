@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v32'; // Bump for simplified ratings cards
+const CACHE_NAME = 'mxt223-schedule-v33'; // Bump for glass/emoji redesign
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
