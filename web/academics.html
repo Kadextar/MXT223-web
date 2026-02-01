@@ -14,17 +14,18 @@
     <meta name="theme-color" content="#eef2f6">
 </head>
 
-<body class="light-mode">
+<body>
     <div class="background-globes">
         <div class="globe globe-1"></div>
         <div class="globe globe-2"></div>
         <div class="globe globe-3"></div>
     </div>
 
-    <header class="header-greeting-container" style="padding: 20px 20px 10px; background: transparent;">
-        <h1 class="greeting-date"
-            style="font-size: 2rem; font-weight: 700; color: var(--text-dark); margin-bottom: 5px;">Учёба</h1>
-        <p class="greeting-text" style="font-size: 1.1rem; color: var(--text-muted-light); font-weight: 500;">
+    <!-- Semantic Header without inline overrides -->
+    <header class="header-greeting-container">
+        <!-- Reusing specific classes that we styled in CSS -->
+        <h1 class="greeting-date">Учёба</h1>
+        <p class="greeting-text">
             Предметы и преподаватели
         </p>
     </header>
