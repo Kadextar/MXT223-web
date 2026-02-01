@@ -1,8 +1,8 @@
 /* Profile Page Styles (Glassmorphism) */
 
 .profile-nav {
-    display: none;
-    /* Hide default nav, using floating one */
+    /* Ensure visible */
+    display: flex;
 }
 
 .profile-container {
