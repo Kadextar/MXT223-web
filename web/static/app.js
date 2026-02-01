@@ -90,9 +90,55 @@ function getWeekDateRange(weekNumber) {
 }
 
 function renderWeekInfo() {
-    dom.currentDate.textContent = formatDate(state.currentDate);
-    if (dom.weekNumber) {
-        dom.weekNumber.textContent = `${state.currentWeek}-я неделя`;
+    const now = new Date(); // Define 'now' here for use in this function
+
+    // --- Header Date Update (Stacked) ---
+    const dayName = now.toLocaleDateString('ru-RU', { weekday: 'long' });
+    const fullDate = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const dayNameCap = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+    
+    // Assuming dom.greetingDate is a new DOM element that needs to be added to the dom object
+    // For now, let's assume it's document.getElementById('greeting-date')
+    const greetingDateEl = document.getElementById('greeting-date');
+    if (greetingDateEl) {
+        // Use HTML to stack them
+        greetingDateEl.innerHTML = `
+            <div class="day-name">${dayNameCap}</div>
+            <div class="date-text">${fullDate}</div>
+        `;
+        greetingDateEl.style.textAlign = 'center'; // Ensure center
+    }
+
+    // --- Week Info Update (Stacked) ---
+    // Helper function to get the start of the week (Monday) for a given date
+    const getWeekStart = (date, weekNum) => {
+        const start = new Date(SEMESTER_START_DATE);
+        start.setDate(start.getDate() + (weekNum - 1) * 7);
+        return start;
+    };
+
+    const weekStart = getWeekStart(now, state.currentWeek);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    const startStr = weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
+    const endStr = weekEnd.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
+
+    /* 
+       We need to find the element that holds the week info text.
+       In the current HTML, it might be just text inside the button or a span.
+       Let's check render logic. Usually it's inside `currentWeekBtn` or similar. 
+       Actually, `renderWeekInfo` in previous code updated `.current-week-label` span. 
+    */
+   
+    const currentWeekLabel = document.querySelector('.current-week-label');
+    if (currentWeekLabel) {
+        currentWeekLabel.innerHTML = `
+            <div class="week-text-container">
+                <span class="week-num">${state.currentWeek}-я неделя</span>
+                <span class="week-dates">${startStr} - ${endStr}</span>
+            </div>
+        `;
     }
 
     // Update week date range
