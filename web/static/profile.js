@@ -232,6 +232,9 @@ async function enableNotifications() {
 
         btn.textContent = 'Подписка...';
 
+        // Force Registration to ensure 'ready' resolves
+        await navigator.serviceWorker.register('/sw.js');
+
         const registration = await navigator.serviceWorker.ready;
         let subscription = await registration.pushManager.getSubscription();
 
