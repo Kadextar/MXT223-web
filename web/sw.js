@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v49'; // Bump for Profile Nav Structure Fix
+const CACHE_NAME = 'mxt223-v50'; // Bump for Profile Icons Fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
