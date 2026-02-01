@@ -518,8 +518,7 @@ async function loadAnnouncement() {
     }
 }
 
-initFloatingNav(); // Call again just in case
-}
+
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {
