@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v39'; // Bump for Title Change
+const CACHE_NAME = 'mxt223-schedule-v40'; // Bump for Dark Mode Default
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

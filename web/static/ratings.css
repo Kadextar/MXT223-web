@@ -1,10 +1,450 @@
-/* Ratings Page Styles - Light Frost */
+/* Ratings Page Styles */
 
-/* Base overrides to match app look */
+/* --- Default (Dark Mode) --- */
+
+.teachers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 20px 20px;
+}
+
+/* Card - Dark Glass */
+.teacher-card {
+    background: rgba(255, 255, 255, 0.05);
+    /* Dark Glass */
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    /* Dark Shadow */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.teacher-card:active {
+    transform: scale(0.98);
+}
+
+.card-icon {
+    font-size: 2rem;
+    min-width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: white;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.subject-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    line-height: 1.3;
+}
+
+/* Buttons - Dark Mode */
+.rate-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.rate-btn {
+    flex: 1;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.lecture-btn {
+    background: rgba(59, 130, 246, 0.2);
+    /* Low opacity Blue */
+    color: #60a5fa;
+    /* Lighter Blue text */
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.seminar-btn {
+    background: rgba(139, 92, 246, 0.2);
+    /* Low opacity Purple */
+    color: #a78bfa;
+    /* Lighter Purple text */
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Modal - Dark Mode */
+.modal-content {
+    background: #0f172a;
+    /* Dark Slate */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 24px;
+}
+
+#modal-teacher-name {
+    color: white;
+}
+
+#modal-subject {
+    color: #94a3b8;
+}
+
+.rating-control-container {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+input[type=number] {
+    background: #0f172a;
+    border-color: #334155;
+    color: white;
+}
+
+.tag-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+}
+
+.tag-btn.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border-color: #3b82f6;
+}
+
+textarea {
+    background: #1e293b;
+    border-color: #334155;
+    color: white;
+}
+
+textarea::placeholder {
+    color: #64748b;
+}
+
+.form-group label {
+    color: #e2e8f0;
+}
+
+/* Info Alert - Dark */
+.info-alert {
+    background: rgba(249, 115, 22, 0.1);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.alert-content strong {
+    color: #fdba74;
+}
+
+.alert-content p {
+    color: #e2e8f0;
+}
+
+/* Close Button */
+.modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+
+/* --- Light Mode Overrides (Light Frost) --- */
+body.light-mode .teacher-card {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+    color: #1e293b;
+}
+
+body.light-mode .card-icon {
+    background: rgba(255, 255, 255, 0.5);
+    color: #1e293b;
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+body.light-mode .subject-title {
+    color: #1e293b;
+}
+
+body.light-mode .lecture-btn {
+    background: #e0f2fe;
+    color: #0284c7;
+    border: none;
+}
+
+body.light-mode .seminar-btn {
+    background: #f3e8ff;
+    color: #9333ea;
+    border: none;
+}
+
+body.light-mode .modal-content {
+    background: #ffffff;
+    border: none;
+    color: #1e293b;
+}
+
+body.light-mode #modal-teacher-name {
+    color: #0f172a;
+}
+
+body.light-mode #modal-subject {
+    color: #64748b;
+}
+
+body.light-mode .rating-control-container {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+body.light-mode input[type=number] {
+    background: white;
+    border-color: #e2e8f0;
+    color: #334155;
+}
+
+body.light-mode .tag-btn {
+    background: white;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+body.light-mode .tag-btn.active {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+body.light-mode textarea {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #334155;
+}
+
+body.light-mode .form-group label {
+    color: #1e293b;
+}
+
+body.light-mode .info-alert {
+    background: #fff7ed;
+    border-color: #ffedd5;
+}
+
+body.light-mode .alert-content strong {
+    color: #ea580c;
+}
+
+body.light-mode .alert-content p {
+    color: #1e293b;
+}
+
+body.light-mode .modal-close {
+    background: rgba(0, 0, 0, 0.05);
+    color: #64748b;
+}
+
+/* Animations kept global */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.tags-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+input[type=range]:focus {
+    outline: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+    background: linear-gradient(to right, #ef4444, #eab308, #22c55e);
+    border-radius: 4px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -8px;
+}
+
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary), #2563eb);
+    color: white;
+    padding: 16px;
+    border-radius: 20px;
+    border: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.rating-display-large {
+    text-align: center;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.rating-emoji {
+    font-size: 3.5rem;
+    line-height: 1;
+}
+
+.rating-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* App layout */
 .app-container {
     padding-bottom: 80px;
-    /* Space for nav */
 }
+
+.header-greeting-container {
+    padding: 20px 20px 10px;
+}
+
+/* Leaderboard Dark/Light */
+/* Leaderboard Dark */
+.leaderboard-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 20px;
+    padding: 16px;
+    margin: 0 20px;
+}
+
+.leader-item {
+    background: rgba(255, 255, 255, 0.05);
+    /* Darker item */
+    color: white;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    /* Flex required for layout */
+    align-items: center;
+    margin-bottom: 8px;
+    /* Spacing */
+}
+
+.leader-name {
+    color: #e2e8f0;
+    flex: 1;
+    font-weight: 500;
+}
+
+.leader-score {
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 50px;
+    padding: 4px 10px;
+    font-weight: 700;
+}
+
+.section-title {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+/* Leaderboard Light Override */
+body.light-mode .leaderboard-section {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+body.light-mode .leader-item {
+    background: white;
+}
+
+body.light-mode .leader-name {
+    color: #334155;
+}
+
+body.light-mode .leader-score {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+body.light-mode .section-title {
+    color: #1e293b;
+}
+
 
 .teachers-grid {
     display: flex;

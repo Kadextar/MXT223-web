@@ -116,47 +116,46 @@
     margin-right: 5px;
 }
 
-/* Tabs - Match .week-nav pill style */
+/* Tabs Default (Dark) */
 .academics-tabs {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: rgba(238, 242, 246, 0.8);
-    backdrop-filter: blur(5px);
-    padding: 10px 20px;
-    margin: 0;
+    background: rgba(5, 5, 16, 0.8);
+    /* Dark BG */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* We will inject structure via JS/HTML that matches .week-nav */
 .tabs-pill {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 20px;
-    padding: 5px;
-    display: flex;
-    gap: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 8px 12px;
-    border-radius: 15px;
-    /* Slightly less than container */
-    border: none;
-    background: transparent;
-    font-weight: 500;
-    color: var(--text-muted-light);
-    font-size: 0.9rem;
-    transition: all 0.2s;
-    cursor: pointer;
+    color: #94a3b8;
 }
 
 .tab-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Light Mode Overrides */
+body.light-mode .academics-tabs {
+    background: rgba(238, 242, 246, 0.8);
+    border-bottom: none;
+}
+
+body.light-mode .tabs-pill {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+body.light-mode .tab-btn {
+    color: var(--text-muted-light);
+}
+
+body.light-mode .tab-btn.active {
     background: white;
     color: var(--primary);
-    /* Blue */
-    font-weight: 600;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
