@@ -207,70 +207,107 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-async function enableNotifications() {
+async function toggleNotifications() {
     const btn = document.getElementById('enable-notifications-btn');
     const msg = document.getElementById('push-message');
 
+    // Check if already subscribed
+    const isSubscribed = btn.classList.contains('subscribed');
+
     try {
         btn.disabled = true;
-        btn.textContent = 'Получение ключей...';
 
-        // 1. Fetch VAPID Key from Server
-        const configResp = await fetch('/api/push/config');
-        if (!configResp.ok) throw new Error('Ошибка получения конфигурации Push');
-        const configData = await configResp.json();
-        const vapidKey = configData.vapid_public_key;
+        if (isSubscribed) {
+            // UNSUBSCRIBE LOGIC
+            btn.textContent = 'Отписка...';
 
-        if (!vapidKey) throw new Error('Сервер не вернул VAPID ключ');
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
 
-        btn.textContent = 'Запрос разрешения...';
+            if (subscription) {
+                // Unsubscribe from browser
+                await subscription.unsubscribe();
 
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            throw new Error('Разрешение отклонено');
-        }
+                // Optional: Tell backend to remove (not strictly required if we handle 410 errors, but good practice)
+                // await fetch('/api/unsubscribe', ...); 
+            }
 
-        btn.textContent = 'Подписка...';
+            btn.classList.remove('subscribed');
+            btn.textContent = 'Включить уведомления';
+            btn.style.background = 'var(--secondary)'; // Reset color
+            showMessage('Уведомления выключены 🔕', 'success', 'push-message');
 
-        // Force Registration to ensure 'ready' resolves
-        await navigator.serviceWorker.register('/sw.js');
+        } else {
+            // SUBSCRIBE LOGIC
+            btn.textContent = 'Получение ключей...';
+            console.log('[Push] Fetching config...');
 
-        const registration = await navigator.serviceWorker.ready;
-        let subscription = await registration.pushManager.getSubscription();
+            // 1. Fetch VAPID Key from Server
+            const configResp = await fetch('/api/push/config');
+            if (!configResp.ok) throw new Error('Ошибка получения конфигурации Push');
+            const configData = await configResp.json();
+            const vapidKey = configData.vapid_public_key;
 
-        if (!subscription) {
-            subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(vapidKey)
+            if (!vapidKey) throw new Error('Сервер не вернул VAPID ключ');
+
+            btn.textContent = 'Запрос разрешения...';
+            console.log('[Push] Requesting permission...');
+
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                throw new Error('Разрешение отклонено');
+            }
+
+            btn.textContent = 'Подписка...';
+            console.log('[Push] Registering SW...');
+
+            // Force Registration to ensure 'ready' resolves
+            await navigator.serviceWorker.register('/sw.js');
+
+            console.log('[Push] Waiting for SW ready...');
+            const registration = await navigator.serviceWorker.ready;
+
+            console.log('[Push] Checking existing subscription...');
+            let subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                console.log('[Push] Creating new subscription...');
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidKey)
+                });
+            }
+
+            console.log('[Push] Sending to backend...');
+            // Send to backend
+            const token = localStorage.getItem('access_token');
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: JSON.stringify(subscription)
             });
+
+            if (!response.ok) throw new Error('Ошибка сервера при подписке');
+
+            const respData = await response.json();
+            if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
+
+            console.log('[Push] Success!');
+            showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
+
+            btn.classList.add('subscribed');
+            btn.textContent = 'Выключить уведомления';
+            btn.style.background = 'var(--accent)';
         }
-
-        // Send to backend
-        const token = localStorage.getItem('access_token');
-        const response = await fetch('/api/subscribe', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : ''
-            },
-            body: JSON.stringify(subscription)
-        });
-
-        if (!response.ok) throw new Error('Ошибка сервера при подписке');
-
-        const respData = await response.json();
-        if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
-
-        showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
-        btn.textContent = 'Уведомления активны';
-        btn.style.background = 'var(--accent)';
 
     } catch (error) {
         console.error('Push error:', error);
         showMessage(`${error.message}`, 'error', 'push-message');
-        // Reset button state
+    } finally {
         btn.disabled = false;
-        btn.textContent = 'Включить уведомления';
     }
 }
 
@@ -287,15 +324,15 @@ async function checkNotificationStatus() {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
         if (subscription) {
-            btn.textContent = 'Уведомления активны';
+            btn.textContent = 'Выключить уведомления';
             btn.style.background = 'var(--accent)';
-            btn.disabled = true;
+            btn.classList.add('subscribed');
         }
     }
 }
 
 // Init Push Logic
-document.getElementById('enable-notifications-btn')?.addEventListener('click', enableNotifications);
+document.getElementById('enable-notifications-btn')?.addEventListener('click', toggleNotifications);
 checkNotificationStatus();
 
 // --- Avatar Logic ---

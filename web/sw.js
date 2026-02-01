@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v55'; // Bump for SW Force Register Fix
+const CACHE_NAME = 'mxt223-v56'; // Bump for SW Notification Toggle
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
