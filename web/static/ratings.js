@@ -125,12 +125,13 @@ window.openRatingModal = function (subjectId, subjectName, type) {
     document.getElementById('selected-lesson-info').style.display = 'none';
 
     // Reset Form
-    selectedRating = null;
+    selectedRating = 50;
     selectedTags = [];
-    ratingInput.value = '';
-    ratingDisplay.textContent = 'Выберите оценку (100-балльная шкала)';
+
+    // Set Default
+    updateRatingVisuals(50);
+
     document.getElementById('comment-input').value = '';
-    document.querySelectorAll('.emoji-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
 
     modal.classList.remove('hidden');
@@ -145,24 +146,59 @@ closeModalBtn.addEventListener('click', closeModal);
 modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
 document.getElementById('back-to-lessons').style.display = 'none';
 
-// Emoji Rating
-document.querySelectorAll('.emoji-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        selectedRating = parseInt(this.dataset.rating);
-        ratingInput.value = selectedRating;
+// Rating Logic (Slider & Input)
+const ratingRange = document.getElementById('rating-range');
+const ratingNumber = document.getElementById('rating-number');
+const ratingVerdict = document.getElementById('rating-verdict');
+const emojiSpan = ratingVerdict.querySelector('.rating-emoji');
+const textSpan = ratingVerdict.querySelector('.rating-text');
 
-        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+function updateRatingVisuals(value) {
+    value = parseInt(value);
+    if (isNaN(value)) value = 0;
 
-        const labels = {
-            20: '20/100 - Плохо 😞',
-            40: '40/100 - Слабо 😐',
-            60: '60/100 - Нормально 🙂',
-            80: '80/100 - Хорошо 😊',
-            100: '100/100 - Отлично! 🤩'
-        };
-        ratingDisplay.textContent = labels[selectedRating];
-    });
+    // Clamp
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+
+    // Update both inputs
+    ratingRange.value = value;
+    ratingNumber.value = value;
+    ratingInput.value = value; // Hidden input for form submission
+    selectedRating = value; // Global var for logic
+
+    // Determine Verdict
+    let emoji = '😐';
+    let text = 'Нормально';
+
+    if (value >= 90) { emoji = '🤩'; text = 'Великолепно!'; }
+    else if (value >= 80) { emoji = '😊'; text = 'Отлично'; }
+    else if (value >= 70) { emoji = '🙂'; text = 'Хорошо'; }
+    else if (value >= 50) { emoji = '😐'; text = 'Нормально'; }
+    else if (value >= 30) { emoji = '😕'; text = 'Так себе'; }
+    else { emoji = '😞'; text = 'Плохо'; }
+
+    // Update DOM only if changed to avoid heavy repaints/animations re-triggering constantly
+    if (emojiSpan.textContent !== emoji) {
+        emojiSpan.textContent = emoji;
+        // Re-trigger animation
+        emojiSpan.style.animation = 'none';
+        emojiSpan.offsetHeight; /* trigger reflow */
+        emojiSpan.style.animation = 'bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    }
+    textSpan.textContent = text;
+}
+
+// Event Listeners
+ratingRange.addEventListener('input', (e) => updateRatingVisuals(e.target.value));
+ratingNumber.addEventListener('input', (e) => updateRatingVisuals(e.target.value));
+
+ratingNumber.addEventListener('blur', function () {
+    // Ensure valid number on blur
+    let val = parseInt(this.value);
+    if (isNaN(val) || val < 0) val = 0;
+    if (val > 100) val = 100;
+    updateRatingVisuals(val);
 });
 
 // Tags

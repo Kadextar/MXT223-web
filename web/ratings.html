@@ -132,15 +132,14 @@
 
                 <div class="form-group">
                     <label>Оценка качества преподавания</label>
-                    <div class="emoji-rating">
-                        <button type="button" class="emoji-btn" data-rating="20">😞</button>
-                        <button type="button" class="emoji-btn" data-rating="40">😐</button>
-                        <button type="button" class="emoji-btn" data-rating="60">🙂</button>
-                        <button type="button" class="emoji-btn" data-rating="80">😊</button>
-                        <button type="button" class="emoji-btn" data-rating="100">🤩</button>
+                    <div class="rating-display-large" id="rating-verdict">
+                        <span class="rating-emoji">😐</span>
+                        <span class="rating-text">Нормально</span>
                     </div>
-                    <div class="rating-value">
-                        <span id="rating-display">Выберите оценку</span>
+
+                    <div class="rating-control-container">
+                        <input type="range" id="rating-range" min="0" max="100" step="1" value="50">
+                        <input type="number" id="rating-number" min="0" max="100" value="50">
                     </div>
                     <input type="hidden" id="rating-input" name="rating" required>
                 </div>

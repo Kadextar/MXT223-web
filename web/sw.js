@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v33'; // Bump for glass/emoji redesign
+const CACHE_NAME = 'mxt223-schedule-v34'; // Bump for rating slider feature
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
