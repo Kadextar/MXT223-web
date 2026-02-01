@@ -311,3 +311,55 @@ document.querySelectorAll('.avatar-option').forEach(img => {
 });
 
 
+// --- Tab Handling ---
+window.switchTab = function (tabName) {
+    // 1. Hide all views
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+    // 2. Remove active class from buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    // 3. Show selected view
+    document.getElementById(`${tabName}-view`).classList.remove('hidden');
+
+    // 4. Activate button (simple match)
+    // Find button with onclick containing the tabName
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => {
+        if (btn.getAttribute('onclick').includes(tabName)) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+// --- Theme Handling ---
+const themeToggle = document.getElementById('theme-toggle');
+
+// 1. Init State
+if (document.body.classList.contains('light-mode')) {
+    themeToggle.checked = true;
+} else {
+    themeToggle.checked = false;
+}
+
+// 2. Toggle Listener
+themeToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        document.body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light');
+    } else {
+        document.body.classList.remove('light-mode');
+        localStorage.setItem('theme', 'dark');
+    }
+});
+
+// Check localStorage on load (handling defaults)
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') {
+    document.body.classList.add('light-mode');
+    themeToggle.checked = true;
+} else {
+    // Default is dark, ensure class is removed if it was accidentally there
+    document.body.classList.remove('light-mode');
+    themeToggle.checked = false;
+}

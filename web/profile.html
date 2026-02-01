@@ -9,8 +9,85 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/academics.css">
     <link rel="stylesheet" href="/static/profile.css">
     <meta name="theme-color" content="#0f172a">
+    <style>
+        /* Profile Specific Tab Tweaks */
+        .academics-tabs {
+            top: 0;
+            position: sticky;
+            z-index: 90;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Light Mode Overrides for Slider */
+        body.light-mode .slider {
+            background-color: #cbd5e1;
+            border: none;
+        }
+
+        body.light-mode input:checked+.slider {
+            background-color: #3b82f6;
+        }
+    </style>
 </head>
 
 <body>
@@ -29,33 +106,112 @@
             </div>
         </header>
 
-        <nav class="profile-nav">
-            <a href="/index.html" class="nav-link">📅 Расписание</a>
-            <a href="/ratings.html" class="nav-link">⭐ Рейтинг</a>
-            <a href="/profile.html" class="nav-link active">👤 Профиль</a>
-        </nav>
+        <!-- New Profile Tabs -->
+        <div class="academics-tabs">
+            <div class="tabs-pill">
+                <button class="tab-btn active" onclick="switchTab('profile')">Профиль</button>
+                <button class="tab-btn" onclick="switchTab('security')">Безопасность</button>
+                <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
+            </div>
+        </div>
 
         <main class="profile-container">
-            <!-- Student Info Card -->
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar-container">
-                        <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar" class="profile-avatar-img">
-                        <button class="edit-avatar-btn" id="edit-avatar-btn">🖊️</button>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="student-name">Загрузка...</h2>
-                        <p class="student-id" id="student-id">ID: ...</p>
-                        <div class="profile-stats"
-                            style="margin-top: 10px; font-size: 0.9em; color: var(--text-muted); display: flex; gap: 15px;">
-                            <span>🗓 С нами с: <b id="join-date">-</b></span>
-                            <span>⭐ Отзывов: <b id="reviews-count">0</b></span>
+
+            <!-- VIEW: PROFILE -->
+            <div id="profile-view" class="tab-content">
+                <!-- Student Info Card -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar-container">
+                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar"
+                                class="profile-avatar-img">
+                            <button class="edit-avatar-btn" id="edit-avatar-btn">🖊️</button>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="student-name">Загрузка...</h2>
+                            <p class="student-id" id="student-id">ID: ...</p>
+                            <div class="profile-stats"
+                                style="margin-top: 10px; font-size: 0.9em; color: var(--text-muted); display: flex; gap: 15px;">
+                                <span>🗓 С нами с: <b id="join-date">-</b></span>
+                                <span>⭐ Отзывов: <b id="reviews-count">0</b></span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Avatar Selection Modal -->
+            <!-- VIEW: SECURITY -->
+            <div id="security-view" class="tab-content hidden">
+                <!-- Password Change Card -->
+                <div class="profile-card">
+                    <h3>🔐 Смена пароля</h3>
+                    <form id="password-form">
+                        <div class="form-group">
+                            <label>Текущий пароль</label>
+                            <input type="password" id="old-password" placeholder="Введите текущий пароль" required
+                                autocomplete="current-password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Новый пароль</label>
+                            <input type="password" id="new-password" placeholder="Введите новый пароль" required
+                                autocomplete="new-password">
+                            <small>Минимум 6 символов</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Подтвердите новый пароль</label>
+                            <input type="password" id="confirm-password" placeholder="Повторите новый пароль" required
+                                autocomplete="new-password">
+                        </div>
+
+                        <button type="submit" class="submit-btn">Изменить пароль</button>
+                    </form>
+
+                    <div id="message" class="message hidden"></div>
+                </div>
+            </div>
+
+            <!-- VIEW: SETTINGS -->
+            <div id="settings-view" class="tab-content hidden">
+
+                <!-- Appearance Card -->
+                <div class="profile-card">
+                    <h3>🎨 Внешний вид</h3>
+                    <div class="setting-row"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                        <div>
+                            <strong style="color: var(--text-main);">Светлая тема</strong>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 4px 0 0;">Переключить на "Light
+                                Frost"</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notifications Card -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>🔔 Уведомления</h3>
+                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о
+                        парах.
+                    </p>
+                    <button class="submit-btn" id="enable-notifications-btn" style="background: var(--secondary);">
+                        Включить уведомления
+                    </button>
+                    <div id="push-message" class="message hidden" style="margin-top: 10px;"></div>
+                </div>
+
+                <!-- Actions Card -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>⚙️ Аккаунт</h3>
+                    <button class="logout-btn" id="logout-btn">🚪 Выйти из аккаунта</button>
+                </div>
+            </div>
+
+            <!-- Avatar Selection Modal (Global) -->
             <div id="avatar-modal" class="modal hidden">
                 <div class="modal-overlay"></div>
                 <div class="modal-content">
@@ -77,56 +233,15 @@
                 </div>
             </div>
 
-            <!-- Password Change Card -->
-            <div class="profile-card">
-                <h3>🔐 Смена пароля</h3>
-                <form id="password-form">
-                    <div class="form-group">
-                        <label>Текущий пароль</label>
-                        <input type="password" id="old-password" placeholder="Введите текущий пароль" required
-                            autocomplete="current-password">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Новый пароль</label>
-                        <input type="password" id="new-password" placeholder="Введите новый пароль" required
-                            autocomplete="new-password">
-                        <small>Минимум 6 символов</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Подтвердите новый пароль</label>
-                        <input type="password" id="confirm-password" placeholder="Повторите новый пароль" required
-                            autocomplete="new-password">
-                    </div>
-
-                    <button type="submit" class="submit-btn">Изменить пароль</button>
-                </form>
-
-                <div id="message" class="message hidden"></div>
-            </div>
-
-            <!-- Notifications Card -->
-            <div class="profile-card">
-                <h3>🔔 Уведомления</h3>
-                <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о парах.
-                </p>
-                <button class="submit-btn" id="enable-notifications-btn" style="background: var(--secondary);">
-                    Включить уведомления
-                </button>
-                <div id="push-message" class="message hidden" style="margin-top: 10px;"></div>
-            </div>
-
-            <!-- Actions Card -->
-            <div class="profile-card">
-                <h3>⚙️ Действия</h3>
-                <button class="logout-btn" id="logout-btn">🚪 Выйти из аккаунта</button>
-            </div>
         </main>
 
-        <footer class="footer">
-            <p>Developed for MXT-223</p>
-        </footer>
+        <br><br><br> <!-- Spacer -->
+
+        <nav class="profile-nav">
+            <a href="/index.html" class="nav-link">📅 Расписание</a>
+            <a href="/ratings.html" class="nav-link">⭐ Рейтинг</a>
+            <a href="/profile.html" class="nav-link active">👤 Профиль</a>
+        </nav>
     </div>
 
     <script src="/static/profile.js"></script>
