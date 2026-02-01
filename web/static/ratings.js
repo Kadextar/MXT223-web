@@ -1,4 +1,5 @@
 import { SUBJECTS_DATA } from './academics.js';
+import './theme_init.js';
 
 // --- Authentication Check ---
 const token = localStorage.getItem('access_token');

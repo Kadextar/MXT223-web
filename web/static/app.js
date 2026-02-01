@@ -1,4 +1,5 @@
 import { SEMESTER_START_DATE, PAIR_TIMES, getLessonsForDay, setScheduleData } from './schedule_data.js';
+import './theme_init.js';
 
 // --- Authentication Check ---
 const AUTHORIZED_STUDENTS = [

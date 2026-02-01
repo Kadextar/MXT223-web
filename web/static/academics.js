@@ -1,4 +1,5 @@
 import { setScheduleData, getUniqueSubjects } from './schedule_data.js';
+import './theme_init.js';
 
 // Init
 async function initAcademics() {

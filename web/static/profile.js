@@ -1,4 +1,5 @@
 // Profile Page JavaScript
+import './theme_init.js';
 
 // Check authentication
 // Check authentication
@@ -425,14 +426,12 @@ themeToggle.addEventListener('change', (e) => {
     }
 });
 
-// Check localStorage on load (handling defaults)
+// Check localStorage on load (handling defaults) - MOVED TO theme_init.js
+// Just sync toggle state
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'light') {
-    document.body.classList.add('light-mode');
     themeToggle.checked = true;
 } else {
-    // Default is dark, ensure class is removed if it was accidentally there
-    document.body.classList.remove('light-mode');
     themeToggle.checked = false;
 }
 

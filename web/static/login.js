@@ -1,4 +1,5 @@
 // Login Page JavaScript
+import './theme_init.js';
 
 const loginForm = document.getElementById('login-form');
 const telegramIdInput = document.getElementById('telegram-id');
