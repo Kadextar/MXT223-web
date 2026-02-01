@@ -171,7 +171,7 @@ function showMessage(text, type) {
 loadStudentInfo();
 
 // --- Push Notifications ---
-const VAPID_PUBLIC_KEY = 'BIXAbfTsvZxslOFPeyLZ-R2mxNla936P_69FI1dNYW4-nE82_TQVQ_0qHxuWKoKJDjwsiPB7ZHZToxJLq3HZE9g';
+// Removed hardcoded VAPID_PUBLIC_KEY to prevent mismatch
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -194,6 +194,16 @@ async function enableNotifications() {
 
     try {
         btn.disabled = true;
+        btn.textContent = 'Получение ключей...';
+
+        // 1. Fetch VAPID Key from Server
+        const configResp = await fetch('/api/push/config');
+        if (!configResp.ok) throw new Error('Ошибка получения конфигурации Push');
+        const configData = await configResp.json();
+        const vapidKey = configData.vapid_public_key;
+
+        if (!vapidKey) throw new Error('Сервер не вернул VAPID ключ');
+
         btn.textContent = 'Запрос разрешения...';
 
         const permission = await Notification.requestPermission();
@@ -209,7 +219,7 @@ async function enableNotifications() {
         if (!subscription) {
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                applicationServerKey: urlBase64ToUint8Array(vapidKey)
             });
         }
 
@@ -226,7 +236,7 @@ async function enableNotifications() {
 
         if (!response.ok) throw new Error('Ошибка сервера при подписке');
 
-        showMessage(msg, 'Уведомления успешно включены! 🎉', 'success');
+        showMessage('Уведомления успешно включены! 🎉', 'success');
         btn.textContent = 'Уведомления активны';
         btn.style.background = 'var(--accent)';
 

@@ -45,6 +45,11 @@ async def subscribe_push(data: dict, authorization: str = Header(None)):
         print(f"Subscribe error: {e}")
         return {"success": False, "error": str(e)}
 
+@router.get("/api/push/config")
+async def get_push_config():
+    """Return VAPID Public Key for frontend"""
+    return {"vapid_public_key": VAPID_PUBLIC_KEY}
+
 @router.post("/api/admin/push")
 async def send_push_notification(data: dict, user = Depends(require_admin)):
     """Send push notification to all subscribers"""
