@@ -303,26 +303,37 @@ async function loadLeaderboard() {
 }
 
 // Tab Logic
+// Tab Logic
 window.initTabs = function () {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const sections = {
-        'evaluation': document.getElementById('evaluation-view'),
-        'leaderboard': document.getElementById('leaderboard-view')
-    };
+    console.log('Initializing Tabs...');
+    // Use ID selectors for safety in case classes vary
+    const btnEval = document.getElementById('tab-btn-eval');
+    const btnRate = document.getElementById('tab-btn-rate');
 
-    tabs.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const target = btn.dataset.tab;
+    const viewEval = document.getElementById('evaluation-view');
+    const viewRate = document.getElementById('leaderboard-view');
 
-            // Update Buttons
-            tabs.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    if (!btnEval || !btnRate || !viewEval || !viewRate) {
+        console.error('Tab elements not found!');
+        return;
+    }
 
-            // Update Views
-            Object.values(sections).forEach(s => s?.classList.add('hidden'));
-            sections[target]?.classList.remove('hidden');
-        });
-    });
+    function setActive(tabName) {
+        if (tabName === 'evaluation') {
+            btnEval.classList.add('active');
+            btnRate.classList.remove('active');
+            viewEval.classList.remove('hidden');
+            viewRate.classList.add('hidden');
+        } else {
+            btnRate.classList.add('active');
+            btnEval.classList.remove('active');
+            viewRate.classList.remove('hidden');
+            viewEval.classList.add('hidden');
+        }
+    }
+
+    btnEval.addEventListener('click', () => setActive('evaluation'));
+    btnRate.addEventListener('click', () => setActive('leaderboard'));
 };
 
 // Init
