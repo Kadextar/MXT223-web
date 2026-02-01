@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v31'; // Bump for header text color fix
+const CACHE_NAME = 'mxt223-schedule-v32'; // Bump for simplified ratings cards
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

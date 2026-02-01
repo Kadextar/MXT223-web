@@ -72,23 +72,8 @@ function createSubjectCard(sub) {
         </div>
     `;
 
-    // Teacher names logic
-    let teacherInfo = '';
-    if (sub.teachers) {
-        if (sub.teachers.lecture && sub.teachers.seminar) {
-            teacherInfo = `<div class="teacher-names">
-                <div><span style="opacity:0.7">Лек:</span> ${sub.teachers.lecture}</div>
-                <div><span style="opacity:0.7">Сем:</span> ${sub.teachers.seminar}</div>
-            </div>`;
-        } else if (sub.teachers.lecture) {
-            teacherInfo = `<div class="teacher-names">Ведет: ${sub.teachers.lecture}</div>`;
-        }
-    }
-
     card.innerHTML = `
         <h3 class="teacher-name">${sub.name}</h3>
-        <span class="badge" style="margin-bottom: 10px; display: inline-block;">${sub.type}</span>
-        ${teacherInfo}
         <div style="margin-top: auto;">
             ${actionsHTML}
         </div>
