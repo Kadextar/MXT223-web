@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v56'; // Bump for SW Notification Toggle
+const CACHE_NAME = 'mxt223-v57'; // Bump: Removed FontAwesome to fix Install Hang
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -6,8 +6,7 @@ const ASSETS_TO_CACHE = [
     '/static/app.js',
     '/static/schedule_data.js',
     '/manifest.json',
-    'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap',
-    'https://kit.fontawesome.com/a076d05399.js',
+    'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap'
 ];
 
 // Install Event
