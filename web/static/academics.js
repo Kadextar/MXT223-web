@@ -2,6 +2,8 @@ import { setScheduleData, getUniqueSubjects } from './schedule_data.js';
 
 // Init
 async function initAcademics() {
+    if (!document.getElementById('subjects-list')) return; // Guard: Only run on academics page
+
     // Check Auth
     const token = localStorage.getItem('access_token');
     if (!token) {

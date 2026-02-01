@@ -221,64 +221,49 @@ document.querySelectorAll('.tag-btn').forEach(btn => {
 });
 
 // Submit
-// Data to send
-const reviewData = {
-    subject_name: currentSubject, // NOTE: this variable holds ID or Name? loadContent passes ID & Name. 
-    // Looking at openRatingModal: currentSubject = subjectId. 
-    // But backend expects Name. 
-    // Let's fix this. In createSubjectCard, we pass (sub.id, sub.name).
-    // currentSubject is assigned sub.id.
-    // We need the Name.
-    // Let's grab name from DOM or store it.
-    subject_type: currentType,
-    rating: selectedRating,
-    tags: selectedTags,
-    comment: document.getElementById('comment-input').value,
-    date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
-};
-
-// Helper: We stored name in the modal title? 
-// Ideally we should store currentSubjectName in a global var.
-// Let's fix openRatingModal to store name too (it does: name is passed).
-// But we previously only stored currentSubject=subjectId.
-// Let's update reviewData to use the textContent of the modal header as fallback or modify openRatingModal.
-// MODIFICATION: `currentSubjectName` variable will be added implicitly via the larger replacement.
-
-const token = localStorage.getItem('access_token');
-
-try {
-    const response = await fetch('/api/ratings', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            subject_name: document.getElementById('modal-teacher-name').textContent, // Using displayed name
-            subject_type: currentType,
-            rating: selectedRating,
-            tags: selectedTags,
-            comment: document.getElementById('comment-input').value,
-            date: new Date().toISOString().split('T')[0]
-        })
-    });
-
-    if (response.ok) {
-        // Save to LocalStorage to prevent re-voting today
-        const votedKey = `voted_${currentSubject}_${currentType}_${new Date().toISOString().split('T')[0]}`;
-        localStorage.setItem(votedKey, 'true');
-
-        alert('✅ Ваш голос принят! Спасибо.');
-        closeModal();
-        // Refresh Leaderboard
-        loadLeaderboard();
-    } else {
-        alert('❌ Ошибка при отправке. Возможно, вы уже голосовали сегодня?');
+// Submit
+ratingForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!selectedRating) {
+        alert('Пожалуйста, выберите оценку');
+        return;
     }
-} catch (error) {
-    console.error('Error:', error);
-    alert('Ошибка сети.');
-}
+
+    const token = localStorage.getItem('access_token');
+
+    try {
+        const response = await fetch('/api/ratings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                subject_name: document.getElementById('modal-teacher-name').textContent,
+                subject_type: currentType,
+                rating: selectedRating,
+                tags: selectedTags,
+                comment: document.getElementById('comment-input').value,
+                date: new Date().toISOString().split('T')[0]
+            })
+        });
+
+        if (response.ok) {
+            // Save to LocalStorage to prevent re-voting today
+            const votedKey = `voted_${currentSubject}_${currentType}_${new Date().toISOString().split('T')[0]}`;
+            localStorage.setItem(votedKey, 'true');
+
+            alert('✅ Ваш голос принят! Спасибо.');
+            closeModal();
+            // Refresh Leaderboard
+            loadLeaderboard();
+        } else {
+            alert('❌ Ошибка при отправке. Возможно, вы уже голосовали сегодня?');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка сети.');
+    }
 });
 
 // Leaderboard Logic
