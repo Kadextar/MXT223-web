@@ -163,14 +163,26 @@ function renderSchedule() {
     const container = dom.scheduleContainer;
     container.innerHTML = '';
 
-    const lessons = getLessonsForDay(state.selectedDay, state.currentWeek);
-
-    if (lessons.length === 0) {
+    // If it's a weekend (or no day selected)
+    if (state.selectedDay === 'weekend') {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">😌</div>
                 <p>В этот день занятий нет</p>
                 <p class="subtitle">Отдыхайте!</p>
+            </div>
+        `;
+        return;
+    }
+
+    const lessons = getLessonsForDay(state.selectedDay, state.currentWeek);
+
+    if (lessons.length === 0) {
+        // Fallback for weekdays with no classes (though rare)
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📅</div>
+                <p>В этот день занятий нет</p>
             </div>
         `;
         return;
@@ -380,9 +392,10 @@ async function init() {
     const now = new Date();
     state.currentWeek = getWeekNumber(now);
 
+    // --- Weekend Logic Fix ---
     let dayIdx = now.getDay();
     if (dayIdx === 0 || dayIdx === 6) {
-        state.selectedDay = 'monday';
+        state.selectedDay = 'weekend'; // Special state for Sat/Sun
     } else {
         state.selectedDay = DAYS_MAP[dayIdx];
     }
