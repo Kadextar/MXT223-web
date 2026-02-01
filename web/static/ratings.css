@@ -59,26 +59,93 @@
 }
 
 /* Buttons - Dark Mode */
+/* Limit Button Width on Desktop */
 .rate-actions {
     display: flex;
     gap: 8px;
     margin-top: 4px;
+    /* Prevent stretching on huge screens */
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .rate-actions {
+        width: auto;
+        min-width: 300px;
+        max-width: 400px;
+    }
 }
 
 .rate-btn {
     flex: 1;
     border: none;
-    padding: 8px 12px;
+    padding: 10px 14px;
+    /* More padding */
     border-radius: 12px;
-    font-weight: 500;
-    font-size: 0.85rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: opacity 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     white-space: nowrap;
+}
+
+/* ... existing rate-btn colors ... */
+
+/* Info Alert - Dark Fix */
+.info-alert {
+    background: rgba(255, 255, 255, 0.05);
+    /* Transparent Dark */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.alert-content strong {
+    color: white;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.alert-content p {
+    color: #94a3b8;
+    /* Muted text */
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Close Button - More Visible */
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 20;
+    /* Ensure on top */
+    transition: background 0.2s;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .lecture-btn {
