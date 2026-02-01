@@ -8,10 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/ratings.css">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#eef2f6">
 </head>
 
 <body class="light-mode">
@@ -36,14 +37,14 @@
                 <!-- <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
                     <a href="/" class="back-link">← Расписание</a>
                 </div> -->
-                <h1>Оценка занятий</h1>
-                <p class="subtitle">Анонимная оценка качества обучения</p>
+                <h1 style="color: #1e293b !important;">Оценка занятий</h1>
+                <p class="subtitle" style="color: #64748b !important;">Анонимная оценка качества обучения</p>
             </div>
         </header>
 
         <main class="main-content">
             <!-- Loading State -->
-            <div id="loading" class="loading hidden">
+            <div id="loading" class="loading hidden" style="display: none !important;">
                 <div class="spinner"></div>
                 <p>Загрузка предметов...</p>
             </div>
@@ -54,7 +55,7 @@
             </div>
 
             <!-- Empty State -->
-            <div id="empty-state" class="empty-state hidden">
+            <div id="empty-state" class="empty-state hidden" style="display: none !important;">
                 <p>📚 Все предметы изучены</p>
             </div>
         </main>
