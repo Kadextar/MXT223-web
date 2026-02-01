@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v50'; // Bump for Profile Icons Fix
+const CACHE_NAME = 'mxt223-v51'; // Bump for Password Fix & Eye Icon
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

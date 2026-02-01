@@ -139,9 +139,17 @@ async def change_password(request: ChangePasswordRequest, authorization: str = H
     
     try:
         from utils.auth import verify_password, hash_password, is_password_hashed
+        from utils.jwt import verify_token
         
-        # Extract telegram_id from Bearer token
-        telegram_id = authorization.replace("Bearer ", "")
+        # Extract token
+        token = authorization.replace("Bearer ", "")
+        
+        # Verify and decode token
+        payload = verify_token(token, "access")
+        if not payload:
+             raise HTTPException(status_code=401, detail="Invalid token")
+             
+        telegram_id = payload.get("sub")
         
         # Get student with current password
         check_query = "SELECT id, password FROM students WHERE telegram_id = :telegram_id"

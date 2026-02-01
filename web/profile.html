@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/academics.css?v=48">
-    <link rel="stylesheet" href="/static/profile.css?v=48">
+    <link rel="stylesheet" href="/static/profile.css?v=51">
     <meta name="theme-color" content="#0f172a">
     <style>
         /* Profile Specific Tab Tweaks */
@@ -148,21 +148,33 @@
                     <form id="password-form">
                         <div class="form-group">
                             <label>Текущий пароль</label>
-                            <input type="password" id="old-password" placeholder="Введите текущий пароль" required
-                                autocomplete="current-password">
+                            <div class="password-wrapper">
+                                <input type="password" id="old-password" placeholder="Введите текущий пароль" required
+                                    autocomplete="current-password">
+                                <i class="fas fa-eye toggle-password"
+                                    onclick="togglePassword('old-password', this)"></i>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label>Новый пароль</label>
-                            <input type="password" id="new-password" placeholder="Введите новый пароль" required
-                                autocomplete="new-password">
+                            <div class="password-wrapper">
+                                <input type="password" id="new-password" placeholder="Введите новый пароль" required
+                                    autocomplete="new-password">
+                                <i class="fas fa-eye toggle-password"
+                                    onclick="togglePassword('new-password', this)"></i>
+                            </div>
                             <small>Минимум 6 символов</small>
                         </div>
 
                         <div class="form-group">
                             <label>Подтвердите новый пароль</label>
-                            <input type="password" id="confirm-password" placeholder="Повторите новый пароль" required
-                                autocomplete="new-password">
+                            <div class="password-wrapper">
+                                <input type="password" id="confirm-password" placeholder="Повторите новый пароль"
+                                    required autocomplete="new-password">
+                                <i class="fas fa-eye toggle-password"
+                                    onclick="togglePassword('confirm-password', this)"></i>
+                            </div>
                         </div>
 
                         <button type="submit" class="submit-btn">Изменить пароль</button>

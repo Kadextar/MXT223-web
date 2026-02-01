@@ -363,3 +363,19 @@ if (savedTheme === 'light') {
     document.body.classList.remove('light-mode');
     themeToggle.checked = false;
 }
+
+// Global function for password toggle
+window.togglePassword = function (inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+        icon.style.color = 'var(--primary)';
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+        icon.style.color = ''; // reset to default
+    }
+}
