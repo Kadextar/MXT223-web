@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v53'; // Bump for Push Error UI Fix
+const CACHE_NAME = 'mxt223-v54'; // Bump for SW Registration Fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

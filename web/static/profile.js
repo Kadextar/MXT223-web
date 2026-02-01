@@ -178,8 +178,16 @@ function showMessage(text, type, elementId = 'message') {
 }
 
 // Initialize
-// Initialize
 loadStudentInfo();
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW Registered:', reg.scope))
+            .catch(err => console.error('SW Registration failed:', err));
+    });
+}
 
 // --- Push Notifications ---
 // Removed hardcoded VAPID_PUBLIC_KEY to prevent mismatch
@@ -246,6 +254,9 @@ async function enableNotifications() {
         });
 
         if (!response.ok) throw new Error('Ошибка сервера при подписке');
+
+        const respData = await response.json();
+        if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
 
         showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
         btn.textContent = 'Уведомления активны';
