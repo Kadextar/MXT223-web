@@ -36,55 +36,9 @@
         };
     </script>
     <style>
-        /* Light Frost Schedule Overrides */
-        body.light-mode {
-            background: #eef2f6;
-            color: #1e293b;
-        }
-
-        .header-greeting-container {
-            padding: 20px 20px 10px;
-            background: transparent;
-        }
-
-        .greeting-date {
-            font-size: 2rem;
-            font-weight: 700;
-            line-height: 1.2;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-
-        .greeting-text {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            /* Use global muted (white-ish) */
-            font-weight: 500;
-        }
-
-        /* Hide old header */
+        /* Only Keep critical page-specifics if needed, removing theme overrides */
         .headers-container {
             display: none;
-        }
-
-        /* Week Navigation - Glass Pill */
-        .week-nav {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
-            margin: 10px 20px 20px;
-            padding: 5px;
-        }
-
-        .week-btn {
-            color: var(--text-muted-light);
-        }
-
-        .week-btn.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
