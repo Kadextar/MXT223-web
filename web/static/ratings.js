@@ -142,4 +142,108 @@ window.openRatingModal = function (subjectId, subjectName, type) {
     modal.classList.remove('hidden');
 }
 
-// ... rest of file (closeModal, event listeners etc.)
+function closeModal() {
+    modal.classList.add('hidden');
+    currentSubject = null;
+}
+
+closeModalBtn.addEventListener('click', closeModal);
+modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+document.getElementById('back-to-lessons').style.display = 'none';
+
+// Rating Logic (Slider & Input)
+const ratingRange = document.getElementById('rating-range');
+const ratingNumber = document.getElementById('rating-number');
+const ratingVerdict = document.getElementById('rating-verdict');
+const emojiSpan = ratingVerdict.querySelector('.rating-emoji');
+const textSpan = ratingVerdict.querySelector('.rating-text');
+
+function updateRatingVisuals(value) {
+    value = parseInt(value);
+    if (isNaN(value)) value = 0;
+
+    // Clamp
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+
+    // Update both inputs
+    ratingRange.value = value;
+    ratingNumber.value = value;
+    ratingInput.value = value; // Hidden input for form submission
+    selectedRating = value; // Global var for logic
+
+    // Determine Verdict
+    let emoji = '😐';
+    let text = 'Нормально';
+
+    if (value >= 90) { emoji = '🤩'; text = 'Великолепно!'; }
+    else if (value >= 80) { emoji = '😊'; text = 'Отлично'; }
+    else if (value >= 70) { emoji = '🙂'; text = 'Хорошо'; }
+    else if (value >= 50) { emoji = '😐'; text = 'Нормально'; }
+    else if (value >= 30) { emoji = '😕'; text = 'Так себе'; }
+    else { emoji = '😞'; text = 'Плохо'; }
+
+    // Update DOM only if changed to avoid heavy repaints/animations re-triggering constantly
+    if (emojiSpan.textContent !== emoji) {
+        emojiSpan.textContent = emoji;
+        // Re-trigger animation
+        emojiSpan.style.animation = 'none';
+        emojiSpan.offsetHeight; /* trigger reflow */
+        emojiSpan.style.animation = 'bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    }
+    textSpan.textContent = text;
+}
+
+// Event Listeners
+ratingRange.addEventListener('input', (e) => updateRatingVisuals(e.target.value));
+ratingNumber.addEventListener('input', (e) => updateRatingVisuals(e.target.value));
+
+ratingNumber.addEventListener('blur', function () {
+    // Ensure valid number on blur
+    let val = parseInt(this.value);
+    if (isNaN(val) || val < 0) val = 0;
+    if (val > 100) val = 100;
+    updateRatingVisuals(val);
+});
+
+// Tags
+document.querySelectorAll('.tag-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const tag = this.dataset.tag;
+        if (selectedTags.includes(tag)) {
+            selectedTags = selectedTags.filter(t => t !== tag);
+            this.classList.remove('active');
+        } else {
+            selectedTags.push(tag);
+            this.classList.add('active');
+        }
+    });
+});
+
+// Submit
+ratingForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!selectedRating) {
+        alert('Пожалуйста, выберите оценку');
+        return;
+    }
+
+    const review = {
+        subjectId: currentSubject,
+        type: currentType,
+        rating: selectedRating,
+        tags: selectedTags,
+        comment: document.getElementById('comment-input').value,
+        date: new Date().toISOString()
+    };
+
+    const reviews = JSON.parse(localStorage.getItem('my_reviews') || '[]');
+    reviews.push(review);
+    localStorage.setItem('my_reviews', JSON.stringify(reviews));
+
+    alert('✅ Ваш отзыв сохранен! Он анонимен.');
+    closeModal();
+});
+
+// Init
+loadContent();
