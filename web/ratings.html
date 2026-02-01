@@ -9,10 +9,33 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/ratings.css">
+    <link rel="stylesheet" href="/static/styles.css?v=30">
+    <link rel="stylesheet" href="/static/ratings.css?v=30">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#eef2f6">
+    <style>
+        /* Nuclear Option: Force Styles Inline to bypass cache issues */
+        .header h1 {
+            color: #1e293b !important;
+        }
+
+        .header .subtitle {
+            color: #64748b !important;
+        }
+
+        #loading.hidden,
+        #empty-state.hidden {
+            display: none !important;
+        }
+
+        .profile-nav .nav-link {
+            color: #94a3b8 !important;
+        }
+
+        .profile-nav .nav-link.active {
+            color: #3b82f6 !important;
+        }
+    </style>
 </head>
 
 <body class="light-mode">
@@ -37,14 +60,14 @@
                 <!-- <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
                     <a href="/" class="back-link">← Расписание</a>
                 </div> -->
-                <h1 style="color: #1e293b !important;">Оценка занятий</h1>
-                <p class="subtitle" style="color: #64748b !important;">Анонимная оценка качества обучения</p>
+                <h1>Оценка занятий</h1>
+                <p class="subtitle">Анонимная оценка качества обучения</p>
             </div>
         </header>
 
         <main class="main-content">
             <!-- Loading State -->
-            <div id="loading" class="loading hidden" style="display: none !important;">
+            <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
                 <p>Загрузка предметов...</p>
             </div>
@@ -55,7 +78,7 @@
             </div>
 
             <!-- Empty State -->
-            <div id="empty-state" class="empty-state hidden" style="display: none !important;">
+            <div id="empty-state" class="empty-state hidden">
                 <p>📚 Все предметы изучены</p>
             </div>
         </main>
@@ -143,7 +166,7 @@
         </div>
     </div>
 
-    <script type="module" src="/static/ratings.js"></script>
+    <script type="module" src="/static/ratings.js?v=30"></script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v29'; // Bump for ratings recovery fix
+const CACHE_NAME = 'mxt223-schedule-v30'; // Bump to aggressive cache bust
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
