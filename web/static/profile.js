@@ -156,13 +156,24 @@ document.getElementById('logout-btn').addEventListener('click', (e) => {
 });
 
 // Show message helper
-function showMessage(text, type) {
-    const messageEl = document.getElementById('message');
+function showMessage(text, type, elementId = 'message') {
+    const messageEl = document.getElementById(elementId);
+    if (!messageEl) {
+        console.warn(`Message element #${elementId} not found, using alert:`, text);
+        alert(text);
+        return;
+    }
+
+    // Ensure it's visible if it was hidden via display:none logic or class
+    messageEl.classList.remove('hidden');
+    messageEl.style.display = 'block';
+
     messageEl.textContent = text;
     messageEl.className = `message ${type}`;
 
     setTimeout(() => {
         messageEl.classList.add('hidden');
+        messageEl.style.display = 'none';
     }, 5000);
 }
 
@@ -236,13 +247,13 @@ async function enableNotifications() {
 
         if (!response.ok) throw new Error('Ошибка сервера при подписке');
 
-        showMessage('Уведомления успешно включены! 🎉', 'success');
+        showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
         btn.textContent = 'Уведомления активны';
         btn.style.background = 'var(--accent)';
 
     } catch (error) {
         console.error('Push error:', error);
-        showMessage(`${error.message}`, 'error');
+        showMessage(`${error.message}`, 'error', 'push-message');
         // Reset button state
         btn.disabled = false;
         btn.textContent = 'Включить уведомления';
