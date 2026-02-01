@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v46'; // Bump for Ratings UI Polish
+const CACHE_NAME = 'mxt223-v47'; // Bump for Profile Tabs Fix
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
