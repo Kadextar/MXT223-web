@@ -274,27 +274,40 @@
 }
 
 /* Light Mode Overrides for Profile Specifics */
+/* Profile Info Override - Dark Text, No Gradient for Readability */
 body.light-mode .profile-info h2 {
-    background: linear-gradient(to right, #0f172a, #334155);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: none;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: initial;
+    color: #0f172a;
     text-shadow: none;
+}
+
+body.light-mode .profile-info p {
+    color: #64748b;
 }
 
 body.light-mode .stat-value {
     color: #0f172a;
 }
 
-body.light-mode .profile-card {
-    background: #ffffff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
+body.light-mode .stat-label {
+    color: #64748b;
 }
 
+/* Light Mode Inputs */
 body.light-mode .form-group input {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #1e293b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+body.light-mode .form-group label {
+    color: #475569;
+}
+
+body.light-mode .toggle-password {
+    color: #94a3b8;
 }
 
 body.light-mode .form-group input:focus {
@@ -306,8 +319,9 @@ body.light-mode .form-group input:focus {
 /* New "Beautiful" Button Styles */
 /* Calendar Button: Soft Emerald Gradient */
 #export-calendar-btn {
-    background: linear-gradient(135deg, #10b981, #059669);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #34d399, #10b981) !important;
+    /* Soft Emerald */
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 #export-calendar-btn:hover {
@@ -317,8 +331,9 @@ body.light-mode .form-group input:focus {
 
 /* Notification Button: Soft Violet/Indigo Gradient */
 #enable-notifications-btn {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    background: linear-gradient(135deg, #818cf8, #6366f1) !important;
+    /* Soft Indigo */
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 #enable-notifications-btn:hover {
