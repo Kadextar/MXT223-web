@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v35'; // Bump for modal visual polish
+const CACHE_NAME = 'mxt223-schedule-v36'; // Bump for Info Alert update
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

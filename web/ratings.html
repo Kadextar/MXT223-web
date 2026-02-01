@@ -116,14 +116,18 @@
 
             <!-- Lesson Selection Step -->
             <div id="lesson-selection" class="lesson-selection">
-                <p class="info-text">Выберите занятие для оценки:</p>
+                <p id="select-lesson-label" class="info-text">Выберите занятие для оценки:</p>
                 <div id="lessons-list" class="lessons-list">
                     <!-- Lessons will be loaded here -->
                 </div>
-                <p id="no-lessons-msg" class="no-lessons hidden">
-                    ⏰ У этого преподавателя сегодня нет завершённых занятий.<br>
-                    Вы можете оценить только сегодняшние занятия после их окончания.
-                </p>
+
+                <div id="no-lessons-alert" class="info-alert hidden">
+                    <div class="alert-icon">⏳</div>
+                    <div class="alert-content">
+                        <strong>Пока нечего оценивать</strong>
+                        <p>Сегодня завершённых занятий нет. Возвращайтесь после пары!</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Rating Form (hidden initially) -->

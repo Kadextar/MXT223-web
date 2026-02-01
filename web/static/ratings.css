@@ -342,3 +342,60 @@ textarea:focus {
     margin-bottom: 24px;
     font-size: 1rem;
 }
+
+/* Info Alert */
+.info-alert {
+    background: #fff7ed;
+    /* Soft Orange */
+    border: 1px solid #ffedd5;
+    color: #9a3412;
+    padding: 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.alert-icon {
+    font-size: 1.8rem;
+    background: white;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-content strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 1rem;
+    color: #ea580c;
+}
+
+.alert-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.85;
+    line-height: 1.4;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
