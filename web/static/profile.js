@@ -451,3 +451,15 @@ window.togglePassword = function (inputId, icon) {
         icon.style.color = ''; // reset to default
     }
 }
+
+// --- Calendar Export ---
+import { generateICS } from './calendar_export.js';
+document.getElementById('export-calendar-btn')?.addEventListener('click', () => {
+    try {
+        generateICS();
+        showMessage('Расписание скачано! 📅', 'success');
+    } catch (e) {
+        console.error(e);
+        showMessage('Ошибка при экспорте', 'error');
+    }
+});
