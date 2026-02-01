@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-schedule-v37'; // Bump for Backend Integration & Leaderboard
+const CACHE_NAME = 'mxt223-schedule-v38'; // Bump for Ratings Tabs Refactor
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',

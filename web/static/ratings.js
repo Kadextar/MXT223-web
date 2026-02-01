@@ -301,6 +301,30 @@ async function loadLeaderboard() {
     }
 }
 
+// Tab Logic
+window.initTabs = function () {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const sections = {
+        'evaluation': document.getElementById('evaluation-view'),
+        'leaderboard': document.getElementById('leaderboard-view')
+    };
+
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.tab;
+
+            // Update Buttons
+            tabs.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update Views
+            Object.values(sections).forEach(s => s?.classList.add('hidden'));
+            sections[target]?.classList.remove('hidden');
+        });
+    });
+};
+
 // Init
 loadContent();
 loadLeaderboard();
+initTabs();

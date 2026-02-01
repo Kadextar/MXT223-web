@@ -11,10 +11,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css?v=37">
     <link rel="stylesheet" href="/static/ratings.css?v=37">
+    <link rel="stylesheet" href="/static/academics.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#eef2f6">
     <style>
-        /* Nuclear Option: Force Styles Inline to bypass cache issues */
+        /* Nuclear Option: Force Styles Inline */
         .header h1 {
             color: #1e293b !important;
         }
@@ -24,7 +25,8 @@
         }
 
         #loading.hidden,
-        #empty-state.hidden {
+        #empty-state.hidden,
+        .tab-content.hidden {
             display: none !important;
         }
 
@@ -34,6 +36,19 @@
 
         .profile-nav .nav-link.active {
             color: #3b82f6 !important;
+        }
+
+        /* Specific Tab Overrides */
+        .academics-tabs {
+            top: 0;
+            position: sticky;
+            z-index: 100;
+            margin-bottom: 10px;
+        }
+
+        #evaluation-view,
+        #leaderboard-view {
+            padding-bottom: 80px;
         }
     </style>
 </head>
@@ -45,73 +60,63 @@
         <div class="globe globe-3"></div>
     </div>
 
-    <!-- Announcement Banner -->
-    <div id="announcement-banner" class="announcement-banner hidden">
-        <div class="announcement-content">
-            <span class="announcement-icon">📣</span>
-            <span class="announcement-text" id="announcement-text"></span>
-            <button id="close-banner-btn" class="close-banner-btn" aria-label="Закрыть">✕</button>
-        </div>
-    </div>
-
     <div class="app-container">
         <header class="header">
             <div class="header-content">
-                <!-- <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
-                    <a href="/" class="back-link">← Расписание</a>
-                </div> -->
                 <h1
                     style="color: #1e293b !important; -webkit-text-fill-color: initial !important; background: none !important;">
-                    Оценка занятий</h1>
+                    Оценка занятий
+                </h1>
                 <p class="subtitle"
                     style="color: #64748b !important; -webkit-text-fill-color: initial !important; background: none !important;">
-                    Анонимная оценка качества обучения</p>
+                    Анонимная оценка качества обучения
+                </p>
             </div>
         </header>
 
-        <main class="main-content">
+        <!-- Tabs -->
+        <div class="academics-tabs">
+            <div class="tabs-pill">
+                <button class="tab-btn active" id="tab-btn-eval" data-tab="evaluation">Оценка</button>
+                <button class="tab-btn" id="tab-btn-rate" data-tab="leaderboard">Рейтинг</button>
+            </div>
+        </div>
+
+        <main class="main-content" style="padding-top: 0;">
             <!-- Loading State -->
             <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
                 <p>Загрузка предметов...</p>
             </div>
 
-            <!-- Leaderboard Section -->
-            <div class="leaderboard-section">
-                <h2 class="section-title">🏆 Топ-3 Предмета</h2>
-                <div id="leaderboard-list" class="leaderboard-list">
-                    <!-- Loaded via JS -->
-                    <div class="leader-empty">Загрузка рейтинга...</div>
+            <!-- TAB 1: Evaluation (List of Subjects) -->
+            <section id="evaluation-view" class="tab-content">
+                <div id="teachers-container" class="teachers-grid">
+                    <!-- Items will be loaded here -->
                 </div>
-            </div>
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state hidden">
+                    <p>📚 Все предметы изучены</p>
+                </div>
+            </section>
 
-            <!-- Items List -->
-            <div id="teachers-container" class="teachers-grid">
-                <!-- Items will be loaded here -->
-            </div>
-
-            <!-- Empty State -->
-            <div id="empty-state" class="empty-state hidden">
-                <p>📚 Все предметы изучены</p>
-            </div>
-        </main>
+            <!-- TAB 2: Leaderboard -->
+            <section id="leaderboard-view" class="tab-content hidden">
+                <div class="leaderboard-section" style="margin-top: 10px;">
+                    <div id="leaderboard-list" class="leaderboard-list">
+                        <div class="leader-empty">Загрузка рейтинга...</div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
     <!-- Bottom Nav -->
     <nav class="profile-nav">
-        <a href="/" class="nav-link" title="Меню">
-            <i class="fas fa-th-large"></i>
-        </a>
-        <a href="/academics.html" class="nav-link" title="Предметы">
-            <i class="fas fa-book"></i>
-        </a>
-        <a href="/ratings.html" class="nav-link active" title="Рейтинг">
-            <i class="fas fa-star"></i>
-        </a>
-        <a href="/profile.html" class="nav-link" title="Профиль">
-            <i class="fas fa-user"></i>
-        </a>
+        <a href="/" class="nav-link" title="Меню"><i class="fas fa-th-large"></i></a>
+        <a href="/academics.html" class="nav-link" title="Предметы"><i class="fas fa-book"></i></a>
+        <a href="/ratings.html" class="nav-link active" title="Рейтинг"><i class="fas fa-star"></i></a>
+        <a href="/profile.html" class="nav-link" title="Профиль"><i class="fas fa-user"></i></a>
     </nav>
 
     <!-- Rating Modal -->
