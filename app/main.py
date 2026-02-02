@@ -29,11 +29,16 @@ async def startup():
     await database.connect()
     try:
         await init_db()
+        # Start Scheduler
+        from app.scheduler import start_scheduler
+        start_scheduler()
     except Exception as e:
-        print(f"CRITICAL: init_db failed: {e}")
+        print(f"CRITICAL: startup failed: {e}")
 
 @app.on_event("shutdown")
 async def shutdown():
+    from app.scheduler import shutdown_scheduler
+    await shutdown_scheduler()
     await database.disconnect()
 
 # Include Routers

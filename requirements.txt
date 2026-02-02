@@ -12,4 +12,5 @@ aiosqlite
 pytest
 pytest-asyncio
 httpx
-sentry-sdk
+sentry-sdkapscheduler
+pytz
