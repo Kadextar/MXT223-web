@@ -263,6 +263,12 @@ function deleteNote() {
     showMessage('Заметка удалена', 'info');
 }
 
+// Expose to window for HTML onclick events
+window.openNoteModal = openNoteModal;
+window.closeNoteModal = closeNoteModal;
+window.saveNote = saveNote;
+window.deleteNote = deleteNote;
+
 // Bind Note Modal Events
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('save-note-btn')?.addEventListener('click', saveNote);
