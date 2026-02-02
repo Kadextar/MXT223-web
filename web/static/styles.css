@@ -1395,3 +1395,52 @@ body.light-mode .time-badge::before {
     margin: 0 !important;
     border: none !important;
 }
+/* Note Styles */
+.lesson-note {
+    background: rgba(255, 230, 0, 0.15); /* Soft yellow highlight */
+    color: #fbbf24;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 8px 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.lesson-note i {
+    font-size: 1rem;
+}
+
+body.light-mode .lesson-note {
+    background: #fefce8;
+    color: #d97706;
+    border-color: #fef08a;
+}
+
+.icon-btn.note-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.icon-btn.note-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.icon-btn.note-btn.active {
+    color: #fbbf24; /* Active note color */
+    background: rgba(251, 191, 36, 0.1);
+}
+

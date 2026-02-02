@@ -202,9 +202,82 @@ function initFloatingNav() {
     // We keep days-tabs for schedule switching, but might want to style it differently
 }
 
+// --- Note Logic ---
+let currentNoteSubject = null;
+
+function openNoteModal(subject) {
+    currentNoteSubject = subject;
+    const modal = document.getElementById('note-modal');
+    const input = document.getElementById('note-input');
+    const title = document.getElementById('note-modal-title');
+    const deleteBtn = document.getElementById('delete-note-btn');
+
+    // Load existing note
+    const notes = JSON.parse(localStorage.getItem('lesson_notes') || '{}');
+    input.value = notes[subject] || '';
+
+    title.textContent = `Заметка: ${subject}`;
+
+    if (notes[subject]) {
+        deleteBtn.style.display = 'block';
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+
+    modal.classList.remove('hidden');
+    input.focus();
+}
+
+function closeNoteModal() {
+    document.getElementById('note-modal').classList.add('hidden');
+    currentNoteSubject = null;
+}
+
+function saveNote() {
+    if (!currentNoteSubject) return;
+
+    const input = document.getElementById('note-input');
+    const text = input.value.trim();
+
+    const notes = JSON.parse(localStorage.getItem('lesson_notes') || '{}');
+
+    if (text) {
+        notes[currentNoteSubject] = text;
+        showMessage('Заметка сохранена! 📝', 'success');
+    } else {
+        delete notes[currentNoteSubject];
+    }
+
+    localStorage.setItem('lesson_notes', JSON.stringify(notes));
+    closeNoteModal();
+    renderSchedule(); // Refresh UI
+}
+
+function deleteNote() {
+    if (!currentNoteSubject) return;
+    const notes = JSON.parse(localStorage.getItem('lesson_notes') || '{}');
+    delete notes[currentNoteSubject];
+    localStorage.setItem('lesson_notes', JSON.stringify(notes));
+    closeNoteModal();
+    renderSchedule();
+    showMessage('Заметка удалена', 'info');
+}
+
+// Bind Note Modal Events
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('save-note-btn')?.addEventListener('click', saveNote);
+    document.getElementById('close-note-btn')?.addEventListener('click', closeNoteModal);
+    document.getElementById('delete-note-btn')?.addEventListener('click', deleteNote);
+    document.getElementById('note-modal')?.querySelector('.modal-overlay')?.addEventListener('click', closeNoteModal);
+});
+
+// Update renderSchedule to show notes
 function renderSchedule() {
     const container = dom.scheduleContainer;
     container.innerHTML = '';
+
+    // Load Notes
+    const notes = JSON.parse(localStorage.getItem('lesson_notes') || '{}');
 
     // If it's a weekend (or no day selected)
     if (state.selectedDay === 'weekend') {
@@ -238,18 +311,33 @@ function renderSchedule() {
         const typeClass = lesson.type === 'lecture' ? 'lecture' : 'seminar';
         const typeLabel = lesson.type === 'lecture' ? 'Лекция' : 'Семинар';
 
+        // Check for note
+        const note = notes[lesson.subject];
+        const noteHtml = note ? `<div class="lesson-note"><i class="fas fa-sticky-note"></i> ${note}</div>` : '';
+        const noteBtnClass = note ? 'active' : '';
+
         // ID для поиска при обновлении Live статуса
         const lessonId = `lesson-${lesson.pair}`;
 
         const card = document.createElement('div');
         card.className = `lesson-card ${typeClass}`;
         card.id = lessonId;
+
+        // Make card relative for button positioning if needed, usually css handles it
+        // We add a specific 'note-btn'
+
         card.innerHTML = `
             <div class="card-header">
                 <span class="time-badge">${lesson.pair} пара • ${time}</span>
                 <span class="type-badge">${typeLabel}</span>
             </div>
-            <h3 class="lesson-subject">${lesson.subject}</h3>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                 <h3 class="lesson-subject">${lesson.subject}</h3>
+                 <button class="icon-btn note-btn ${noteBtnClass}" onclick="openNoteModal('${lesson.subject}')" title="Заметка">
+                    <i class="far fa-edit"></i>
+                 </button>
+            </div>
+            ${noteHtml}
             <div class="lesson-details">
                 <div class="detail-item">
                     <span class="icon">🏫</span>
@@ -264,68 +352,67 @@ function renderSchedule() {
         container.appendChild(card);
     });
 }
+// (Original Listeners for Week Navigation below)
+const now = new Date();
+// Определяем текущий день недели
+let dayIdx = now.getDay();
+const currentDayName = DAYS_MAP[dayIdx];
 
-function updateLiveStatus() {
-    const now = new Date();
-    // Определяем текущий день недели
-    let dayIdx = now.getDay();
-    const currentDayName = DAYS_MAP[dayIdx];
+// Показывать Live статус ТОЛЬКО если пользователь смотрит на расписание СЕГОДНЯШНЕГО дня
+// И если мы на текущей неделе
+const realWeek = getWeekNumber(now);
 
-    // Показывать Live статус ТОЛЬКО если пользователь смотрит на расписание СЕГОДНЯШНЕГО дня
-    // И если мы на текущей неделе
-    const realWeek = getWeekNumber(now);
+// Но state.currentDate может отличаться от now, если мы переключали недели
+// Сравним визуальный день с реальным
+const visualIsToday = state.selectedDay === currentDayName && state.currentWeek === realWeek;
 
-    // Но state.currentDate может отличаться от now, если мы переключали недели
-    // Сравним визуальный день с реальным
-    const visualIsToday = state.selectedDay === currentDayName && state.currentWeek === realWeek;
-
-    if (!visualIsToday) {
-        dom.liveWidget.classList.add('hidden');
-        // Убираем подсветку
-        document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
-        return;
-    }
-
-    const lessons = getLessonsForDay(currentDayName, realWeek);
-    let activeLesson = null;
-    let nextLesson = null;
-
-    for (const lesson of lessons) {
-        const timeRange = PAIR_TIMES[lesson.pair]; // "09:30 - 10:50"
-        if (!timeRange) continue;
-
-        const [startStr, endStr] = timeRange.split(' - ');
-        const start = parseTime(startStr, now);
-        const end = parseTime(endStr, now);
-
-        if (now >= start && now <= end) {
-            activeLesson = { ...lesson, start, end };
-            break;
-        }
-
-        if (now < start) {
-            if (!nextLesson || start < nextLesson.start) {
-                nextLesson = { ...lesson, start, end };
-            }
-        }
-    }
-
-    // Очищаем активные классы
+if (!visualIsToday) {
+    dom.liveWidget.classList.add('hidden');
+    // Убираем подсветку
     document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
+    return;
+}
 
-    if (activeLesson) {
-        // Подсвечиваем карточку
-        const card = document.getElementById(`lesson-${activeLesson.pair}`);
-        if (card) card.classList.add('active');
+const lessons = getLessonsForDay(currentDayName, realWeek);
+let activeLesson = null;
+let nextLesson = null;
 
-        // Считаем прогресс
-        const totalDuration = activeLesson.end - activeLesson.start;
-        const elapsed = now - activeLesson.start;
-        const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
-        const minutesLeft = Math.ceil((totalDuration - elapsed) / (1000 * 60));
+for (const lesson of lessons) {
+    const timeRange = PAIR_TIMES[lesson.pair]; // "09:30 - 10:50"
+    if (!timeRange) continue;
 
-        dom.liveWidget.classList.remove('hidden');
-        dom.liveWidget.innerHTML = `
+    const [startStr, endStr] = timeRange.split(' - ');
+    const start = parseTime(startStr, now);
+    const end = parseTime(endStr, now);
+
+    if (now >= start && now <= end) {
+        activeLesson = { ...lesson, start, end };
+        break;
+    }
+
+    if (now < start) {
+        if (!nextLesson || start < nextLesson.start) {
+            nextLesson = { ...lesson, start, end };
+        }
+    }
+}
+
+// Очищаем активные классы
+document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
+
+if (activeLesson) {
+    // Подсвечиваем карточку
+    const card = document.getElementById(`lesson-${activeLesson.pair}`);
+    if (card) card.classList.add('active');
+
+    // Считаем прогресс
+    const totalDuration = activeLesson.end - activeLesson.start;
+    const elapsed = now - activeLesson.start;
+    const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+    const minutesLeft = Math.ceil((totalDuration - elapsed) / (1000 * 60));
+
+    dom.liveWidget.classList.remove('hidden');
+    dom.liveWidget.innerHTML = `
             <div class="live-header">
                 <div class="live-badge">
                     <div class="live-dot"></div>
@@ -341,14 +428,14 @@ function updateLiveStatus() {
                 <div class="progress-bar" style="width: ${percent}%"></div>
             </div>
         `;
-    } else if (nextLesson) {
-        // Если перемена (до следующей пары < 40 минут)
-        const diffMs = nextLesson.start - now;
-        const diffMinutes = Math.ceil(diffMs / (1000 * 60));
+} else if (nextLesson) {
+    // Если перемена (до следующей пары < 40 минут)
+    const diffMs = nextLesson.start - now;
+    const diffMinutes = Math.ceil(diffMs / (1000 * 60));
 
-        if (diffMinutes <= 40) {
-            dom.liveWidget.classList.remove('hidden');
-            dom.liveWidget.innerHTML = `
+    if (diffMinutes <= 40) {
+        dom.liveWidget.classList.remove('hidden');
+        dom.liveWidget.innerHTML = `
                 <div class="live-header">
                     <div class="live-badge" style="color: #60a5fa; background: rgba(96, 165, 250, 0.1);">
                         <i class="fas fa-coffee"></i> Перемена
@@ -363,12 +450,12 @@ function updateLiveStatus() {
                     <div class="progress-bar" style="width: 0%"></div>
                 </div>
            `;
-        } else {
-            dom.liveWidget.classList.add('hidden');
-        }
     } else {
         dom.liveWidget.classList.add('hidden');
     }
+} else {
+    dom.liveWidget.classList.add('hidden');
+}
 }
 
 // --- Logic ---

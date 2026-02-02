@@ -124,14 +124,29 @@
             </div>
         </div>
 
-        <footer class="footer">
-            <p>Developed for MXT-223</p>
-        </footer>
-        <nav class="profile-nav">
-            <a href="/" class="nav-link active" title="Меню"><i class="fas fa-th-large"></i></a>
-            <a href="/academics.html" class="nav-link" title="Предметы"><i class="fas fa-book"></i></a>
-            <a href="/ratings.html" class="nav-link" title="Рейтинг"><i class="fas fa-star"></i></a>
-            <a href="/profile.html" class="nav-link" title="Профиль"><i class="fas fa-user"></i></a>
+        <!-- Note Modal -->
+        <div id="note-modal" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content" style="max-width: 350px;">
+                <h3 id="note-modal-title" style="margin-bottom: 15px; color: var(--text-main);">Заметка</h3>
+                <textarea id="note-input" rows="4" placeholder="Запишите домашнее задание или напоминание..."
+                    style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-main); margin-bottom: 15px; resize: vertical;"></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button id="save-note-btn" class="submit-btn"
+                        style="padding: 12px; margin: 0; font-size: 1rem;">Сохранить</button>
+                    <button id="close-note-btn" class="back-btn" style="flex: 1;">Отмена</button>
+                </div>
+                <button id="delete-note-btn"
+                    style="width: 100%; margin-top: 10px; background: transparent; color: #ef4444; border: none; padding: 10px; cursor: pointer; display: none;">Удалить
+                    заметку</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <a href="/" class="nav-link active" title="Меню"><i class="fas fa-th-large"></i></a>
+        <a href="/academics.html" class="nav-link" title="Предметы"><i class="fas fa-book"></i></a>
+        <a href="/ratings.html" class="nav-link" title="Рейтинг"><i class="fas fa-star"></i></a>
+        <a href="/profile.html" class="nav-link" title="Профиль"><i class="fas fa-user"></i></a>
         </nav>
     </div>
 
@@ -141,7 +156,7 @@
     <script type="module" src="/static/search.js"></script>
     <script type="module" src="/static/install.js"></script>
     <!-- app.js is the main controller -->
-    <script type="module" src="/static/app.js?v=73"></script>
+    <script type="module" src="/static/app.js?v=74"></script>
 
     <script>
         // Service Worker
