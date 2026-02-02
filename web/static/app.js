@@ -409,26 +409,48 @@ async function init() {
     setInterval(updateLiveStatus, 30000); // Every 30 sec
 
     // 5. Load Schedule (This might be slow, so do it last to not block UI)
+    // 5. Load Schedule with Offline Caching
     try {
-        const response = await fetch('/api/debug/schedule-nocache');
+        // Try to fetch from server
+        // Using standard endpoint (cached on server if enabled)
+        const response = await fetch('/api/schedule');
+
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
         const data = await response.json();
         setScheduleData(data);
-    } catch (error) {
-        console.error('Failed to load schedule:', error);
 
-        // Show error to user
-        const container = document.getElementById('schedule-container');
-        if (container) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <p>Ошибка загрузки</p>
-                    <p class="subtitle">${error.message}</p>
-                    <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; border-radius: 8px; border: none; background: var(--primary); color: white;">Попробовать снова</button>
-                </div>
-            `;
-            // Even if schedule fails, we don't want to stop the script
+        // Cache for offline use
+        localStorage.setItem('cached_schedule', JSON.stringify(data));
+        localStorage.setItem('cached_schedule_time', new Date().toISOString());
+
+    } catch (error) {
+        console.error('Network load failed, checking cache:', error);
+
+        // Fallback to cache
+        const cached = localStorage.getItem('cached_schedule');
+        const cachedTime = localStorage.getItem('cached_schedule_time');
+
+        if (cached) {
+            console.log('Using offline cache');
+            setScheduleData(JSON.parse(cached));
+
+            // Show Offline Notification
+            const timeStr = cachedTime ? new Date(cachedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+            showMessage(`Режим офлайн 📶 (Данные от ${timeStr})`, 'info'); // Using 'info' style (orange/blue)
+        } else {
+            // Show error to user if no cache
+            const container = document.getElementById('schedule-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <p>Ошибка загрузки</p>
+                        <p class="subtitle">Нет интернета и сохраненной копии.</p>
+                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 12px 20px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight:600;">Попробовать снова</button>
+                    </div>
+                `;
+            }
         }
     }
 
