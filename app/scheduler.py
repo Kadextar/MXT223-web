@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 # Timezone (Tashkent)
 TZ = pytz.timezone('Asia/Tashkent')
 
-# Pair Times (Start Times) - MXT-223 uses these standardized times
+# Pair Times (Standardized for MXT-223 from schedule_data.js)
 PAIR_START_TIMES = {
-    1: "08:30",
-    2: "10:00",
-    3: "11:30",
-    4: "13:00",  # Lunch break usually 13:00-13:30 or 12:40-13:20, assumes standard grid
-    5: "14:30",
-    6: "16:00"
+    1: "08:00",
+    2: "09:30",
+    3: "11:00",
+    4: "12:30", # Assumed continuation
+    5: "14:00",
+    6: "15:30"
 }
 
 scheduler = AsyncIOScheduler()
