@@ -125,18 +125,20 @@
         </div>
 
         <!-- Note Modal -->
+        <!-- Note Modal -->
         <div id="note-modal" class="modal hidden">
-            <div class="modal-overlay"></div>
+            <div class="modal-overlay" onclick="closeNoteModal()"></div>
             <div class="modal-content" style="max-width: 350px;">
-                <h3 id="note-modal-title" style="margin-bottom: 15px; color: var(--text-main);">Заметка</h3>
+                <h3 id="note-modal-title" style="margin-bottom: 15px;">Заметка</h3>
                 <textarea id="note-input" rows="4" placeholder="Запишите домашнее задание или напоминание..."
-                    style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-main); margin-bottom: 15px; resize: vertical;"></textarea>
+                    class="form-group note-textarea"></textarea>
                 <div style="display: flex; gap: 10px;">
-                    <button id="save-note-btn" class="submit-btn"
+                    <button id="save-note-btn" class="submit-btn" onclick="saveNote()"
                         style="padding: 12px; margin: 0; font-size: 1rem;">Сохранить</button>
-                    <button id="close-note-btn" class="back-btn" style="flex: 1;">Отмена</button>
+                    <button id="close-note-btn" class="back-btn" onclick="closeNoteModal()"
+                        style="flex: 1;">Отмена</button>
                 </div>
-                <button id="delete-note-btn"
+                <button id="delete-note-btn" onclick="deleteNote()"
                     style="width: 100%; margin-top: 10px; background: transparent; color: #ef4444; border: none; padding: 10px; cursor: pointer; display: none;">Удалить
                     заметку</button>
             </div>
@@ -156,7 +158,7 @@
     <script type="module" src="/static/search.js"></script>
     <script type="module" src="/static/install.js"></script>
     <!-- app.js is the main controller -->
-    <script type="module" src="/static/app.js?v=77"></script>
+    <script type="module" src="/static/app.js?v=78"></script>
 
     <script>
         // Service Worker
