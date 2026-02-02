@@ -353,66 +353,67 @@ function renderSchedule() {
     });
 }
 // (Original Listeners for Week Navigation below)
-const now = new Date();
-// Определяем текущий день недели
-let dayIdx = now.getDay();
-const currentDayName = DAYS_MAP[dayIdx];
+function updateLiveStatus() {
+    const now = new Date();
+    // Определяем текущий день недели
+    let dayIdx = now.getDay();
+    const currentDayName = DAYS_MAP[dayIdx];
 
-// Показывать Live статус ТОЛЬКО если пользователь смотрит на расписание СЕГОДНЯШНЕГО дня
-// И если мы на текущей неделе
-const realWeek = getWeekNumber(now);
+    // Показывать Live статус ТОЛЬКО если пользователь смотрит на расписание СЕГОДНЯШНЕГО дня
+    // И если мы на текущей неделе
+    const realWeek = getWeekNumber(now);
 
-// Но state.currentDate может отличаться от now, если мы переключали недели
-// Сравним визуальный день с реальным
-const visualIsToday = state.selectedDay === currentDayName && state.currentWeek === realWeek;
+    // Но state.currentDate может отличаться от now, если мы переключали недели
+    // Сравним визуальный день с реальным
+    const visualIsToday = state.selectedDay === currentDayName && state.currentWeek === realWeek;
 
-if (!visualIsToday) {
-    dom.liveWidget.classList.add('hidden');
-    // Убираем подсветку
-    document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
-    return;
-}
-
-const lessons = getLessonsForDay(currentDayName, realWeek);
-let activeLesson = null;
-let nextLesson = null;
-
-for (const lesson of lessons) {
-    const timeRange = PAIR_TIMES[lesson.pair]; // "09:30 - 10:50"
-    if (!timeRange) continue;
-
-    const [startStr, endStr] = timeRange.split(' - ');
-    const start = parseTime(startStr, now);
-    const end = parseTime(endStr, now);
-
-    if (now >= start && now <= end) {
-        activeLesson = { ...lesson, start, end };
-        break;
+    if (!visualIsToday) {
+        dom.liveWidget.classList.add('hidden');
+        // Убираем подсветку
+        document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
+        return;
     }
 
-    if (now < start) {
-        if (!nextLesson || start < nextLesson.start) {
-            nextLesson = { ...lesson, start, end };
+    const lessons = getLessonsForDay(currentDayName, realWeek);
+    let activeLesson = null;
+    let nextLesson = null;
+
+    for (const lesson of lessons) {
+        const timeRange = PAIR_TIMES[lesson.pair]; // "09:30 - 10:50"
+        if (!timeRange) continue;
+
+        const [startStr, endStr] = timeRange.split(' - ');
+        const start = parseTime(startStr, now);
+        const end = parseTime(endStr, now);
+
+        if (now >= start && now <= end) {
+            activeLesson = { ...lesson, start, end };
+            break;
+        }
+
+        if (now < start) {
+            if (!nextLesson || start < nextLesson.start) {
+                nextLesson = { ...lesson, start, end };
+            }
         }
     }
-}
 
-// Очищаем активные классы
-document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
+    // Очищаем активные классы
+    document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
 
-if (activeLesson) {
-    // Подсвечиваем карточку
-    const card = document.getElementById(`lesson-${activeLesson.pair}`);
-    if (card) card.classList.add('active');
+    if (activeLesson) {
+        // Подсвечиваем карточку
+        const card = document.getElementById(`lesson-${activeLesson.pair}`);
+        if (card) card.classList.add('active');
 
-    // Считаем прогресс
-    const totalDuration = activeLesson.end - activeLesson.start;
-    const elapsed = now - activeLesson.start;
-    const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
-    const minutesLeft = Math.ceil((totalDuration - elapsed) / (1000 * 60));
+        // Считаем прогресс
+        const totalDuration = activeLesson.end - activeLesson.start;
+        const elapsed = now - activeLesson.start;
+        const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+        const minutesLeft = Math.ceil((totalDuration - elapsed) / (1000 * 60));
 
-    dom.liveWidget.classList.remove('hidden');
-    dom.liveWidget.innerHTML = `
+        dom.liveWidget.classList.remove('hidden');
+        dom.liveWidget.innerHTML = `
             <div class="live-header">
                 <div class="live-badge">
                     <div class="live-dot"></div>
@@ -428,14 +429,14 @@ if (activeLesson) {
                 <div class="progress-bar" style="width: ${percent}%"></div>
             </div>
         `;
-} else if (nextLesson) {
-    // Если перемена (до следующей пары < 40 минут)
-    const diffMs = nextLesson.start - now;
-    const diffMinutes = Math.ceil(diffMs / (1000 * 60));
+    } else if (nextLesson) {
+        // Если перемена (до следующей пары < 40 минут)
+        const diffMs = nextLesson.start - now;
+        const diffMinutes = Math.ceil(diffMs / (1000 * 60));
 
-    if (diffMinutes <= 40) {
-        dom.liveWidget.classList.remove('hidden');
-        dom.liveWidget.innerHTML = `
+        if (diffMinutes <= 40) {
+            dom.liveWidget.classList.remove('hidden');
+            dom.liveWidget.innerHTML = `
                 <div class="live-header">
                     <div class="live-badge" style="color: #60a5fa; background: rgba(96, 165, 250, 0.1);">
                         <i class="fas fa-coffee"></i> Перемена
@@ -450,12 +451,12 @@ if (activeLesson) {
                     <div class="progress-bar" style="width: 0%"></div>
                 </div>
            `;
+        } else {
+            dom.liveWidget.classList.add('hidden');
+        }
     } else {
         dom.liveWidget.classList.add('hidden');
     }
-} else {
-    dom.liveWidget.classList.add('hidden');
-}
 }
 
 // --- Logic ---
