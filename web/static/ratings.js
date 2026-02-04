@@ -1,4 +1,5 @@
 import { SUBJECTS_DATA } from './academics.js';
+import { SEMESTER_START_DATE, getLessonsForDay, setScheduleData } from './schedule_data.js';
 import './theme_init.js';
 
 // --- Authentication Check ---
@@ -17,65 +18,121 @@ const ratingForm = document.getElementById('rating-form');
 const ratingDisplay = document.getElementById('rating-display');
 const ratingInput = document.getElementById('rating-input');
 
-let currentSubject = null;
+let currentSubject = null; // используем название предмета
 let currentType = null; // 'lecture' or 'seminar'
 let selectedRating = null;
 let selectedTags = [];
 
-// Load Content
+const DAYS_MAP = {
+    0: 'sunday',
+    1: 'monday',
+    2: 'tuesday',
+    3: 'wednesday',
+    4: 'thursday',
+    5: 'friday',
+    6: 'saturday'
+};
+
+function getWeekNumber(date) {
+    const start = new Date(SEMESTER_START_DATE);
+    start.setHours(0, 0, 0, 0);
+    const current = new Date(date);
+    current.setHours(0, 0, 0, 0);
+    if (current < start) return 1;
+    const diffDays = Math.ceil((current - start) / (1000 * 60 * 60 * 24));
+    return Math.floor(diffDays / 7) + 1;
+}
+
+// Load Content: показываем ТОЛЬКО предметы, которые есть сегодня в расписании
 async function loadContent() {
     loading.classList.remove('hidden');
     emptyState.classList.add('hidden');
     teachersContainer.innerHTML = '';
 
-    // Simulate delay for "fetching"
-    setTimeout(() => {
-        renderSubjects();
-        loading.classList.add('hidden');
-    }, 300);
-}
+    try {
+        const resp = await fetch('/api/schedule');
+        if (!resp.ok) throw new Error('Failed to load schedule');
+        const data = await resp.json();
+        setScheduleData(data);
 
-function renderSubjects() {
-    const validSubjects = SUBJECTS_DATA.filter(s =>
-        (s.lectures > 0 || s.seminars > 0) &&
-        !s.isPractice &&
-        !s.isCoursework &&
-        s.id !== 'enlightenment'
-    );
+        const now = new Date();
+        const week = getWeekNumber(now);
+        const dayName = DAYS_MAP[now.getDay()];
 
-    if (validSubjects.length === 0) {
+        // В выходные занятий нет
+        if (dayName === 'saturday' || dayName === 'sunday') {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        const lessonsToday = getLessonsForDay(dayName, week);
+        if (!lessonsToday || lessonsToday.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        // Собираем информацию по предметам и типам (lecture/seminar), которые были сегодня
+        const metaBySubject = {};
+        lessonsToday.forEach((lesson) => {
+            const name = lesson.subject;
+            if (!metaBySubject[name]) {
+                metaBySubject[name] = { hasLecture: false, hasSeminar: false };
+            }
+            if (lesson.type === 'lecture') metaBySubject[name].hasLecture = true;
+            if (lesson.type === 'seminar') metaBySubject[name].hasSeminar = true;
+        });
+
+        // Берём только те предметы из SUBJECTS_DATA, которые реально были сегодня
+        const validSubjects = SUBJECTS_DATA.filter(
+            (s) => metaBySubject[s.name] && (metaBySubject[s.name].hasLecture || metaBySubject[s.name].hasSeminar)
+        );
+
+        if (validSubjects.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        validSubjects.forEach((sub) => {
+            const card = createSubjectCard(sub, metaBySubject[sub.name]);
+            if (card) teachersContainer.appendChild(card);
+        });
+    } catch (e) {
+        console.error('Ratings loadContent error:', e);
         emptyState.classList.remove('hidden');
-        return;
+    } finally {
+        loading.classList.add('hidden');
     }
-
-    validSubjects.forEach(sub => {
-        const card = createSubjectCard(sub);
-        teachersContainer.appendChild(card);
-    });
 }
 
-function createSubjectCard(sub) {
+function createSubjectCard(sub, meta) {
+    const hasLecture = meta?.hasLecture;
+    const hasSeminar = meta?.hasSeminar;
+
+    // Если по предмету сегодня нет ни лекций, ни семинаров, карточку не показываем
+    if (!hasLecture && !hasSeminar) return null;
+
     const card = document.createElement('div');
     card.className = 'info-card teacher-card';
 
     const icon = getSubjectIcon(sub.name);
 
-    // Actions
     let actionsHTML = '';
 
-    // Lecture Button
-    actionsHTML += `
-        <button class="rate-btn lecture-btn" onclick="openRatingModal('${sub.id}', '${sub.name}', 'lecture')">
-            <i class="fas fa-chalkboard-teacher"></i> Лекции
-        </button>
-    `;
+    if (hasLecture) {
+        actionsHTML += `
+            <button class="rate-btn lecture-btn" onclick="openRatingModal('${sub.name}', 'lecture')">
+                <i class="fas fa-chalkboard-teacher"></i> Лекции
+            </button>
+        `;
+    }
 
-    // Seminar Button
-    actionsHTML += `
-        <button class="rate-btn seminar-btn" onclick="openRatingModal('${sub.id}', '${sub.name}', 'seminar')">
-            <i class="fas fa-users"></i> Семинары
-        </button>
-    `;
+    if (hasSeminar) {
+        actionsHTML += `
+            <button class="rate-btn seminar-btn" onclick="openRatingModal('${sub.name}', 'seminar')">
+                <i class="fas fa-users"></i> Семинары
+            </button>
+        `;
+    }
 
     card.innerHTML = `
         <div class="card-icon">${icon}</div>
@@ -108,8 +165,15 @@ function getSubjectIcon(name) {
 }
 
 // Modal Functions
-window.openRatingModal = function (subjectId, subjectName, type) {
-    currentSubject = subjectId;
+window.openRatingModal = function (subjectName, type) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const votedKey = `voted_${subjectName}_${type}_${todayStr}`;
+    if (localStorage.getItem(votedKey)) {
+        alert('Вы уже оценивали этот предмет сегодня.');
+        return;
+    }
+
+    currentSubject = subjectName;
     currentType = type;
 
     // Title
@@ -120,27 +184,21 @@ window.openRatingModal = function (subjectId, subjectName, type) {
     document.getElementById('modal-teacher-name').textContent = subjectName;
     document.getElementById('modal-subject').textContent = `Оцениваем: ${typeName}`;
 
-    // Simulate finding today's lessons
-    // In a real app, you'd filter by date and subjectId
-    const today = new Date().toISOString().split('T')[0];
-    const hasLessonsToday = false; // Mock: Force empty state for now to show the alert
-
     const lessonsList = document.getElementById('lessons-list');
     const noLessonsAlert = document.getElementById('no-lessons-alert');
     const selectLabel = document.getElementById('select-lesson-label');
 
     lessonsList.innerHTML = '';
 
-    if (hasLessonsToday) {
-        noLessonsAlert.classList.add('hidden');
-        selectLabel.classList.remove('hidden');
-        // valid logic to render lessons...
-    } else {
-        noLessonsAlert.classList.remove('hidden');
-        selectLabel.classList.add('hidden'); // Hide "Select lesson" label
-    }
+    // Список конкретных пар сейчас не показываем, только факт, что сегодня было занятие
+    noLessonsAlert.classList.add('hidden');
+    selectLabel.classList.add('hidden');
+    lessonsList.classList.add('hidden');
 
     modal.classList.remove('hidden');
+
+    // Подгружаем последние комментарии
+    loadComments(subjectName, type);
 }
 
 function closeModal() {
@@ -225,7 +283,6 @@ document.querySelectorAll('.tag-btn').forEach(btn => {
 });
 
 // Submit
-// Submit
 ratingForm.addEventListener('submit', async function (e) {
     e.preventDefault();
     if (!selectedRating) {
@@ -253,16 +310,16 @@ ratingForm.addEventListener('submit', async function (e) {
         });
 
         if (response.ok) {
-            // Save to LocalStorage to prevent re-voting today
-            const votedKey = `voted_${currentSubject}_${currentType}_${new Date().toISOString().split('T')[0]}`;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const votedKey = `voted_${currentSubject}_${currentType}_${todayStr}`;
             localStorage.setItem(votedKey, 'true');
 
             alert('✅ Ваш голос принят! Спасибо.');
             closeModal();
-            // Refresh Leaderboard
             loadLeaderboard();
+            loadComments(currentSubject, currentType);
         } else {
-            alert('❌ Ошибка при отправке. Возможно, вы уже голосовали сегодня?');
+            alert('❌ Ошибка при отправке. Возможно, вы уже голосовали сегодня или предмета нет в расписании.');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -302,6 +359,47 @@ async function loadLeaderboard() {
         }
     } catch (e) {
         console.error("Leaderboard error:", e);
+    }
+}
+
+// Загрузка комментариев для модалки
+async function loadComments(subjectName, type) {
+    const container = document.getElementById('comments-list');
+    if (!container) return;
+    container.innerHTML = '<p class="text-muted">Загрузка отзывов...</p>';
+
+    try {
+        const params = new URLSearchParams({
+            subject_name: subjectName,
+            subject_type: type
+        });
+        const resp = await fetch(`/api/ratings/comments?${params.toString()}`);
+        if (!resp.ok) {
+            container.innerHTML = '';
+            return;
+        }
+        const data = await resp.json();
+        if (!data.length) {
+            container.innerHTML = '<p class="text-muted">Пока нет комментариев</p>';
+            return;
+        }
+        container.innerHTML = data.map((c) => {
+            const dateStr = c.lesson_date || '';
+            const ratingStr = typeof c.rating === 'number' ? `${c.rating}/100` : '';
+            const comment = c.comment || '';
+            return `
+                <div class="comment-item">
+                    <div class="comment-meta">
+                        <span>${ratingStr}</span>
+                        <span>${dateStr}</span>
+                    </div>
+                    <p>${comment ? comment.replace(/</g, '&lt;') : ''}</p>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error('loadComments error', e);
+        container.innerHTML = '';
     }
 }
 

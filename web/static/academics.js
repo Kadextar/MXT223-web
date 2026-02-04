@@ -21,6 +21,9 @@ async function initAcademics() {
         setScheduleData(data); // Populate data store
         renderContent();
 
+        // Load exams for second tab
+        await loadExams();
+        initTabs();
     } catch (error) {
         console.error(error);
         document.getElementById('subjects-list').innerHTML = `<p>Ошибка загрузки.</p>`;
@@ -219,6 +222,68 @@ function renderContent() {
         `;
         teachersList.appendChild(card);
     });
+}
+
+async function loadExams() {
+    const container = document.getElementById('exams-list');
+    if (!container) return;
+    try {
+        const resp = await fetch('/api/exams');
+        if (!resp.ok) throw new Error('Failed to load exams');
+        const exams = await resp.json();
+        if (!exams.length) {
+            container.innerHTML = '<div class="empty-state"><p>Экзамены пока не добавлены.</p></div>';
+            return;
+        }
+        container.innerHTML = '';
+        exams.forEach((ex, index) => {
+            const card = document.createElement('div');
+            card.className = 'info-card subject-card';
+            const dateStr = ex.exam_date ? new Date(ex.exam_date).toLocaleDateString('ru-RU') : '';
+            const timeStr = ex.exam_time || '';
+            const room = ex.room || '';
+            card.innerHTML = `
+                <div class="subject-number">${index + 1}</div>
+                <div class="card-content">
+                    <div class="subject-header">
+                        <h3>${ex.subject}</h3>
+                        ${ex.exam_type ? `<span class="tag">${ex.exam_type}</span>` : ''}
+                    </div>
+                    <div class="subject-stats">${dateStr}${timeStr ? ' • ' + timeStr : ''}${room ? ' • ' + room : ''}</div>
+                    ${ex.teacher ? `<div class="subject-teachers"><div><span class="label">Преподаватель:</span> ${ex.teacher}</div></div>` : ''}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } catch (e) {
+        console.error('loadExams error', e);
+        container.innerHTML = '<div class="empty-state"><p>Ошибка загрузки экзаменов.</p></div>';
+    }
+}
+
+function initTabs() {
+    const tabSubjects = document.getElementById('tab-subjects');
+    const tabExams = document.getElementById('tab-exams');
+    const viewSubjects = document.getElementById('subjects-view');
+    const viewExams = document.getElementById('exams-view');
+    if (!tabSubjects || !tabExams || !viewSubjects || !viewExams) return;
+
+    function setActive(which) {
+        if (which === 'subjects') {
+            tabSubjects.classList.add('active');
+            tabExams.classList.remove('active');
+            viewSubjects.classList.remove('hidden');
+            viewExams.classList.add('hidden');
+        } else {
+            tabExams.classList.add('active');
+            tabSubjects.classList.remove('active');
+            viewExams.classList.remove('hidden');
+            viewSubjects.classList.add('hidden');
+        }
+    }
+
+    tabSubjects.addEventListener('click', () => setActive('subjects'));
+    tabExams.addEventListener('click', () => setActive('exams'));
 }
 
 initAcademics();
