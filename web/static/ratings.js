@@ -150,6 +150,9 @@ function closeModal() {
 
 closeModalBtn.addEventListener('click', closeModal);
 modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeModal();
+});
 document.getElementById('back-to-lessons').style.display = 'none';
 
 // Rating Logic (Slider & Input)

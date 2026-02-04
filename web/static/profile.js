@@ -279,8 +279,7 @@ async function toggleNotifications() {
                 });
             }
 
-            console.log('[Push] Sending to backend...');
-            // Send to backend
+            const reminderMinutes = parseInt(document.getElementById('reminder-minutes')?.value || '15', 10);
             const token = localStorage.getItem('access_token');
             const response = await fetch('/api/subscribe', {
                 method: 'POST',
@@ -288,7 +287,7 @@ async function toggleNotifications() {
                     'Content-Type': 'application/json',
                     'Authorization': token ? `Bearer ${token}` : ''
                 },
-                body: JSON.stringify(subscription)
+                body: JSON.stringify({ subscription, reminder_minutes: reminderMinutes })
             });
 
             if (!response.ok) throw new Error('Ошибка сервера при подписке');
@@ -352,6 +351,11 @@ document.getElementById('close-avatar-modal').addEventListener('click', () => {
 avatarModal.querySelector('.modal-overlay').addEventListener('click', () => {
     avatarModal.classList.add('hidden');
 });
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && avatarModal && !avatarModal.classList.contains('hidden')) {
+        avatarModal.classList.add('hidden');
+    }
+});
 
 // Select Avatar
 document.querySelectorAll('.avatar-option').forEach(img => {
@@ -385,55 +389,168 @@ document.querySelectorAll('.avatar-option').forEach(img => {
 
 
 // --- Tab Handling ---
+const APP_VERSION = '1.2';
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+async function updateSettingsMeta() {
+    const cacheEl = document.getElementById('cache-date');
+    const versionEl = document.getElementById('app-version');
+    if (cacheEl) {
+        const t = localStorage.getItem('cached_schedule_time');
+        cacheEl.textContent = t ? 'Обновлено: ' + new Date(t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Обновлено: —';
+    }
+    if (versionEl) versionEl.textContent = 'Версия ' + APP_VERSION;
+    const annList = document.getElementById('announcements-list');
+    if (annList) {
+        try {
+            const r = await fetch('/api/announcements');
+            const list = r.ok ? await r.json() : [];
+            annList.innerHTML = list.length ? list.slice(0, 10).map(a => {
+                const date = a.created_at ? new Date(a.created_at).toLocaleDateString('ru-RU') : '';
+                return `<div class="announcement-item" style="margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;"><span class="text-muted" style="font-size: 0.8rem;">${date}</span><p style="margin: 4px 0 0;">${escapeHtml(a.message)}</p></div>`;
+            }).join('') : '<p class="text-muted">Нет объявлений</p>';
+        } catch (_) {
+            annList.innerHTML = '<p class="text-muted">Нет объявлений</p>';
+        }
+    }
+    const deadlinesList = document.getElementById('deadlines-list');
+    if (deadlinesList) {
+        try {
+            const r = await fetch('/api/deadlines');
+            const list = r.ok ? await r.json() : [];
+            deadlinesList.innerHTML = list.length ? list.map(d => {
+                const date = d.deadline_date ? new Date(d.deadline_date).toLocaleDateString('ru-RU') : '';
+                return `<div class="deadline-item" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;"><span>${escapeHtml(d.title)}</span><span class="text-muted">${date}</span></div>`;
+            }).join('') : '<p class="text-muted">Нет важных дат</p>';
+        } catch (_) {
+            deadlinesList.innerHTML = '<p class="text-muted">Нет важных дат</p>';
+        }
+    }
+    const reminderSelect = document.getElementById('reminder-minutes');
+    if (reminderSelect) {
+        try {
+            const token = localStorage.getItem('access_token');
+            const r = await fetch('/api/subscribe-settings', { headers: { Authorization: token ? `Bearer ${token}` : '' } });
+            const d = r.ok ? await r.json() : {};
+            const rem = d.reminder_minutes || 15;
+            reminderSelect.value = String([5, 15, 30].includes(rem) ? rem : 15);
+        } catch (_) {}
+    }
+    const subgroupSelect = document.getElementById('subgroup-select');
+    if (subgroupSelect) {
+        try {
+            const token = localStorage.getItem('access_token');
+            const r = await fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } });
+            const me = r.ok ? await r.json() : {};
+            const sg = me.subgroup === 2 ? 2 : 1;
+            subgroupSelect.value = String(sg);
+        } catch (_) {}
+        if (!subgroupSelect._bound) {
+            subgroupSelect._bound = true;
+            subgroupSelect.addEventListener('change', async () => {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+                const val = parseInt(subgroupSelect.value, 10);
+                const res = await fetch('/api/me', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+                    body: JSON.stringify({ subgroup: val })
+                });
+                if (res.ok) showMessage('Подгруппа ' + val + ' сохранена', 'success', 'push-message');
+            });
+        }
+    }
+    if (reminderSelect && !reminderSelect._bound) {
+        reminderSelect._bound = true;
+        reminderSelect.addEventListener('change', async () => {
+                const token = localStorage.getItem('access_token');
+                if (!token) return;
+                const val = parseInt(reminderSelect.value, 10);
+                const res = await fetch('/api/subscribe-settings', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ reminder_minutes: val })
+                });
+                if (res.ok) showMessage('Напоминание: за ' + val + ' мин', 'success', 'push-message');
+            });
+        }
+    }
+}
+
 window.switchTab = function (tabName) {
-    // 1. Hide all views
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-
-    // 2. Remove active class from buttons
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-    // 3. Show selected view
     document.getElementById(`${tabName}-view`).classList.remove('hidden');
-
-    // 4. Activate button (simple match)
-    // Find button with onclick containing the tabName
     const buttons = document.querySelectorAll('.tab-btn');
     buttons.forEach(btn => {
-        if (btn.getAttribute('onclick').includes(tabName)) {
-            btn.classList.add('active');
+        if (btn.getAttribute('onclick')?.includes(tabName)) btn.classList.add('active');
+    });
+    if (tabName === 'settings') updateSettingsMeta();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash === '#settings') switchTab('settings');
+    try {
+        fetch('/api/analytics/view', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('access_token') },
+            body: JSON.stringify({ page: 'profile' })
+        });
+    } catch (_) {}
+});
+
+// --- Theme & Font Handling ---
+const themeToggle = document.getElementById('theme-toggle');
+const fontLargeToggle = document.getElementById('font-large-toggle');
+const themeAutoToggle = document.getElementById('theme-auto-toggle');
+
+function syncThemeToggles() {
+    const themeAuto = localStorage.getItem('theme_auto') === 'true';
+    if (themeToggle) themeToggle.checked = document.body.classList.contains('light-mode');
+    if (themeAutoToggle) themeAutoToggle.checked = themeAuto;
+    if (fontLargeToggle) fontLargeToggle.checked = localStorage.getItem('font_large') === 'true';
+}
+if (themeToggle) {
+    const savedTheme = localStorage.getItem('theme');
+    themeToggle.checked = savedTheme === 'light';
+    themeToggle.addEventListener('change', (e) => {
+        localStorage.setItem('theme_auto', 'false');
+        if (themeAutoToggle) themeAutoToggle.checked = false;
+        if (e.target.checked) {
+            document.body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            localStorage.setItem('theme', 'dark');
         }
     });
 }
-
-// --- Theme Handling ---
-const themeToggle = document.getElementById('theme-toggle');
-
-// 1. Init State
-if (document.body.classList.contains('light-mode')) {
-    themeToggle.checked = true;
-} else {
-    themeToggle.checked = false;
+if (fontLargeToggle) {
+    fontLargeToggle.checked = localStorage.getItem('font_large') === 'true';
+    fontLargeToggle.addEventListener('change', (e) => {
+        localStorage.setItem('font_large', e.target.checked ? 'true' : 'false');
+        document.body.classList.toggle('font-large', e.target.checked);
+    });
 }
-
-// 2. Toggle Listener
-themeToggle.addEventListener('change', (e) => {
-    if (e.target.checked) {
-        document.body.classList.add('light-mode');
-        localStorage.setItem('theme', 'light');
-    } else {
-        document.body.classList.remove('light-mode');
-        localStorage.setItem('theme', 'dark');
-    }
-});
-
-// Check localStorage on load (handling defaults) - MOVED TO theme_init.js
-// Just sync toggle state
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'light') {
-    themeToggle.checked = true;
-} else {
-    themeToggle.checked = false;
+if (themeAutoToggle) {
+    themeAutoToggle.checked = localStorage.getItem('theme_auto') === 'true';
+    themeAutoToggle.addEventListener('change', (e) => {
+        localStorage.setItem('theme_auto', e.target.checked ? 'true' : 'false');
+        if (e.target.checked) {
+            const hour = new Date().getHours();
+            if (hour >= 6 && hour < 21) document.body.classList.add('light-mode');
+            else document.body.classList.remove('light-mode');
+        } else {
+            const t = localStorage.getItem('theme');
+            document.body.classList.toggle('light-mode', t === 'light');
+        }
+    });
 }
+syncThemeToggles();
 
 // Global function for password toggle
 window.togglePassword = function (inputId, icon) {

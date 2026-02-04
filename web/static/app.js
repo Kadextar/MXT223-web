@@ -34,6 +34,8 @@ const dom = {
     prevWeekBtn: document.getElementById('prev-week-btn'),
     nextWeekBtn: document.getElementById('next-week-btn'),
     liveWidget: document.getElementById('live-status'),
+    nextLessonWidget: document.getElementById('next-lesson-widget'),
+    shareBtn: document.getElementById('share-schedule-btn'),
 };
 
 const DAYS_MAP = {
@@ -43,6 +45,19 @@ const DAYS_MAP = {
 const DAYS_LABELS = {
     'monday': 'Пн', 'tuesday': 'Вт', 'wednesday': 'Ср', 'thursday': 'Чт', 'friday': 'Пт'
 };
+
+// --- Toast (messages on schedule page) ---
+function showMessage(text, type = 'info') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = text;
+    toast.className = 'toast ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : 'info');
+    toast.classList.remove('hidden');
+    clearTimeout(showMessage._tid);
+    showMessage._tid = setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3500);
+}
 
 // --- Utils ---
 function getWeekNumber(date) {
@@ -68,6 +83,49 @@ function parseTime(timeStr, dateParams) {
     const date = new Date(dateParams);
     date.setHours(hours, minutes, 0, 0);
     return date;
+}
+
+// --- Next lesson widget (today, always visible) ---
+function updateNextLessonWidget() {
+    const el = dom.nextLessonWidget;
+    if (!el) return;
+    const now = new Date();
+    const dayIdx = now.getDay();
+    const currentDayName = DAYS_MAP[dayIdx];
+    if (dayIdx === 0 || dayIdx === 6) {
+        el.classList.add('hidden');
+        return;
+    }
+    const realWeek = getWeekNumber(now);
+    const lessons = getLessonsForDay(currentDayName, realWeek);
+    if (lessons.length === 0) {
+        el.classList.add('hidden');
+        return;
+    }
+    lessons.sort((a, b) => a.pair - b.pair);
+    let nextLesson = null;
+    for (const lesson of lessons) {
+        const timeRange = PAIR_TIMES[lesson.pair];
+        if (!timeRange) continue;
+        const [startStr] = timeRange.split(' - ');
+        const start = parseTime(startStr, now);
+        if (now < start) {
+            nextLesson = { ...lesson, startStr };
+            break;
+        }
+    }
+    if (!nextLesson) {
+        el.innerHTML = '<span class="next-lesson-label">Сегодня пар больше нет</span>';
+        el.classList.remove('hidden');
+        return;
+    }
+    el.innerHTML = `
+        <span class="next-lesson-label">Следующая пара:</span>
+        <span class="next-lesson-text">${nextLesson.subject}</span>
+        <span class="next-lesson-label">${nextLesson.startStr}</span>
+        <span class="next-lesson-text">${nextLesson.room}</span>
+    `;
+    el.classList.remove('hidden');
 }
 
 // --- Render Functions ---
@@ -147,13 +205,22 @@ function renderWeekInfo() {
 
 function renderTabs() {
     const tabsContainer = dom.daysTabs;
+    tabsContainer.setAttribute('role', 'tablist');
+    tabsContainer.setAttribute('aria-label', 'Дни недели');
     tabsContainer.innerHTML = '';
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const now = new Date();
+    const todayName = DAYS_MAP[now.getDay()];
+    const isCurrentWeek = state.currentWeek === getWeekNumber(now);
 
     days.forEach(day => {
         const btn = document.createElement('button');
-        btn.className = `tab ${state.selectedDay === day ? 'active' : ''}`;
-        btn.textContent = DAYS_LABELS[day];
+        btn.type = 'button';
+        btn.role = 'tab';
+        btn.setAttribute('aria-selected', state.selectedDay === day ? 'true' : 'false');
+        const isToday = isCurrentWeek && day === todayName;
+        btn.className = `tab ${state.selectedDay === day ? 'active' : ''} ${isToday ? 'tab--today' : ''}`;
+        btn.innerHTML = DAYS_LABELS[day] + (isToday ? ' <span class="tab-today-dot" aria-hidden="true"></span>' : '');
         btn.onclick = () => selectDay(day);
         tabsContainer.appendChild(btn);
     });
@@ -165,20 +232,12 @@ function initFloatingNav() {
     if (!nav) {
         nav = document.createElement('nav');
         nav.className = 'profile-nav';
-        // Icon-only Navigation
+        nav.setAttribute('aria-label', 'Основное меню');
         nav.innerHTML = `
-            <a href="/" class="nav-link" title="Меню">
-                <i class="fas fa-th-large"></i>
-            </a>
-            <a href="/academics.html" class="nav-link" title="Предметы">
-                <i class="fas fa-book"></i>
-            </a>
-            <a href="/ratings.html" class="nav-link" title="Рейтинг">
-                <i class="fas fa-star"></i>
-            </a>
-            <a href="/profile.html" class="nav-link" title="Профиль">
-                <i class="fas fa-user"></i>
-            </a>
+            <a href="/" class="nav-link" title="Меню" aria-label="Главная, расписание"><i class="fas fa-th-large"></i></a>
+            <a href="/academics.html" class="nav-link" title="Предметы" aria-label="Предметы"><i class="fas fa-book"></i></a>
+            <a href="/ratings.html" class="nav-link" title="Рейтинг" aria-label="Рейтинг"><i class="fas fa-star"></i></a>
+            <a href="/profile.html" class="nav-link" title="Профиль" aria-label="Профиль"><i class="fas fa-user"></i></a>
         `;
         document.body.appendChild(nav);
     }
@@ -269,18 +328,25 @@ window.closeNoteModal = closeNoteModal;
 window.saveNote = saveNote;
 window.deleteNote = deleteNote;
 
-// Bind Note Modal Events
+// Bind Note Modal Events + Escape to close
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('save-note-btn')?.addEventListener('click', saveNote);
     document.getElementById('close-note-btn')?.addEventListener('click', closeNoteModal);
     document.getElementById('delete-note-btn')?.addEventListener('click', deleteNote);
     document.getElementById('note-modal')?.querySelector('.modal-overlay')?.addEventListener('click', closeNoteModal);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const noteModal = document.getElementById('note-modal');
+            if (noteModal && !noteModal.classList.contains('hidden')) closeNoteModal();
+        }
+    });
 });
 
 // Update renderSchedule to show notes
 function renderSchedule() {
     const container = dom.scheduleContainer;
     container.innerHTML = '';
+    if (dom.shareBtn) dom.shareBtn.classList.add('hidden');
 
     // Load Notes
     const notes = JSON.parse(localStorage.getItem('lesson_notes') || '{}');
@@ -300,7 +366,6 @@ function renderSchedule() {
     const lessons = getLessonsForDay(state.selectedDay, state.currentWeek);
 
     if (lessons.length === 0) {
-        // Fallback for weekdays with no classes (though rare)
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📅</div>
@@ -357,6 +422,8 @@ function renderSchedule() {
         `;
         container.appendChild(card);
     });
+    // Show share button when we have schedule for the day
+    if (lessons.length > 0 && dom.shareBtn) dom.shareBtn.classList.remove('hidden');
 }
 // (Original Listeners for Week Navigation below)
 function updateLiveStatus() {
@@ -465,6 +532,109 @@ function updateLiveStatus() {
     }
 }
 
+// --- Pull-to-refresh ---
+function initPullToRefresh() {
+    const container = dom.scheduleContainer;
+    if (!container) return;
+    let startY = 0;
+    let pullTriggered = false;
+    container.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        pullTriggered = false;
+    }, { passive: true });
+    container.addEventListener('touchmove', (e) => {
+        const y = e.touches[0].clientY;
+        if (!pullTriggered && y - startY > 140 && window.scrollY < 50) {
+            pullTriggered = true;
+            refreshSchedule();
+        }
+    }, { passive: true });
+}
+async function refreshSchedule() {
+    try {
+        const response = await fetch('/api/schedule');
+        if (!response.ok) return;
+        const data = await response.json();
+        setScheduleData(data);
+        localStorage.setItem('cached_schedule', JSON.stringify(data));
+        localStorage.setItem('cached_schedule_time', new Date().toISOString());
+        renderSchedule();
+        updateNextLessonWidget();
+        updateLiveStatus();
+        showMessage('Расписание обновлено', 'success');
+    } catch (_) {}
+}
+
+// --- Share schedule (today or selected day) ---
+function initShare() {
+    dom.shareBtn?.addEventListener('click', shareSchedule);
+}
+function shareSchedule() {
+    const dayName = state.selectedDay;
+    if (!dayName || dayName === 'weekend') return;
+    const dayLabels = { monday: 'Пн', tuesday: 'Вт', wednesday: 'Ср', thursday: 'Чт', friday: 'Пт' };
+    const lessons = getLessonsForDay(dayName, state.currentWeek);
+    lessons.sort((a, b) => a.pair - b.pair);
+    const lines = [`Расписание МХТ-223, ${dayLabels[dayName] || dayName}:`];
+    lessons.forEach(l => {
+        const time = PAIR_TIMES[l.pair] || '';
+        lines.push(`${l.pair} пара ${time} — ${l.subject}, ${l.room}`);
+    });
+    const text = lines.join('\n');
+    if (navigator.share) {
+        navigator.share({
+            title: 'Расписание МХТ-223',
+            text,
+            url: window.location.href
+        }).catch(() => copyShareText(text));
+    } else {
+        copyShareText(text);
+    }
+}
+function copyShareText(text) {
+    navigator.clipboard.writeText(text).then(() => showMessage('Скопировано в буфер', 'success')).catch(() => {});
+}
+
+// --- Onboarding (first visit) ---
+function showOnboardingOnce() {
+    if (localStorage.getItem('onboarding_seen')) return;
+    const overlay = document.getElementById('onboarding-overlay');
+    const btn = document.getElementById('onboarding-close');
+    if (!overlay || !btn) return;
+    overlay.classList.remove('hidden');
+    btn.onclick = () => {
+        overlay.classList.add('hidden');
+        localStorage.setItem('onboarding_seen', '1');
+    };
+}
+
+// --- One-time notification prompt ---
+function showNotificationPromptOnce() {
+    if (localStorage.getItem('notification_prompt_dismissed')) return;
+    const prompt = document.getElementById('notification-prompt');
+    const enableBtn = document.getElementById('notification-prompt-enable');
+    const dismissBtn = document.getElementById('notification-prompt-dismiss');
+    if (!prompt || !enableBtn || !dismissBtn) return;
+    (async () => {
+        try {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg?.active) {
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) return;
+            }
+        } catch (_) {}
+        prompt.classList.remove('hidden');
+        enableBtn.onclick = () => {
+            prompt.classList.add('hidden');
+            window.location.href = '/profile.html#settings';
+        };
+        dismissBtn.onclick = () => {
+            prompt.classList.add('hidden');
+            localStorage.setItem('notification_prompt_dismissed', '1');
+        };
+    })();
+}
+
 // --- Logic ---
 function selectDay(day) {
     state.selectedDay = day;
@@ -488,7 +658,14 @@ function updateWeek(offset) {
 }
 
 async function init() {
-    // 1. Initialize Navigation IMMEDIATELY
+    try {
+        const token = localStorage.getItem('access_token');
+        await fetch('/api/analytics/view', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify({ page: 'main' })
+        });
+    } catch (_) {}
     initFloatingNav();
 
     // 2. Load User Profile & Greeting IMMEDIATELY (Cached or Network)
@@ -502,38 +679,43 @@ async function init() {
     updateLiveStatus();
     setInterval(updateLiveStatus, 30000); // Every 30 sec
 
-    // 5. Load Schedule (This might be slow, so do it last to not block UI)
-    // 5. Load Schedule with Offline Caching
-    try {
-        // Try to fetch from server
-        // Using standard endpoint (cached on server if enabled)
-        const response = await fetch('/api/schedule');
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const data = await response.json();
-        setScheduleData(data);
-
-        // Cache for offline use
-        localStorage.setItem('cached_schedule', JSON.stringify(data));
-        localStorage.setItem('cached_schedule_time', new Date().toISOString());
-
-    } catch (error) {
-        console.error('Network load failed, checking cache:', error);
-
-        // Fallback to cache
+    // 5. Load Schedule with retry + check for updates
+    const cachedBefore = localStorage.getItem('cached_schedule');
+    let scheduleLoaded = false;
+    for (let attempt = 1; attempt <= 3 && !scheduleLoaded; attempt++) {
+        try {
+            const response = await fetch('/api/schedule');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            const dataStr = JSON.stringify(data);
+            const hadCache = !!cachedBefore;
+            const changed = hadCache && cachedBefore !== dataStr;
+            setScheduleData(data);
+            localStorage.setItem('cached_schedule', dataStr);
+            localStorage.setItem('cached_schedule_time', new Date().toISOString());
+            scheduleLoaded = true;
+            if (changed) {
+                showMessage('Расписание обновлено', 'success');
+                renderWeekInfo();
+                renderTabs();
+                renderSchedule();
+                updateNextLessonWidget();
+                updateLiveStatus();
+            }
+            break;
+        } catch (error) {
+            console.error(`Schedule fetch attempt ${attempt}/3 failed:`, error);
+            if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
+        }
+    }
+    if (!scheduleLoaded) {
         const cached = localStorage.getItem('cached_schedule');
         const cachedTime = localStorage.getItem('cached_schedule_time');
-
         if (cached) {
-            console.log('Using offline cache');
             setScheduleData(JSON.parse(cached));
-
-            // Show Offline Notification
             const timeStr = cachedTime ? new Date(cachedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-            showMessage(`Режим офлайн 📶 (Данные от ${timeStr})`, 'info'); // Using 'info' style (orange/blue)
+            showMessage(`Режим офлайн 📶 (Данные от ${timeStr})`, 'info');
         } else {
-            // Show error to user if no cache
             const container = document.getElementById('schedule-container');
             if (container) {
                 container.innerHTML = `
@@ -541,9 +723,10 @@ async function init() {
                         <div class="empty-icon">⚠️</div>
                         <p>Ошибка загрузки</p>
                         <p class="subtitle">Нет интернета и сохраненной копии.</p>
-                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 12px 20px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight:600;">Попробовать снова</button>
+                        <button type="button" id="retry-schedule-btn" style="margin-top: 1rem; padding: 12px 20px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight:600;">Попробовать снова</button>
                     </div>
                 `;
+                document.getElementById('retry-schedule-btn')?.addEventListener('click', () => location.reload());
             }
         }
     }
@@ -562,6 +745,13 @@ async function init() {
     renderWeekInfo();
     renderTabs();
     renderSchedule();
+
+    updateNextLessonWidget();
+    setInterval(updateNextLessonWidget, 60000);
+    initPullToRefresh();
+    initShare();
+    showOnboardingOnce();
+    showNotificationPromptOnce();
 
     // Listeners for Week Navigation
     const currentWeekBtn = document.getElementById('current-week-btn');

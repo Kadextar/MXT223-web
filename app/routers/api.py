@@ -60,6 +60,40 @@ async def get_exams():
     except Exception as e:
         return []
 
+@router.get("/api/announcements")
+async def get_announcements_list():
+    """Returns last 20 announcements for archive"""
+    try:
+        query = "SELECT id, message, created_at FROM announcements ORDER BY created_at DESC LIMIT 20"
+        rows = await database.fetch_all(query=query)
+        return [{"id": r["id"], "message": r["message"], "created_at": r["created_at"]} for r in rows]
+    except Exception as e:
+        print(f"Announcements list error: {e}")
+        return []
+
+@router.get("/api/deadlines")
+async def get_deadlines():
+    """Important dates: exams, coursework, etc."""
+    try:
+        query = "SELECT id, title, deadline_date, dtype FROM deadlines WHERE deadline_date >= date('now') ORDER BY deadline_date ASC LIMIT 30"
+        rows = await database.fetch_all(query=query)
+        return [{"id": r["id"], "title": r["title"], "deadline_date": str(r["deadline_date"]), "dtype": r.get("dtype") or "other"} for r in rows]
+    except Exception as e:
+        return []
+
+@router.post("/api/analytics/view")
+async def analytics_view(data: dict = None):
+    """Log page view (no PII). Body: { \"page\": \"main\" }."""
+    try:
+        page = (data or {}).get("page", "unknown")[:100]
+        await database.execute(
+            "INSERT INTO page_views (page_name) VALUES (:p)",
+            {"p": page}
+        )
+        return {"ok": True}
+    except Exception:
+        return {"ok": False}
+
 @router.get("/api/ratings")
 async def get_ratings():
     """Get all teacher ratings"""

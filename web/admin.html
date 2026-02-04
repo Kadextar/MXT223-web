@@ -126,7 +126,9 @@
                 <button class="tab-btn active" data-tab="dashboard">Дашборд</button>
                 <button class="tab-btn" data-tab="schedule">Расписание</button>
                 <button class="tab-btn" data-tab="teachers">Преподаватели</button>
+                <button class="tab-btn" data-tab="deadlines">Важные даты</button>
                 <button class="tab-btn" data-tab="announcements">Объявления</button>
+                <button class="tab-btn" data-tab="analytics">Аналитика</button>
             </div>
 
             <!-- Dashboard Section -->
@@ -232,6 +234,38 @@
                 </table>
             </div>
 
+            <!-- Deadlines Section -->
+            <div id="deadlines" class="admin-section">
+                <div class="card" style="padding: 20px; margin-bottom: 20px;">
+                    <h3>📅 Добавить важную дату</h3>
+                    <div class="form-group">
+                        <label>Название</label>
+                        <input type="text" id="deadline-title" placeholder="Например: Экзамен по математике">
+                    </div>
+                    <div class="form-group">
+                        <label>Дата</label>
+                        <input type="date" id="deadline-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Тип</label>
+                        <select id="deadline-type">
+                            <option value="exam">Экзамен</option>
+                            <option value="coursework">Курсовая</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                    <button class="btn-add" id="add-deadline-btn">Добавить</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Название</th><th>Дата</th><th>Тип</th><th></th></tr>
+                        </thead>
+                        <tbody id="deadlines-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Announcements Section -->
             <div id="announcements" class="admin-section">
                 <!-- Push Notification Card -->
@@ -265,8 +299,21 @@
                         <input type="text" id="announcement-input"
                             placeholder="Текст объявления (например: Завтра пары отменены!)">
                     </div>
-                    <button class="btn-add" id="save-announcement-btn" style="margin-top: 10px;">Сохранить
-                        объявленние</button>
+                    <button class="btn-add" id="save-announcement-btn" style="margin-top: 10px;">Сохранить объявление</button>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics" class="admin-section">
+                <div class="card" style="padding: 20px;">
+                    <h3>📊 Просмотры страниц</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">Количество открытий по страницам (без персональных данных).</p>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Страница</th><th>Просмотры</th></tr>
+                        </thead>
+                        <tbody id="analytics-table-body"></tbody>
+                    </table>
                 </div>
             </div>
         </main>

@@ -32,6 +32,13 @@ async def init_db():
             await database.execute("ALTER TABLE students ADD COLUMN avatar TEXT DEFAULT '1.png'")
         except Exception as e:
             print(f"Migration warning: {e}")
+    try:
+        await database.fetch_one("SELECT subgroup FROM students LIMIT 1")
+    except Exception:
+        try:
+            await database.execute("ALTER TABLE students ADD COLUMN subgroup INTEGER DEFAULT 1")
+        except Exception as e:
+            print(f"Migration subgroup: {e}")
     
     # Teachers table
     query = f"""
@@ -101,11 +108,19 @@ async def init_db():
             id {id_type},
             student_id TEXT NOT NULL,
             subscription_data TEXT NOT NULL,
+            reminder_minutes INTEGER DEFAULT 15,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(student_id)
         )
     """
     await database.execute(query)
+    try:
+        await database.execute("SELECT reminder_minutes FROM push_subscriptions LIMIT 1")
+    except Exception:
+        try:
+            await database.execute("ALTER TABLE push_subscriptions ADD COLUMN reminder_minutes INTEGER DEFAULT 15")
+        except Exception as e:
+            print(f"Migration reminder_minutes: {e}")
     
     # Schedule table
     query = f"""
@@ -130,6 +145,28 @@ async def init_db():
             message TEXT NOT NULL,
             is_active BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    await database.execute(query)
+
+    # Deadlines (важные даты: экзамены, курсовые)
+    query = f"""
+        CREATE TABLE IF NOT EXISTS deadlines (
+            id {id_type},
+            title TEXT NOT NULL,
+            deadline_date DATE NOT NULL,
+            dtype TEXT DEFAULT 'other',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """
+    await database.execute(query)
+
+    # Page views (analytics, no PII)
+    query = f"""
+        CREATE TABLE IF NOT EXISTS page_views (
+            id {id_type},
+            page_name TEXT NOT NULL,
+            viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """
     await database.execute(query)

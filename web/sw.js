@@ -2,6 +2,7 @@ const CACHE_NAME = 'mxt223-v57'; // Bump: Removed FontAwesome to fix Install Han
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
+    '/offline.html',
     '/static/styles.css',
     '/static/app.js',
     '/static/schedule_data.js',
@@ -35,7 +36,10 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 })
                 .catch(() => {
-                    return caches.match(event.request);
+                    return caches.match(event.request).then((cached) => {
+                        if (cached) return cached;
+                        return caches.match('/offline.html').then((offline) => offline || new Response('Offline', { status: 503 }));
+                    });
                 })
         );
         return;

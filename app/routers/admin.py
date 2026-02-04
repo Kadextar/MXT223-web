@@ -123,16 +123,52 @@ async def delete_teacher(teacher_id: int, user = Depends(require_admin)):
 async def update_announcement(data: dict, user = Depends(require_admin)):
     """Update announcement banner"""
     try:
-        # archive all previous
         await database.execute("UPDATE announcements SET is_active = FALSE")
-        
         message = data.get("message")
         if message:
             await database.execute(
                 "INSERT INTO announcements (message, is_active) VALUES (:msg, TRUE)",
                 {"msg": message}
             )
-            
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+@router.get("/api/admin/deadlines")
+async def get_admin_deadlines(user = Depends(require_admin)):
+    """List all deadlines"""
+    try:
+        return await database.fetch_all("SELECT * FROM deadlines ORDER BY deadline_date")
+    except Exception:
+        return []
+
+@router.post("/api/admin/deadlines")
+async def add_deadline(data: dict, user = Depends(require_admin)):
+    """Add deadline (title, deadline_date, dtype: exam/coursework/other)"""
+    try:
+        await database.execute(
+            "INSERT INTO deadlines (title, deadline_date, dtype) VALUES (:title, :deadline_date, :dtype)",
+            {"title": data.get("title", ""), "deadline_date": data.get("deadline_date"), "dtype": data.get("dtype", "other")}
+        )
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@router.delete("/api/admin/deadlines/{deadline_id}")
+async def delete_deadline(deadline_id: int, user = Depends(require_admin)):
+    try:
+        await database.execute("DELETE FROM deadlines WHERE id = :id", {"id": deadline_id})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@router.get("/api/admin/analytics")
+async def get_analytics(user = Depends(require_admin)):
+    """Page view counts by page"""
+    try:
+        rows = await database.fetch_all(
+            "SELECT page_name, COUNT(*) as cnt FROM page_views GROUP BY page_name ORDER BY cnt DESC LIMIT 50"
+        )
+        return [{"page": r["page_name"], "views": r["cnt"]} for r in rows]
+    except Exception:
+        return []

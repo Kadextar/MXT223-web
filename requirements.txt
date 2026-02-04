@@ -15,3 +15,5 @@ httpx
 sentry-sdk
 apscheduler
 pytz
+playwright
+pytest-playwright

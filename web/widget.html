@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>След. пара — МХТ-223</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body { padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .widget-box { max-width: 400px; width: 100%; text-align: center; }
+        .widget-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+        .widget-next { font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .widget-meta { font-size: 0.95rem; color: var(--text-muted); }
+        .widget-empty { color: var(--text-muted); }
+        a.back { display: inline-block; margin-top: 20px; color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="widget-box">
+        <p class="widget-title">Следующая пара</p>
+        <div id="widget-content">
+            <p class="widget-empty">Загрузка...</p>
+        </div>
+        <a href="/" class="back">Открыть расписание</a>
+    </div>
+    <script type="module">
+        const SEMESTER_START_DATE = new Date('2026-01-12');
+        const PAIR_TIMES = { 1: "08:00 - 09:20", 2: "09:30 - 10:50", 3: "11:00 - 12:20", 4: "12:30 - 13:50", 5: "14:00 - 15:20", 6: "15:30 - 16:50" };
+        const DAYS_MAP = { 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday', 6: 'saturday', 0: 'sunday' };
+
+        function getWeekNumber(date) {
+            const start = new Date(SEMESTER_START_DATE);
+            start.setHours(0, 0, 0, 0);
+            const current = new Date(date);
+            current.setHours(0, 0, 0, 0);
+            if (current < start) return 1;
+            const diffDays = Math.ceil((current - start) / (1000 * 60 * 60 * 24));
+            return Math.floor(diffDays / 7) + 1;
+        }
+
+        function getLessonsForDay(data, day, week) {
+            return (data || []).filter(l => l.day === day && Array.isArray(l.weeks) && week >= l.weeks[0] && week <= l.weeks[1]);
+        }
+
+        const el = document.getElementById('widget-content');
+        if (!localStorage.getItem('access_token')) {
+            el.innerHTML = '<p class="widget-empty">Войдите в приложение</p>';
+        } else {
+            try {
+                const r = await fetch('/api/schedule', { headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') } });
+                const data = r.ok ? await r.json() : [];
+                const schedule = Array.isArray(data) ? data : (data.lessons || data.schedule || []);
+                const now = new Date();
+                const dayIdx = now.getDay();
+                const dayName = DAYS_MAP[dayIdx];
+                const week = getWeekNumber(now);
+                const lessons = getLessonsForDay(schedule, dayName, week);
+                lessons.sort((a, b) => (a.pair || 0) - (b.pair || 0));
+                let next = null;
+                for (const l of lessons) {
+                    const timeRange = PAIR_TIMES[l.pair];
+                    if (!timeRange) continue;
+                    const [startStr] = timeRange.split(' - ');
+                    const [h, m] = startStr.trim().split(':').map(Number);
+                    const start = new Date(now);
+                    start.setHours(h, m, 0, 0);
+                    if (now < start) { next = { ...l, startStr }; break; }
+                }
+                if (next) {
+                    el.innerHTML = `<p class="widget-next">${next.subject}</p><p class="widget-meta">${next.startStr} • ${next.room || ''}</p>`;
+                } else if (dayIdx === 0 || dayIdx === 6) {
+                    el.innerHTML = '<p class="widget-empty">Выходной</p>';
+                } else {
+                    el.innerHTML = '<p class="widget-empty">Сегодня пар больше нет</p>';
+                }
+            } catch (e) {
+                const cached = localStorage.getItem('cached_schedule');
+                if (cached) {
+                    const schedule = JSON.parse(cached);
+                    const now = new Date();
+                    const dayName = DAYS_MAP[now.getDay()];
+                    const week = getWeekNumber(now);
+                    const lessons = getLessonsForDay(schedule, dayName, week);
+                    lessons.sort((a, b) => (a.pair || 0) - (b.pair || 0));
+                    let next = null;
+                    for (const l of lessons) {
+                        const timeRange = PAIR_TIMES[l.pair];
+                        if (!timeRange) continue;
+                        const [startStr] = timeRange.split(' - ');
+                        const [h, m] = startStr.trim().split(':').map(Number);
+                        const start = new Date(now);
+                        start.setHours(h, m, 0, 0);
+                        if (now < start) { next = { ...l, startStr }; break; }
+                    }
+                    if (next) el.innerHTML = `<p class="widget-next">${next.subject}</p><p class="widget-meta">${next.startStr} • ${next.room || ''}</p>`;
+                    else el.innerHTML = '<p class="widget-empty">Сегодня пар больше нет</p>';
+                } else {
+                    el.innerHTML = '<p class="widget-empty">Нет данных</p>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

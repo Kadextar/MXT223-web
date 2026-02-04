@@ -194,13 +194,41 @@
                         style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
                         <div>
                             <strong style="color: var(--text-main);">Светлая тема</strong>
-                            <p class="text-muted" style="font-size: 0.85rem; margin: 4px 0 0;">Переключить на "Светлая
-                                тема"</p>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 4px 0 0;">Переключить на светлую тему</p>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="theme-toggle">
                             <span class="slider round"></span>
                         </label>
+                    </div>
+                    <div class="setting-row"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                        <div>
+                            <strong style="color: var(--text-main);">Крупный шрифт</strong>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 4px 0 0;">Увеличить размер текста</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="font-large-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                        <div>
+                            <strong style="color: var(--text-main);">Тема по времени</strong>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 4px 0 0;">Светлая днём (6–21), тёмная ночью</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="theme-auto-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="margin-top: 16px;">
+                        <strong style="color: var(--text-main);">Подгруппа</strong>
+                        <select id="subgroup-select" class="form-select" style="margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main);">
+                            <option value="1">Подгруппа 1</option>
+                            <option value="2">Подгруппа 2</option>
+                        </select>
                     </div>
                 </div>
 
@@ -216,13 +244,61 @@
                 <!-- Notifications Card -->
                 <div class="profile-card" style="margin-top: 20px;">
                     <h3>🔔 Уведомления</h3>
-                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о
-                        парах.
-                    </p>
+                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о парах.</p>
+                    <div class="setting-row" style="margin-bottom: 12px;">
+                        <label class="text-muted" style="font-size: 0.9rem;">Напоминать за</label>
+                        <select id="reminder-minutes" class="form-select" style="padding: 8px 12px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main);">
+                            <option value="5">5 минут</option>
+                            <option value="15" selected>15 минут</option>
+                            <option value="30">30 минут</option>
+                        </select>
+                    </div>
                     <button class="submit-btn" id="enable-notifications-btn">
                         Включить уведомления
                     </button>
                     <div id="push-message" class="message hidden" style="margin-top: 10px;"></div>
+                </div>
+
+                <!-- Announcements archive -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>📣 Объявления</h3>
+                    <div id="announcements-list" class="announcements-list">
+                        <p class="text-muted">Загрузка...</p>
+                    </div>
+                </div>
+
+                <!-- Deadlines -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>📅 Важные даты</h3>
+                    <div id="deadlines-list" class="deadlines-list">
+                        <p class="text-muted">Загрузка...</p>
+                    </div>
+                </div>
+
+                <!-- Data / Cache info -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>📶 Данные</h3>
+                    <p class="text-muted" style="margin-bottom: 8px;">Расписание загружается с сервера и сохраняется для офлайна.</p>
+                    <p id="cache-date" class="text-muted" style="font-size: 0.9rem;">Обновлено: —</p>
+                </div>
+
+                <!-- About -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>ℹ️ О приложении</h3>
+                    <p class="text-muted" style="margin-bottom: 8px;">Расписание занятий группы МХТ-223. PWA: можно установить на главный экран и пользоваться офлайн.</p>
+                    <p id="app-version" class="text-muted" style="font-size: 0.9rem;">Версия —</p>
+                    <a id="chat-group-link" href="https://t.me/kadextar" target="_blank" rel="noopener noreferrer" class="submit-btn" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; margin-top: 12px;">
+                        <i class="fab fa-telegram"></i> Чат группы МХТ-223
+                    </a>
+                </div>
+
+                <!-- Report bug -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>🐛 Обратная связь</h3>
+                    <p class="text-muted" style="margin-bottom: 12px;">Нашли ошибку или есть идея?</p>
+                    <a id="report-bug-link" href="https://t.me/kadextar" target="_blank" rel="noopener noreferrer" class="submit-btn" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                        <i class="fas fa-paper-plane"></i> Написать в Telegram
+                    </a>
                 </div>
 
                 <!-- Actions Card -->
@@ -233,8 +309,8 @@
             </div>
 
             <!-- Avatar Selection Modal (Global) -->
-            <div id="avatar-modal" class="modal hidden">
-                <div class="modal-overlay"></div>
+            <div id="avatar-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Выберите аватар">
+                <div class="modal-overlay" aria-hidden="true"></div>
                 <div class="modal-content">
                     <h2 style="color: var(--text-main); margin-bottom: 20px;">Выберите аватар</h2>
                     <div class="avatars-grid">
@@ -256,9 +332,7 @@
 
         </main>
 
-        <br><br><br> <!-- Spacer -->
-
-        <nav class="profile-nav">
+        <nav class="profile-nav" aria-label="Основное меню">
             <a href="/" class="nav-link" title="Меню"><i class="fas fa-th-large"></i></a>
             <a href="/academics.html" class="nav-link" title="Предметы"><i class="fas fa-book"></i></a>
             <a href="/ratings.html" class="nav-link" title="Рейтинг"><i class="fas fa-star"></i></a>

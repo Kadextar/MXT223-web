@@ -32,6 +32,14 @@ def academics_page():
 def admin_page():
     return FileResponse(BASE_DIR / "web" / "admin.html")
 
+@router.get("/widget.html")
+def widget_page():
+    return FileResponse(BASE_DIR / "web" / "widget.html")
+
+@router.get("/offline.html")
+def offline_page():
+    return FileResponse(BASE_DIR / "web" / "offline.html")
+
 @router.get("/manifest.json")
 def manifest():
     return FileResponse(BASE_DIR / "web" / "manifest.json", media_type="application/manifest+json")

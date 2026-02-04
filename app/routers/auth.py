@@ -11,12 +11,25 @@ async def update_avatar(data: dict, current_user: dict = Depends(get_current_use
     avatar = data.get("avatar")
     if not avatar:
         raise HTTPException(status_code=400, detail="Avatar required")
-        
     try:
         await database.execute(
             "UPDATE students SET avatar = :avatar WHERE telegram_id = :tid",
             {"avatar": avatar, "tid": current_user["telegram_id"]}
         )
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@router.patch("/api/me")
+async def update_me(data: dict, current_user: dict = Depends(get_current_user)):
+    """Update current user (subgroup, etc.)"""
+    try:
+        subgroup = data.get("subgroup")
+        if subgroup is not None and subgroup in (1, 2):
+            await database.execute(
+                "UPDATE students SET subgroup = :sg WHERE telegram_id = :tid",
+                {"sg": subgroup, "tid": current_user["telegram_id"]}
+            )
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -34,15 +47,16 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
     )
     
     student_details = await database.fetch_one(
-        "SELECT created_at, avatar FROM students WHERE telegram_id = :tid",
+        "SELECT created_at, avatar, subgroup FROM students WHERE telegram_id = :tid",
         {"tid": current_user["telegram_id"]}
     )
-    
+    if not student_details:
+        student_details = {}
     response = dict(current_user)
-    response["created_at"] = str(student_details["created_at"]) if student_details and student_details["created_at"] else "N/A"
-    response["avatar"] = student_details["avatar"] if student_details and student_details["avatar"] else "1.png"
+    response["created_at"] = str(student_details.get("created_at")) if student_details.get("created_at") else "N/A"
+    response["avatar"] = student_details.get("avatar") or "1.png"
+    response["subgroup"] = int(student_details["subgroup"]) if student_details.get("subgroup") is not None else 1
     response["ratings_count"] = ratings_count
-    
     return response
 
 @router.post("/api/login")

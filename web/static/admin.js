@@ -286,14 +286,70 @@ document.getElementById('teacher-form').addEventListener('submit', async (e) => 
     }
 });
 
+// --- Deadlines ---
+async function loadDeadlines() {
+    const data = await apiCall('/api/admin/deadlines');
+    const tbody = document.getElementById('deadlines-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (data && data.length) {
+        data.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${d.title}</td>
+                <td>${d.deadline_date}</td>
+                <td>${d.dtype || 'other'}</td>
+                <td><button class="action-btn btn-delete" onclick="window.deleteDeadline(${d.id})">Удалить</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+}
+window.deleteDeadline = async function (id) {
+    if (!confirm('Удалить?')) return;
+    const result = await apiCall(`/api/admin/deadlines/${id}`, 'DELETE');
+    if (result && result.success) loadDeadlines();
+};
+document.getElementById('add-deadline-btn')?.addEventListener('click', async () => {
+    const title = document.getElementById('deadline-title')?.value?.trim();
+    const date = document.getElementById('deadline-date')?.value;
+    const dtype = document.getElementById('deadline-type')?.value || 'other';
+    if (!title || !date) { alert('Заполните название и дату'); return; }
+    const result = await apiCall('/api/admin/deadlines', 'POST', { title, deadline_date: date, dtype });
+    if (result && result.success) {
+        document.getElementById('deadline-title').value = '';
+        document.getElementById('deadline-date').value = '';
+        loadDeadlines();
+    }
+});
+
+// --- Analytics ---
+async function loadAnalytics() {
+    const data = await apiCall('/api/admin/analytics');
+    const tbody = document.getElementById('analytics-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (data && data.length) {
+        data.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${r.page}</td><td>${r.views}</td>`;
+            tbody.appendChild(tr);
+        });
+    } else {
+        tbody.innerHTML = '<tr><td colspan="2">Нет данных</td></tr>';
+    }
+}
+
 // Tabs
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-
         btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
+        const section = document.getElementById(btn.dataset.tab);
+        if (section) section.classList.add('active');
+        if (btn.dataset.tab === 'deadlines') loadDeadlines();
+        if (btn.dataset.tab === 'analytics') loadAnalytics();
     });
 });
 
