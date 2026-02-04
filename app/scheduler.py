@@ -53,8 +53,9 @@ async def check_upcoming_lessons():
         return
 
     # Determine current day of week (Monday=0, Sunday=6)
-    # Our DB uses 0=Monday
-    day_of_week = now.weekday()
+    # DB stores day as text: monday, tuesday, ...
+    WEEKDAY_NAMES = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    day_of_week = WEEKDAY_NAMES[now.weekday()]
     
     # Determine current week type (Odd/Even or Week Number) if needed
     # For MVP, we just notify if there is *any* lesson for this group/subgroup.
