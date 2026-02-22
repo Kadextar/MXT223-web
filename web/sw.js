@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mxt223-v57'; // Bump: Removed FontAwesome to fix Install Hang
+const CACHE_NAME = 'mxt223-v58'; // Bump: API always network-only to fix offline banner in normal session
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -24,6 +24,12 @@ self.addEventListener('install', (event) => {
 
 // Fetch Event
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+    // API: always network-only (no cache) so normal session gets fresh data like incognito
+    if (url.pathname.startsWith('/api/')) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
     // Network First for HTML; on failure serve offline.html for navigation
     if (event.request.mode === 'navigate' || event.request.destination === 'document') {
         event.respondWith(
