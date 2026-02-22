@@ -6,11 +6,11 @@ from typing import Optional
 from jose import JWTError, jwt
 import os
 
-# JWT Configuration
+# JWT Configuration (overridable via env)
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-this-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_EXPIRE_MINUTES", "15"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("JWT_REFRESH_EXPIRE_DAYS", "7"))
 
 
 def create_access_token(data: dict) -> str:
@@ -33,18 +33,13 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(data: dict) -> str:
+def create_refresh_token(data: dict, days: Optional[int] = None) -> str:
     """
-    Create a JWT refresh token
-    
-    Args:
-        data: Dictionary with user data (should include 'sub' for user ID)
-        
-    Returns:
-        Encoded JWT token string
+    Create a JWT refresh token. Use days to override (e.g. remember_me=30).
     """
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expire_days = days if days is not None else REFRESH_TOKEN_EXPIRE_DAYS
+    expire = datetime.utcnow() + timedelta(days=expire_days)
     to_encode.update({
         "exp": expire,
         "type": "refresh",

@@ -1,7 +1,13 @@
 import databases
-from app.config import DATABASE_URL
+from app.config import DATABASE_URL, DATABASE_CONNECT_TIMEOUT
+from app.logging_config import logger
 
-database = databases.Database(DATABASE_URL)
+# Add connect_timeout for PostgreSQL
+_url = DATABASE_URL
+if "postgresql" in _url and "connect_timeout" not in _url:
+    sep = "&" if "?" in _url else "?"
+    _url = f"{_url}{sep}connect_timeout={DATABASE_CONNECT_TIMEOUT}"
+database = databases.Database(_url)
 
 async def init_db():
     """Initialize database tables if they don't exist"""
@@ -27,11 +33,11 @@ async def init_db():
         # Try to select avatar from one user. If it fails, column likely doesn't exist.
         await database.fetch_one("SELECT avatar FROM students LIMIT 1")
     except Exception:
-        print("💡 Migrating: Adding avatar column to students table...")
+        logger.info("Migrating: Adding avatar column to students table...")
         try:
             await database.execute("ALTER TABLE students ADD COLUMN avatar TEXT DEFAULT '1.png'")
         except Exception as e:
-            print(f"Migration warning: {e}")
+            logger.warning("Migration warning: %s", e)
     
     # Teachers table
     query = f"""
@@ -133,13 +139,184 @@ async def init_db():
         )
     """
     await database.execute(query)
-    
+    try:
+        await database.execute("ALTER TABLE announcements ADD COLUMN schedule_context TEXT")
+    except Exception:
+        pass
+
+    # User favorites (subjects) — sync across devices
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS user_favorites (
+            student_id TEXT NOT NULL,
+            subject_name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(student_id, subject_name)
+        )
+    """)
+
+    # User deadlines (coursework, exams - per student)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS user_deadlines (
+            id {id_type},
+            student_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            due_date DATE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Subject reviews (anonymous short reviews per subject)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS subject_reviews (
+            id {id_type},
+            subject_name TEXT NOT NULL,
+            body TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            moderated BOOLEAN DEFAULT FALSE
+        )
+    """)
+
+    # Announcement read receipts (for admin "read by N of M")
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS announcement_reads (
+            id {id_type},
+            announcement_id INTEGER NOT NULL,
+            user_identifier TEXT NOT NULL,
+            read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # 2FA TOTP secret per student
+    try:
+        await database.execute("ALTER TABLE students ADD COLUMN totp_secret TEXT")
+    except Exception:
+        pass
+
+    # Password reset tokens
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            id {id_type},
+            token TEXT UNIQUE NOT NULL,
+            telegram_id TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Visitors today (who opened schedule) — one row per day per identifier
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS visitor_log (
+            id {id_type},
+            visit_date DATE NOT NULL,
+            visitor_identifier TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(visit_date, visitor_identifier)
+        )
+    """)
+
+    # Polls (admin creates)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS polls (
+            id {id_type},
+            question TEXT NOT NULL,
+            options_json TEXT NOT NULL,
+            created_by TEXT NOT NULL,
+            active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS poll_votes (
+            id {id_type},
+            poll_id INTEGER NOT NULL,
+            user_identifier TEXT NOT NULL,
+            option_index INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(poll_id, user_identifier)
+        )
+    """)
+
+    # Comments under announcement
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS announcement_comments (
+            id {id_type},
+            announcement_id INTEGER NOT NULL,
+            user_identifier TEXT NOT NULL,
+            body TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Materials per subject (links)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS subject_materials (
+            id {id_type},
+            subject_name TEXT NOT NULL,
+            title TEXT NOT NULL,
+            url TEXT NOT NULL,
+            uploaded_by TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Schedule change history (admin)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS schedule_change_log (
+            id {id_type},
+            action TEXT NOT NULL,
+            payload_json TEXT,
+            changed_by TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Achievements definition + user unlocks
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS achievements (
+            id {id_type},
+            achievement_key TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            icon TEXT
+        )
+    """)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS user_achievements (
+            id {id_type},
+            user_identifier TEXT NOT NULL,
+            achievement_key TEXT NOT NULL,
+            unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_identifier, achievement_key)
+        )
+    """)
+
+    # Seed default achievements
+    for ak, name, desc, icon in [
+        ("streak_7", "Неделя подряд", "Заходил 7 дней подряд", "🔥"),
+        ("ratings_5", "Критик", "Оценил 5 преподавателей", "⭐"),
+        ("notes_3", "Заметки", "Вёл заметки к 3 предметам", "📝"),
+        ("first_login", "Первый вход", "Вошел в приложение", "👋"),
+    ]:
+        try:
+            await database.execute(
+                "INSERT OR IGNORE INTO achievements (achievement_key, name, description, icon) VALUES (:k, :n, :d, :i)",
+                {"k": ak, "n": name, "d": desc, "i": icon},
+            )
+        except Exception:
+            try:
+                await database.execute(
+                    "INSERT INTO achievements (achievement_key, name, description, icon) VALUES (:k, :n, :d, :i) ON CONFLICT(achievement_key) DO NOTHING",
+                    {"k": ak, "n": name, "d": desc, "i": icon},
+                )
+            except Exception:
+                pass
+
     # Check if students exist
     count_query = "SELECT COUNT(*) FROM students"
     count = await database.fetch_val(query=count_query)
     
     if count == 0:
-        print("🌱 Seeding students...")
+        logger.info("Seeding students...")
         students = [
             {"telegram_id": "1748727700", "password": "robiya2026", "name": "Робия"},
             {"telegram_id": "1427112602", "password": "sardor2026", "name": "Сардор"},
@@ -161,18 +338,18 @@ async def init_db():
             try:
                 await database.execute(query=insert_query, values=student)
             except Exception as e:
-                print(f"Error seeding student {student['name']}: {e}")
+                logger.warning("Error seeding student %s: %s", student['name'], e)
     
     # Check if schedule exists
     try:
         count_query = "SELECT COUNT(*) FROM schedule"
         count = await database.fetch_val(query=count_query)
     except Exception as e:
-        print(f"Schedule table check failed (maybe not created?): {e}")
+        logger.warning("Schedule table check failed (maybe not created?): %s", e)
         count = -1  # Skip seeding if table check fails
     
     if count == 0:
-        print("📅 Seeding schedule...")
+        logger.info("Seeding schedule...")
         
         # Mappings for teachers
         TEACHERS = {
@@ -263,12 +440,12 @@ async def init_db():
                 
                 await database.execute(query=insert_query, values=data)
             except Exception as e:
-                print(f"Error seeding lesson {lesson['subject']}: {e}")
+                logger.warning("Error seeding lesson %s: %s", lesson['subject'], e)
                 
-        print(f"✓ Seeded {len(lessons)} lessons")
+        logger.info("Seeded %d lessons", len(lessons))
     
     # Create indexes for performance
-    print("📊 Creating database indexes...")
+    logger.info("Creating database indexes...")
     
     try:
         # Index on students.telegram_id (for login queries)
@@ -300,7 +477,19 @@ async def init_db():
             CREATE INDEX IF NOT EXISTS idx_exams_date 
             ON exams(exam_date)
         """)
-        
-        print("✓ Database indexes created")
+
+        # Index on announcement_reads.announcement_id (for read count)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_announcement_reads_announcement_id
+            ON announcement_reads(announcement_id)
+        """)
+
+        # Index on subject_reviews (subject_name, moderated) for listing/moderated filter
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_subject_reviews_subject_moderated
+            ON subject_reviews(subject_name, moderated)
+        """)
+
+        logger.info("Database indexes created")
     except Exception as e:
-        print(f"Warning: Could not create indexes: {e}")
+        logger.warning("Could not create indexes: %s", e)

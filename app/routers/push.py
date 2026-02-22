@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Header, Depends
+import json
+from fastapi import APIRouter, Header, Depends, BackgroundTasks
+from fastapi.responses import JSONResponse
+from pywebpush import webpush, WebPushException
 from app.database import database
 from app.config import VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY, VAPID_CLAIM_EMAIL
 from app.dependencies import require_admin
-import json
-from pywebpush import webpush, WebPushException
+from app.logging_config import logger
 
-router = APIRouter()
+router = APIRouter(tags=["Push"])
 
-@router.post("/api/subscribe")
+@router.post("/subscribe")
 async def subscribe_push(data: dict, authorization: str = Header(None)):
     """Subscribe to push notifications"""
     try:
@@ -39,74 +41,104 @@ async def subscribe_push(data: dict, authorization: str = Header(None)):
                 "INSERT INTO push_subscriptions (student_id, subscription_data) VALUES (:sid, :data)",
                 {"sid": student_id, "data": subscription_json}
             )
-            
+        logger.info("push_subscribed", extra={"student_id": student_id})
         return {"success": True}
     except Exception as e:
-        print(f"Subscribe error: {e}")
+        logger.exception("Subscribe error")
         return {"success": False, "error": str(e)}
 
-@router.get("/api/push/config")
+@router.get("/push/config")
 async def get_push_config():
     """Return VAPID Public Key for frontend"""
     return {"vapid_public_key": VAPID_PUBLIC_KEY}
 
-@router.post("/api/admin/push")
-async def send_push_notification(data: dict, user = Depends(require_admin)):
-    """Send push notification to all subscribers"""
+async def _send_push_to_all(title: str, body: str, url: str = "/"):
+    """Send one push to all subscriptions. Used by admin push and schedule-changed."""
     if not VAPID_PRIVATE_KEY:
-        return {"success": False, "error": "VAPID key not configured"}
-        
+        return
+    payload = json.dumps({
+        "title": title,
+        "body": body,
+        "url": url,
+        "icon": "/static/icons/icon-192x192.png",
+    })
     try:
-        message = data.get("message", "Новое уведомление")
-        title = data.get("title", "МХТ-223")
-        url = data.get("url", "/")
-        
-        payload = json.dumps({
-            "title": title,
-            "body": message,
-            "url": url,
-            "icon": "/static/icons/icon-192x192.png"
-        })
-        
-        # Get all subscriptions
-        query = "SELECT * FROM push_subscriptions"
-        rows = await database.fetch_all(query=query)
-        
-        sent_count = 0
-        failed_count = 0
-        removed_count = 0
-        
+        rows = await database.fetch_all("SELECT * FROM push_subscriptions")
         for row in rows:
             try:
-                subscription_info = json.loads(row["subscription_data"])
-                
+                sub = json.loads(row["subscription_data"])
                 webpush(
-                    subscription_info=subscription_info,
+                    subscription_info=sub,
                     data=payload,
                     vapid_private_key=VAPID_PRIVATE_KEY,
-                    vapid_claims={"sub": VAPID_CLAIM_EMAIL}
+                    vapid_claims={"sub": VAPID_CLAIM_EMAIL},
                 )
-                sent_count += 1
             except WebPushException as ex:
                 if ex.response and ex.response.status_code in [404, 410]:
-                    # Subscription is expired or invalid, remove it
-                    await database.execute(
-                        "DELETE FROM push_subscriptions WHERE id = :id", 
-                        {"id": row["id"]}
-                    )
-                    removed_count += 1
-                else:
-                    print(f"Push error for {row['student_id']}: {ex}")
-                    failed_count += 1
-            except Exception as e:
-                print(f"Generic push error: {e}")
-                failed_count += 1
-                
-        return {
-            "success": True, 
-            "sent": sent_count, 
-            "failed": failed_count, 
-            "removed_stale": removed_count
-        }
+                    await database.execute("DELETE FROM push_subscriptions WHERE id = :id", {"id": row["id"]})
+            except Exception:
+                pass
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logger.exception("_send_push_to_all: %s", e)
+
+
+async def notify_schedule_changed():
+    """Call after schedule add/delete to push 'Расписание обновилось'."""
+    await _send_push_to_all("МХТ-223", "Расписание обновилось", "/")
+
+
+@router.post("/admin/push")
+async def send_push_notification(
+    data: dict, background_tasks: BackgroundTasks, user=Depends(require_admin)
+):
+    """Queue push to all subscribers; returns immediately (202). Sending runs in background."""
+    if not VAPID_PRIVATE_KEY:
+        return {"success": False, "error": "VAPID key not configured"}
+    message = data.get("message", "Новое уведомление")
+    title = data.get("title", "МХТ-223")
+    url = data.get("url", "/")
+    payload = json.dumps({
+        "title": title,
+        "body": message,
+        "url": url,
+        "icon": "/static/icons/icon-192x192.png",
+    })
+    # Run sending in background so admin gets fast response
+    async def send_in_background():
+        try:
+            query = "SELECT * FROM push_subscriptions"
+            rows = await database.fetch_all(query=query)
+            sent = failed = removed = 0
+            for row in rows:
+                try:
+                    sub = json.loads(row["subscription_data"])
+                    webpush(
+                        subscription_info=sub,
+                        data=payload,
+                        vapid_private_key=VAPID_PRIVATE_KEY,
+                        vapid_claims={"sub": VAPID_CLAIM_EMAIL},
+                    )
+                    sent += 1
+                except WebPushException as ex:
+                    if ex.response and ex.response.status_code in [404, 410]:
+                        await database.execute(
+                            "DELETE FROM push_subscriptions WHERE id = :id",
+                            {"id": row["id"]},
+                        )
+                        removed += 1
+                    else:
+                        failed += 1
+                except Exception:
+                    failed += 1
+            logger.info("Push finished: sent=%s failed=%s removed=%s", sent, failed, removed)
+        except Exception as e:
+            logger.exception("Background push failed: %s", e)
+    background_tasks.add_task(send_in_background)
+    return JSONResponse(
+        status_code=202,
+        content={
+            "success": True,
+            "status": "accepted",
+            "message": "Отправка запущена в фоне",
+        },
+    )

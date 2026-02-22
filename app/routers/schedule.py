@@ -1,85 +1,53 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from app.database import database
+from app.logging_config import logger
+from app.schemas import LessonItem, ScheduleResponse
 from utils.cache import cached
 
-router = APIRouter()
+router = APIRouter(tags=["Schedule"])
 
-# Helper function for cached schedule
-@cached(ttl=300)  # 5 minutes cache
-async def get_schedule_data():
+def _row_to_item(row):
+    return {
+        "id": row["id"],
+        "day": row["day_of_week"],
+        "pair": row["pair_number"],
+        "subject": row["subject"],
+        "type": row["lesson_type"],
+        "teacher": row["teacher"],
+        "room": row["room"],
+        "weeks": [row["week_start"], row["week_end"]],
+    }
+
+@router.get(
+    "/schedule",
+    summary="Список занятий",
+    description="С limit/offset — объект {items, total, limit, offset}. Без параметров — массив (обратная совместимость).",
+)
+async def get_schedule(
+    limit: int = Query(None, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+):
     try:
         query = "SELECT * FROM schedule ORDER BY pair_number"
         rows = await database.fetch_all(query=query)
-        print(f"🔍 get_schedule_data: Found {len(rows)} rows in DB")
-        schedule = []
-        for row in rows:
-            schedule.append({
-                "id": row["id"],
-                "day": row["day_of_week"],
-                "pair": row["pair_number"],
-                "subject": row["subject"],
-                "type": row["lesson_type"],
-                "teacher": row["teacher"],
-                "room": row["room"],
-                "weeks": [row["week_start"], row["week_end"]]
-            })
-        return schedule
-    except Exception as e:
-        print(f"DB Error: {e}")
-        return []
+        total = len(rows)
+        if limit is not None:
+            rows = rows[offset : offset + limit]
+            items = [_row_to_item(row) for row in rows]
+            return ScheduleResponse(items=items, total=total, limit=limit, offset=offset)
+        # Backward compat: return plain array
+        return [_row_to_item(row) for row in rows]
+    except Exception:
+        logger.exception("get_schedule DB error")
+        return [] if limit is None else ScheduleResponse(items=[], total=0, limit=limit, offset=offset)
 
-@router.get("/api/schedule")
-async def get_schedule_cached():
-    """Returns all lessons from database (currently NOCACHE as per recent fix)"""
-    # TEMP: Disabled caching due to persistent stale cache issue
-    # We are using the nocache logic directly here as per the fix applied in previous phase
-    # But keeping the structure ready for when caching is re-enabled properly
-    
-    # Original cached intent:
-    # return await get_schedule_data()
-    
-    # Current non-cached implementation:
-    try:
-        query = "SELECT * FROM schedule ORDER BY pair_number"
-        rows = await database.fetch_all(query=query)
-        print(f"🔍 get_schedule: Found {len(rows)} rows in DB")
-        schedule = []
-        for row in rows:
-            schedule.append({
-                "id": row["id"],
-                "day": row["day_of_week"],
-                "pair": row["pair_number"],
-                "subject": row["subject"],
-                "type": row["lesson_type"],
-                "teacher": row["teacher"],
-                "room": row["room"],
-                "weeks": [row["week_start"], row["week_end"]]
-            })
-        return schedule
-    except Exception as e:
-        print(f"DB Error: {e}")
-        return []
-
-@router.get("/api/debug/schedule-nocache")
+@router.get("/debug/schedule-nocache")
 async def get_schedule_nocache():
-    """Returns schedule WITHOUT caching - for debugging"""
+    """Returns schedule WITHOUT caching - for debugging."""
     try:
         query = "SELECT * FROM schedule ORDER BY pair_number"
         rows = await database.fetch_all(query=query)
-        print(f"🔍 NOCACHE: Found {len(rows)} rows in DB")
-        schedule = []
-        for row in rows:
-            schedule.append({
-                "id": row["id"],
-                "day": row["day_of_week"],
-                "pair": row["pair_number"],
-                "subject": row["subject"],
-                "type": row["lesson_type"],
-                "teacher": row["teacher"],
-                "room": row["room"],
-                "weeks": [row["week_start"], row["week_end"]]
-            })
-        return schedule
-    except Exception as e:
-        print(f"❌ NOCACHE Error: {e}")
+        return [_row_to_item(row) for row in rows]
+    except Exception:
+        logger.exception("schedule-nocache error")
         return []

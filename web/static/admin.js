@@ -4,9 +4,26 @@ if (!accessToken) {
     window.location.href = '/login.html';
 }
 
+// DOM
+const lessonModal = document.getElementById('lesson-modal');
+
 // Global State
 let scheduleData = [];
 let teachersData = [];
+
+function showAdminMessage(el, text, isError) {
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('hidden', 'success', 'error');
+    el.classList.add(isError ? 'error' : 'success');
+}
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // API Helper
 async function apiCall(endpoint, method = 'GET', data = null) {
@@ -55,12 +72,26 @@ async function checkAdmin() {
 
 // Stats Function
 async function loadStats() {
+    const ids = ['stat-students', 'stat-teachers', 'stat-ratings', 'stat-subs'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '…';
+    });
     const data = await apiCall('/api/admin/stats');
     if (data) {
-        document.getElementById('stat-students').textContent = data.students;
-        document.getElementById('stat-teachers').textContent = data.teachers;
-        document.getElementById('stat-ratings').textContent = data.ratings;
-        document.getElementById('stat-subs').textContent = data.subscriptions;
+        const set = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val != null && val !== '' ? Number(val) : '—';
+        };
+        set('stat-students', data.students);
+        set('stat-teachers', data.teachers);
+        set('stat-ratings', data.ratings);
+        set('stat-subs', data.subscriptions);
+    } else {
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '—';
+        });
     }
 }
 
@@ -102,13 +133,14 @@ function renderSchedule(data) {
     data.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${DAY_MAPPING[item.day]}</td>
-            <td>${item.pair}</td>
-            <td>${item.subject}</td>
-            <td>${item.type === 'lecture' ? 'Лекция' : 'Семинар'}</td>
-            <td>${item.room}</td>
-            <td>
-                <button class="action-btn btn-delete" onclick="window.deleteLesson(${item.id})">Удалить</button>
+            <td data-label="День">${DAY_MAPPING[item.day]}</td>
+            <td data-label="Пара">${item.pair}</td>
+            <td data-label="Предмет">${item.subject}</td>
+            <td data-label="Тип">${item.type === 'lecture' ? 'Лекция' : 'Семинар'}</td>
+            <td data-label="Аудитория">${item.room}</td>
+            <td data-label="Действия">
+                <button class="action-btn" style="background:var(--primary); color:white;" onclick="window.editLesson(${item.id})">✏️</button>
+                <button class="action-btn btn-delete" onclick="window.deleteLesson(${item.id})">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -143,10 +175,10 @@ function renderTeachers(data) {
     data.forEach(teacher => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${teacher.name}</td>
-            <td>${teacher.subject || '-'}</td>
-            <td>${teacher.average_rating ? teacher.average_rating.toFixed(1) : 'Нет'}</td>
-            <td>
+            <td data-label="Имя">${teacher.name}</td>
+            <td data-label="Предмет">${teacher.subject || '-'}</td>
+            <td data-label="Рейтинг">${teacher.average_rating ? teacher.average_rating.toFixed(1) : 'Нет'}</td>
+            <td data-label="Действия">
                 <button class="action-btn btn-delete" onclick="window.deleteTeacher(${teacher.id})">Удалить</button>
             </td>
         `;
@@ -191,14 +223,48 @@ async function sendPushNotification() {
 // --- Announcements ---
 async function loadAnnouncement() {
     const data = await apiCall('/api/announcement');
-    if (data && data.message) {
-        document.getElementById('announcement-input').value = data.message;
+    if (data) {
+        document.getElementById('announcement-input').value = data.message || '';
+        const ctx = data.schedule_context;
+        if (ctx) {
+            const w = document.getElementById('announcement-week');
+            const d = document.getElementById('announcement-day');
+            if (w) w.value = ctx.week_num || '';
+            if (d) d.value = ctx.day || '';
+        }
+    }
+    const stats = await apiCall('/api/admin/announcement-stats');
+    const statsEl = document.getElementById('announcement-stats');
+    if (statsEl && stats) statsEl.textContent = `Прочитали: ${stats.read_count} из ${stats.total_students}`;
+
+    const reviews = await apiCall('/api/admin/subject-reviews');
+    const listEl = document.getElementById('subject-reviews-list-admin');
+    if (listEl) {
+        if (!reviews || reviews.length === 0) listEl.innerHTML = '<p class="text-muted">Нет отзывов</p>';
+        else {
+            listEl.innerHTML = reviews.map(r => `
+                <div class="subject-review-admin-row">
+                    <div><strong>${escapeHtml(r.subject_name)}</strong><br><span class="text-muted">${escapeHtml(r.body)}</span></div>
+                    ${r.moderated ? '<span class="text-muted">✓ Опубликован</span>' : `<button type="button" class="btn-add" data-review-id="${r.id}">Модерировать</button>`}
+                </div>
+            `).join('');
+            listEl.querySelectorAll('[data-review-id]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-review-id');
+                    await apiCall('/api/admin/subject-reviews/' + id + '/moderate', 'POST');
+                    loadAnnouncement();
+                });
+            });
+        }
     }
 }
 
 document.getElementById('save-announcement-btn').addEventListener('click', async () => {
     const message = document.getElementById('announcement-input').value;
-    const result = await apiCall('/api/admin/announcement', 'POST', { message });
+    const weekNum = document.getElementById('announcement-week')?.value;
+    const day = document.getElementById('announcement-day')?.value;
+    const schedule_context = (weekNum && day) ? { week_num: parseInt(weekNum, 10), day } : null;
+    const result = await apiCall('/api/admin/announcement', 'POST', { message, schedule_context });
     if (result && result.success) {
         alert('Объявление обновлено!');
     } else {
@@ -221,16 +287,50 @@ function populateDatalists() {
 }
 
 // Add Lesson
-const lessonModal = document.getElementById('lesson-modal');
+// Edit Lesson
+let editingLessonId = null;
+
+window.editLesson = function (id) {
+    const lesson = scheduleData.find(item => item.id === id);
+    if (!lesson) return;
+
+    editingLessonId = id;
+
+    // Fill form
+    const form = document.getElementById('lesson-form');
+    form.day.value = lesson.day;
+    form.pair.value = lesson.pair;
+    form.subject.value = lesson.subject;
+    form.type.value = lesson.type;
+    form.teacher.value = lesson.teacher;
+    form.room.value = lesson.room;
+
+    // Change UI
+    document.getElementById('lesson-modal-title').textContent = 'Редактировать пару';
+    document.getElementById('lesson-submit-btn').textContent = 'Сохранить';
+
+    lessonModal.classList.remove('hidden');
+}
+
+// Reset form on close
+function resetLessonForm() {
+    editingLessonId = null;
+    document.getElementById('lesson-form').reset();
+    document.getElementById('lesson-modal-title').textContent = 'Добавить пару';
+    document.getElementById('lesson-submit-btn').textContent = 'Добавить';
+    lessonModal.classList.add('hidden');
+}
+
 document.getElementById('add-lesson-btn').addEventListener('click', () => {
+    editingLessonId = null;
+    document.getElementById('lesson-form').reset();
+    document.getElementById('lesson-modal-title').textContent = 'Добавить пару';
+    document.getElementById('lesson-submit-btn').textContent = 'Добавить';
     lessonModal.classList.remove('hidden');
 });
-document.getElementById('close-lesson-modal').addEventListener('click', () => {
-    lessonModal.classList.add('hidden');
-});
-lessonModal.querySelector('.modal-overlay').addEventListener('click', () => {
-    lessonModal.classList.add('hidden');
-});
+
+document.getElementById('close-lesson-modal').addEventListener('click', resetLessonForm);
+lessonModal.querySelector('.modal-overlay').addEventListener('click', resetLessonForm);
 
 document.getElementById('lesson-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -242,14 +342,21 @@ document.getElementById('lesson-form').addEventListener('submit', async (e) => {
         type: formData.get('type'),
         teacher: formData.get('teacher'),
         room: formData.get('room'),
-        week_start: 1, // Default to all semester
+        week_start: 1,
         week_end: 18
     };
 
-    const result = await apiCall('/api/admin/schedule', 'POST', data);
+    let result;
+    if (editingLessonId) {
+        // UPDATE
+        result = await apiCall(`/api/admin/schedule/${editingLessonId}`, 'PUT', data);
+    } else {
+        // CREATE
+        result = await apiCall('/api/admin/schedule', 'POST', data);
+    }
+
     if (result && result.success) {
-        lessonModal.classList.add('hidden');
-        e.target.reset();
+        resetLessonForm();
         loadSchedule();
     } else {
         alert('Ошибка: ' + (result?.error || 'Unknown'));

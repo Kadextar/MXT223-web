@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/login.css">
+    <link rel="stylesheet" href="/static/toast.css">
     <meta name="theme-color" content="#0f172a">
 </head>
 
@@ -22,7 +23,6 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <span class="badge">MXT-223</span>
                 <h1>Добро пожаловать!</h1>
                 <p class="subtitle">Введите ваш ID для входа</p>
             </div>
@@ -35,28 +35,27 @@
 
                 <div class="form-group">
                     <label>Пароль</label>
-                    <input type="password" id="password" placeholder="Введите пароль" required
-                        autocomplete="current-password">
-                    <small>Используйте начальный пароль, который вам дал Азамат</small>
+                    <div class="password-wrap">
+                        <input type="password" id="password" placeholder="Введите пароль" required
+                            autocomplete="current-password">
+                        <button type="button" class="password-toggle" id="password-toggle" title="Показать пароль" aria-label="Показать пароль">
+                            <svg class="icon-eye" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="icon-eye-off" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
                 </div>
-
+                <div class="form-group" id="totp-group" style="display: none;">
+                    <label>Код из приложения (2FA)</label>
+                    <input type="text" id="totp-code" placeholder="000000" maxlength="6" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="form-group form-group-checkbox">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember-me" name="remember_me">
+                        <span>Запомнить меня (30 дней)</span>
+                    </label>
+                </div>
                 <button type="submit" class="login-btn">Войти</button>
             </form>
-
-            <div class="students-list">
-                <p class="list-title">Студенты группы МХТ-223:</p>
-                <ul>
-                    <li>Робия</li>
-                    <li>Сардор</li>
-                    <li>Хислатбек</li>
-                    <li>Тимур</li>
-                    <li>Амир</li>
-                    <li>Мухаммад</li>
-                    <li>Абдумалик</li>
-                    <li>Азамат</li>
-                    <li>Нозима</li>
-                </ul>
-            </div>
         </div>
     </div>
 

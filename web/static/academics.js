@@ -1,4 +1,4 @@
-import { setScheduleData, getUniqueSubjects } from './schedule_data.js';
+import { setScheduleData, getUniqueSubjects, getProgressBySubject } from './schedule_data.js';
 import './theme_init.js';
 
 // Init
@@ -13,17 +13,30 @@ async function initAcademics() {
     }
 
     try {
-        // Fetch Schedule Data
-        const response = await fetch('/api/debug/schedule-nocache');
+        // Try to load from cache first for immediate render
+        const cached = localStorage.getItem('cached_schedule');
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            setScheduleData(Array.isArray(parsed) ? parsed : (parsed.items || []));
+            renderContent();
+        }
+
+        const response = await fetch('/api/schedule');
         if (!response.ok) throw new Error('Failed to load data');
         const data = await response.json();
+        const list = Array.isArray(data) ? data : (data.items || []);
 
-        setScheduleData(data); // Populate data store
+        localStorage.setItem('cached_schedule', JSON.stringify(list));
+        localStorage.setItem('cached_schedule_time', new Date().toISOString());
+
+        setScheduleData(list);
         renderContent();
 
     } catch (error) {
         console.error(error);
-        document.getElementById('subjects-list').innerHTML = `<p>Ошибка загрузки.</p>`;
+        if (!localStorage.getItem('cached_schedule')) {
+             document.getElementById('subjects-list').innerHTML = `<p>Ошибка загрузки.</p>`;
+        }
     }
 }
 
@@ -112,46 +125,107 @@ export const SUBJECTS_DATA = [
     }
 ];
 
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function getProgressForSubject(subjectName, progressMap) {
+    if (!progressMap[subjectName]) {
+        const key = Object.keys(progressMap).find(k => k.includes(subjectName) || subjectName.includes(k));
+        return key ? progressMap[key] : { lecture: 0, seminar: 0 };
+    }
+    return progressMap[subjectName];
+}
+
+async function openSubjectModal(sub) {
+    const scheduleSubjects = getUniqueSubjects();
+    let lectureTeacher = sub.teachers?.lecture;
+    let seminarTeacher = sub.teachers?.seminar;
+    if (!lectureTeacher || !seminarTeacher) {
+        const found = scheduleSubjects.find(s => s.name.includes(sub.name) || sub.name.includes(s.name));
+        if (found && found.teachers?.length) {
+            if (!lectureTeacher && !seminarTeacher) lectureTeacher = found.teachers.join(', ');
+        }
+    }
+
+    let statsText = '';
+    if (sub.isPractice) statsText = `${sub.credits} кредитов • ${sub.hours} часов`;
+    else if (sub.isCoursework) statsText = `${sub.credits} кредит • ${sub.hours} часов`;
+    else if (sub.credits > 0) statsText = `${sub.credits} кредитов • ${sub.hours} часов • ${sub.lectures || 0} лекций • ${sub.seminars || 0} семинаров`;
+    else statsText = 'Без кредитов';
+
+    let teachersBlock = '';
+    if (lectureTeacher || seminarTeacher) {
+        teachersBlock = '<div class="subject-detail-teachers">';
+        if (lectureTeacher) teachersBlock += `<div><span class="label">Лекция:</span> ${lectureTeacher}</div>`;
+        if (seminarTeacher) teachersBlock += `<div><span class="label">Семинар:</span> ${seminarTeacher}</div>`;
+        teachersBlock += '</div>';
+    } else if (!sub.isPractice) {
+        teachersBlock = '<p class="subject-detail-muted">Преподаватели уточняются</p>';
+    }
+
+    const progress = getProgressBySubject();
+    const prog = getProgressForSubject(sub.name, progress);
+    const totalL = sub.lectures || 0;
+    const totalS = sub.seminars || 0;
+    let progressBlock = '';
+    if (totalL > 0 || totalS > 0) {
+        progressBlock = '<div class="subject-detail-progress">';
+        if (totalL > 0) progressBlock += `<div>Лекции: пройдено ${prog.lecture}/${totalL}</div>`;
+        if (totalS > 0) progressBlock += `<div>Семинары: пройдено ${prog.seminar}/${totalS}</div>`;
+        progressBlock += '</div>';
+    }
+
+    let summaryBlock = '';
+    try {
+        const res = await fetch('/api/ratings/subject-summary?subject=' + encodeURIComponent(sub.name));
+        const summary = await res.json();
+        if (summary && (summary.average != null || (summary.top_tags && summary.top_tags.length) || (summary.reviews && summary.reviews.length))) {
+            summaryBlock = '<div class="subject-detail-summary">';
+            if (summary.average != null && summary.count > 0) {
+                summaryBlock += `<p class="subject-summary-avg">Средний балл: <strong>${summary.average}</strong> (оценок: ${summary.count})</p>`;
+            }
+            if (summary.top_tags && summary.top_tags.length) {
+                summaryBlock += `<p class="subject-summary-tags">Чаще отмечают: ${summary.top_tags.slice(0, 5).join(', ')}</p>`;
+            }
+            if (summary.reviews && summary.reviews.length) {
+                summaryBlock += '<p class="subject-summary-reviews-title">Последние отзывы:</p><ul class="subject-summary-reviews">';
+                summary.reviews.forEach(r => {
+                    summaryBlock += `<li>${escapeHtml(r.body)}</li>`;
+                });
+                summaryBlock += '</ul>';
+            }
+            summaryBlock += '</div>';
+        }
+    } catch (_) {}
+
+    document.getElementById('subject-modal-body').innerHTML = `
+        <h2 class="subject-detail-title">${sub.name}</h2>
+        ${sub.type ? `<span class="tag">${sub.type}</span>` : ''}
+        <p class="subject-detail-stats">${statsText}</p>
+        ${progressBlock}
+        ${summaryBlock}
+        ${teachersBlock}
+    `;
+    document.getElementById('subject-modal').classList.remove('hidden');
+}
+
 function renderContent() {
     const subjectsList = document.getElementById('subjects-list');
     const teachersList = document.getElementById('teachers-list');
-
-    // Calculate teachers from Schedule Data to fill gaps
     const scheduleSubjects = getUniqueSubjects();
-    const scheduleTeacherMap = {}; // { "Subject Name": { lectures: [], seminars: [] } }
-
-    scheduleSubjects.forEach(s => {
-        // Simple mapping based on type if available, otherwise just list them
-        // In our data, 'type' is on the lesson level. getUniqueSubjects aggregates them.
-        // Let's refine getUniqueSubjects output or just look at raw teachers
-        scheduleTeacherMap[s.name] = s.teachers;
-    });
+    const progressMap = getProgressBySubject();
 
     subjectsList.innerHTML = '';
     teachersList.innerHTML = '';
 
     SUBJECTS_DATA.forEach((sub, index) => {
         const card = document.createElement('div');
-        card.className = 'info-card subject-card';
+        card.className = 'info-card subject-card subject-card-clickable';
 
-        // Determine Teachers
-        let lectureTeacher = sub.teachers?.lecture;
-        let seminarTeacher = sub.teachers?.seminar;
-
-        // If not hardcoded, try to find in schedule
-        if (!lectureTeacher || !seminarTeacher) {
-            const found = scheduleSubjects.find(s => s.name.includes(sub.name) || sub.name.includes(s.name));
-            if (found && found.teachers.length > 0) {
-                // If we have hardcoded one but not other, keep hardcoded. 
-                // Currently our schedule data doesn't link teacher to type easily in the aggregated view,
-                // but usually it's mixed. Let's just join them for now if missing.
-                if (!lectureTeacher && !seminarTeacher) {
-                    lectureTeacher = found.teachers.join(', ');
-                }
-            }
-        }
-
-        // Formatting HTML
         let statsHTML = '';
         if (sub.isPractice) {
             statsHTML = `<div class="subject-stats">${sub.credits} кредитов • ${sub.hours} часов</div>`;
@@ -163,14 +237,15 @@ function renderContent() {
             statsHTML = `<div class="subject-stats" style="color: var(--text-muted);">Без кредитов</div>`;
         }
 
-        let teachersHTML = '';
-        if (lectureTeacher || seminarTeacher) {
-            teachersHTML = '<div class="subject-teachers">';
-            if (lectureTeacher) teachersHTML += `<div><span class="label">Лекция:</span> ${lectureTeacher}</div>`;
-            if (seminarTeacher) teachersHTML += `<div><span class="label">Семинар:</span> ${seminarTeacher}</div>`;
-            teachersHTML += '</div>';
-        } else if (!sub.isPractice) {
-            teachersHTML = '<div class="subject-teachers" style="color: var(--text-muted); font-style: italic;">Преподаватели уточняются</div>';
+        const prog = getProgressForSubject(sub.name, progressMap);
+        const totalL = sub.lectures || 0;
+        const totalS = sub.seminars || 0;
+        let progressHTML = '';
+        if (totalL > 0 || totalS > 0) {
+            progressHTML = '<div class="subject-progress">';
+            if (totalL > 0) progressHTML += `<div class="subject-progress-row"><span class="subject-progress-label">Лекция:</span> пройдено ${prog.lecture}/${totalL}</div>`;
+            if (totalS > 0) progressHTML += `<div class="subject-progress-row"><span class="subject-progress-label">Семинар:</span> пройдено ${prog.seminar}/${totalS}</div>`;
+            progressHTML += '</div>';
         }
 
         card.innerHTML = `
@@ -181,9 +256,11 @@ function renderContent() {
                     ${sub.type ? `<span class="tag">${sub.type}</span>` : ''}
                 </div>
                 ${statsHTML}
-                ${teachersHTML}
+                ${progressHTML}
+                <div class="subject-tap-hint">Нажмите, чтобы подробнее</div>
             </div>
         `;
+        card.addEventListener('click', () => openSubjectModal(sub));
         subjectsList.appendChild(card);
     });
 
@@ -220,5 +297,12 @@ function renderContent() {
         teachersList.appendChild(card);
     });
 }
+
+const subjectModal = document.getElementById('subject-modal');
+const subjectModalClose = document.getElementById('subject-modal-close');
+const subjectModalOverlay = document.querySelector('.subject-modal-overlay');
+
+if (subjectModalClose) subjectModalClose.addEventListener('click', () => subjectModal.classList.add('hidden'));
+if (subjectModalOverlay) subjectModalOverlay.addEventListener('click', () => subjectModal.classList.add('hidden'));
 
 initAcademics();

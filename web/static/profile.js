@@ -1,5 +1,9 @@
 // Profile Page JavaScript
 import './theme_init.js';
+import { applyTheme, applyAccent, applyAmoled, applyLargeFont, getVisitHistory } from './theme_init.js';
+import { setScheduleData, getProgressBySubject } from './schedule_data.js';
+import { showToast } from './toast.js';
+import { getMe, updateAvatar } from './api/auth.js';
 
 // Check authentication
 // Check authentication
@@ -40,35 +44,28 @@ async function refreshAccessToken() {
 // Load student info
 async function loadStudentInfo() {
     if (!token) return;
-
     try {
-        const response = await fetch('/api/me', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        // Check for authentication errors
-        if (response.status === 401 || response.status === 403) {
-            // Try to refresh token
-            const refreshed = await refreshAccessToken();
-            if (refreshed) {
-                window.location.reload();
+        let data;
+        try {
+            data = await getMe();
+        } catch (err) {
+            if (err.message && (err.message.includes('401') || err.message.includes('403'))) {
+                const refreshed = await refreshAccessToken();
+                if (refreshed) {
+                    window.location.reload();
+                    return;
+                }
+                localStorage.clear();
+                window.location.href = '/login.html';
                 return;
             }
-
-            // Refresh failed, redirect to login
-            localStorage.clear();
-            window.location.href = '/login.html';
-            return;
+            throw err;
         }
-
-        if (!response.ok) {
-            throw new Error('Failed to load student info');
-        }
-
-        const data = await response.json();
-        document.getElementById('student-name').textContent = data.name;
+        const nameEl = document.getElementById('student-name');
+        nameEl.textContent = data.name;
+        nameEl.classList.remove('skeleton-line');
+        nameEl.removeAttribute('style');
+        nameEl.removeAttribute('aria-busy');
         document.getElementById('student-id').textContent = `ID: ${data.telegram_id}`;
 
         // Stats
@@ -81,15 +78,168 @@ async function loadStudentInfo() {
 
         document.getElementById('reviews-count').textContent = data.ratings_count || 0;
 
-        // Avatar
         if (data.avatar) {
-            document.getElementById('current-avatar').src = `/static/avatars/${data.avatar}`;
+            const avatarEl = document.getElementById('current-avatar');
+            avatarEl.src = `/static/avatars/${data.avatar}`;
+            avatarEl.loading = 'lazy';
         }
+        loadScheduleStats();
     } catch (error) {
         console.error('Error loading student info:', error);
         showMessage('Ошибка загрузки данных профиля', 'error');
     }
 }
+
+function getWeekNumber(date) {
+    const start = new Date('2026-01-12');
+    start.setHours(0, 0, 0, 0);
+    const current = new Date(date);
+    current.setHours(0, 0, 0, 0);
+    if (current < start) return 1;
+    const diffDays = Math.floor((current - start) / (1000 * 60 * 60 * 24));
+    return Math.min(20, Math.floor(diffDays / 7) + 1);
+}
+
+async function loadScheduleStats() {
+    const monthEl = document.getElementById('stats-lessons-month');
+    const dayEl = document.getElementById('stats-busiest-day');
+    const weekEl = document.getElementById('stats-lessons-week');
+    const typeEl = document.getElementById('stats-most-type');
+    const subjectEl = document.getElementById('stats-top-subject');
+    const streakEl = document.getElementById('stats-login-streak');
+    const semesterPctEl = document.getElementById('stats-semester-pct');
+    const lessonsProgressEl = document.getElementById('stats-lessons-progress');
+    if (!monthEl || !dayEl) return;
+    try {
+        const res = await fetch('/api/schedule');
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.items || []);
+        setScheduleData(list);
+
+        const now = new Date();
+        const semesterStart = new Date('2026-01-12');
+        const semesterEnd = new Date(semesterStart);
+        semesterEnd.setDate(semesterEnd.getDate() + 18 * 7);
+        const totalDays = Math.max(1, (semesterEnd - semesterStart) / (24 * 60 * 60 * 1000));
+        const todayNorm = new Date(now);
+        todayNorm.setHours(0, 0, 0, 0);
+        const passedDays = Math.max(0, (todayNorm - semesterStart) / (24 * 60 * 60 * 1000));
+        const pct = Math.min(100, Math.round((passedDays / totalDays) * 100));
+        if (semesterPctEl) semesterPctEl.textContent = pct + '%';
+
+        const progress = getProgressBySubject();
+        let totalPassed = 0;
+        let totalPlanned = 0;
+        list.forEach(lesson => {
+            const [wS, wE] = Array.isArray(lesson.weeks) ? lesson.weeks : [1, 18];
+            totalPlanned += (wE - wS + 1);
+        });
+        Object.values(progress).forEach(p => {
+            totalPassed += (p.lecture || 0) + (p.seminar || 0);
+        });
+        if (lessonsProgressEl) lessonsProgressEl.textContent = totalPlanned > 0 ? `${totalPassed} из ${totalPlanned}` : '—';
+
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const currentWeek = getWeekNumber(now);
+        let lessonsThisMonth = 0;
+        let lessonsThisWeek = 0;
+        const dayCount = { monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0 };
+        const typeCount = { lecture: 0, seminar: 0 };
+        const subjectCount = {};
+        const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+        list.forEach(lesson => {
+            if (!dayNames.includes(lesson.day)) return;
+            dayCount[lesson.day] = (dayCount[lesson.day] || 0) + 1;
+            const [wStart, wEnd] = Array.isArray(lesson.weeks) ? lesson.weeks : [1, 20];
+            for (let w = wStart; w <= wEnd; w++) {
+                const mon = new Date(semesterStart);
+                mon.setDate(mon.getDate() + (w - 1) * 7);
+                const dayOff = dayNames.indexOf(lesson.day);
+                const lessonDate = new Date(mon);
+                lessonDate.setDate(mon.getDate() + dayOff);
+                if (lessonDate.getMonth() === currentMonth && lessonDate.getFullYear() === currentYear) lessonsThisMonth++;
+                if (w === currentWeek) lessonsThisWeek++;
+            }
+            if (currentWeek >= (wStart || 1) && currentWeek <= (wEnd || 20)) {
+                const t = (lesson.type || 'seminar').toLowerCase();
+                typeCount[t] = (typeCount[t] || 0) + 1;
+                subjectCount[lesson.subject] = (subjectCount[lesson.subject] || 0) + 1;
+            }
+        });
+        monthEl.textContent = lessonsThisMonth;
+        if (weekEl) weekEl.textContent = lessonsThisWeek;
+        const busiest = dayNames.reduce((a, b) => (dayCount[a] || 0) >= (dayCount[b] || 0) ? a : b);
+        const dayLabels = { monday: 'пн', tuesday: 'вт', wednesday: 'ср', thursday: 'чт', friday: 'пт' };
+        dayEl.textContent = dayLabels[busiest] || busiest;
+        if (typeEl) {
+            const l = typeCount.lecture || 0;
+            const s = typeCount.seminar || 0;
+            if (l + s === 0) typeEl.textContent = '—';
+            else typeEl.textContent = l >= s ? (l > s ? 'лекции' : 'лекции/семинары') : 'семинары';
+        }
+        if (subjectEl) {
+            const entries = Object.entries(subjectCount);
+            if (entries.length === 0) subjectEl.textContent = '—';
+            else {
+                const top = entries.sort((a, b) => b[1] - a[1])[0];
+                subjectEl.textContent = top[0].length > 20 ? top[0].slice(0, 18) + '…' : top[0];
+            }
+        }
+        if (streakEl) {
+            const n = parseInt(localStorage.getItem('login_streak') || '0', 10);
+            streakEl.textContent = n ? n + ' дн.' : '0';
+        }
+    } catch (_) {
+        if (semesterPctEl) semesterPctEl.textContent = '—';
+        if (lessonsProgressEl) lessonsProgressEl.textContent = '—';
+        monthEl.textContent = '—';
+        dayEl.textContent = '—';
+        if (weekEl) weekEl.textContent = '—';
+        if (typeEl) typeEl.textContent = '—';
+        if (subjectEl) subjectEl.textContent = '—';
+        if (streakEl) streakEl.textContent = '—';
+    }
+}
+
+function exportSchedulePdf() {
+    const dayNames = { monday: 'Пн', tuesday: 'Вт', wednesday: 'Ср', thursday: 'Чт', friday: 'Пт' };
+    const PAIR_TIMES = { 1: '08:00 - 09:20', 2: '09:30 - 10:50', 3: '11:00 - 12:20' };
+    fetch('/api/schedule')
+        .then(res => res.json())
+        .then(data => {
+            const list = Array.isArray(data) ? data : (data.items || []);
+            const now = new Date();
+            const currentWeek = getWeekNumber(now);
+            const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const lessonsByDay = {};
+            daysOrder.forEach(d => { lessonsByDay[d] = []; });
+            list.forEach(l => {
+                if (!daysOrder.includes(l.day)) return;
+                const [wStart, wEnd] = Array.isArray(l.weeks) ? l.weeks : [1, 20];
+                if (currentWeek >= wStart && currentWeek <= wEnd) lessonsByDay[l.day].push(l);
+            });
+            daysOrder.forEach(d => lessonsByDay[d].sort((a, b) => a.pair - b.pair));
+            let html = '<html><head><meta charset="utf-8"><title>Расписание</title></head><body style="font-family:sans-serif;padding:20px">';
+            html += `<h2>Неделя ${currentWeek}</h2>`;
+            daysOrder.forEach(day => {
+                html += `<h3>${dayNames[day]}</h3><ul>`;
+                lessonsByDay[day].forEach(l => {
+                    html += `<li>${PAIR_TIMES[l.pair] || ''} ${l.subject} — ${l.room}</li>`;
+                });
+                html += '</ul>';
+            });
+            html += '</body></html>';
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.document.close();
+            win.print();
+            win.onafterprint = () => win.close();
+        })
+        .catch(() => showMessage('Ошибка загрузки расписания', 'error'));
+}
+
+document.getElementById('profile-pdf-btn')?.addEventListener('click', exportSchedulePdf);
 
 // Password change form handler
 document.getElementById('password-form').addEventListener('submit', async (e) => {
@@ -142,44 +292,50 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
 
 // Logout handler
 document.getElementById('logout-btn').addEventListener('click', (e) => {
-    e.preventDefault(); // Prevent any default behavior
-
-    // Direct logout without confirm dialog (since it was causing issues for user)
-    // Clear ALL auth data
+    e.preventDefault();
+    if (!confirm('Вы уверены, что хотите выйти из аккаунта?')) return;
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_name');
     localStorage.removeItem('auth_token');
-    localStorage.removeItem('student_id'); // KEY FIX: Clear legacy auth ID
-
-    // Use replace to prevent going back
+    localStorage.removeItem('student_id');
     window.location.replace('/login.html');
 });
 
-// Show message helper
+// Show message: toast or in-element
 function showMessage(text, type, elementId = 'message') {
     const messageEl = document.getElementById(elementId);
     if (!messageEl) {
-        console.warn(`Message element #${elementId} not found, using alert:`, text);
-        alert(text);
+        showToast(text, type || 'info');
         return;
     }
-
-    // Ensure it's visible if it was hidden via display:none logic or class
     messageEl.classList.remove('hidden');
     messageEl.style.display = 'block';
-
     messageEl.textContent = text;
     messageEl.className = `message ${type}`;
-
     setTimeout(() => {
         messageEl.classList.add('hidden');
         messageEl.style.display = 'none';
     }, 5000);
 }
 
+// Load app version (from /api/flags)
+async function loadAppVersion() {
+    const el = document.getElementById('app-version');
+    if (!el) return;
+    try {
+        const res = await fetch('/api/flags');
+        const data = await res.json();
+        if (data && data.version) el.textContent = data.version;
+        else el.textContent = '1.0.0';
+    } catch (_) {
+        el.textContent = '—';
+    }
+}
+
 // Initialize
 loadStudentInfo();
+loadAppVersion();
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {
@@ -297,6 +453,7 @@ async function toggleNotifications() {
             if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
 
             console.log('[Push] Success!');
+            localStorage.setItem('push_subscribed', '1');
             showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
 
             btn.classList.add('subscribed');
@@ -353,31 +510,24 @@ avatarModal.querySelector('.modal-overlay').addEventListener('click', () => {
     avatarModal.classList.add('hidden');
 });
 
-// Select Avatar
+// Select Avatar (optimistic update: show new avatar immediately, revert on error)
 document.querySelectorAll('.avatar-option').forEach(img => {
     img.addEventListener('click', async () => {
         const selectedAvatar = img.getAttribute('data-id');
-
+        const previousSrc = currentAvatarImg.src;
+        currentAvatarImg.src = `/static/avatars/${selectedAvatar}`;
+        avatarModal.classList.add('hidden');
         try {
-            const response = await fetch('/api/me/avatar', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ avatar: selectedAvatar })
-            });
-
-            if (response.ok) {
-                // Update UI immediately
-                currentAvatarImg.src = `/static/avatars/${selectedAvatar}`;
-                avatarModal.classList.add('hidden');
-                showMessage('Аватарка обновлена! 📸', 'success');
-            } else {
+            const response = await updateAvatar(selectedAvatar);
+            if (!response.ok) {
+                currentAvatarImg.src = previousSrc;
                 showMessage('Ошибка при сохранении', 'error');
+            } else {
+                showMessage('Аватарка обновлена! 📸', 'success');
             }
         } catch (e) {
             console.error(e);
+            currentAvatarImg.src = previousSrc;
             showMessage('Ошибка соединения', 'error');
         }
     });
@@ -405,34 +555,186 @@ window.switchTab = function (tabName) {
     });
 }
 
-// --- Theme Handling ---
-const themeToggle = document.getElementById('theme-toggle');
-
-// 1. Init State
-if (document.body.classList.contains('light-mode')) {
-    themeToggle.checked = true;
-} else {
-    themeToggle.checked = false;
+// --- Theme, акцент, AMOLED, крупный шрифт ---
+const themeSelect = document.getElementById('theme-select');
+if (themeSelect) {
+    const saved = localStorage.getItem('theme') || 'dark';
+    themeSelect.value = ['light', 'dark', 'system', 'time'].includes(saved) ? saved : 'dark';
+    themeSelect.addEventListener('change', () => {
+        const v = themeSelect.value;
+        localStorage.setItem('theme', v);
+        applyTheme(v);
+    });
+}
+const reminderSelect = document.getElementById('reminder-minutes');
+if (reminderSelect) {
+    reminderSelect.value = localStorage.getItem('reminder_minutes') || '15';
+    reminderSelect.addEventListener('change', () => {
+        localStorage.setItem('reminder_minutes', reminderSelect.value);
+    });
+}
+const accentSelect = document.getElementById('accent-select');
+if (accentSelect) {
+    accentSelect.value = localStorage.getItem('accent') || 'blue';
+    accentSelect.addEventListener('change', () => {
+        const v = accentSelect.value;
+        localStorage.setItem('accent', v);
+        applyAccent(v);
+    });
+}
+const amoledToggle = document.getElementById('amoled-toggle');
+if (amoledToggle) {
+    amoledToggle.checked = localStorage.getItem('amoled') === '1';
+    amoledToggle.addEventListener('change', () => {
+        localStorage.setItem('amoled', amoledToggle.checked ? '1' : '0');
+        applyAmoled(amoledToggle.checked);
+    });
+}
+const largeFontToggle = document.getElementById('large-font-toggle');
+if (largeFontToggle) {
+    largeFontToggle.checked = localStorage.getItem('large_font') === '1';
+    largeFontToggle.addEventListener('change', () => {
+        localStorage.setItem('large_font', largeFontToggle.checked ? '1' : '0');
+        applyLargeFont(largeFontToggle.checked);
+    });
 }
 
-// 2. Toggle Listener
-themeToggle.addEventListener('change', (e) => {
-    if (e.target.checked) {
-        document.body.classList.add('light-mode');
-        localStorage.setItem('theme', 'light');
-    } else {
-        document.body.classList.remove('light-mode');
-        localStorage.setItem('theme', 'dark');
+// --- Дедлайны ---
+async function loadDeadlines() {
+    const listEl = document.getElementById('deadlines-list');
+    if (!listEl) return;
+    const t = localStorage.getItem('access_token');
+    if (!t) {
+        listEl.innerHTML = '<li class="text-muted">Войдите, чтобы видеть дедлайны</li>';
+        return;
     }
-});
+    try {
+        const res = await fetch('/api/deadlines', { headers: { Authorization: 'Bearer ' + t } });
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+            listEl.innerHTML = '<li class="text-muted">Ошибка загрузки</li>';
+            return;
+        }
+        if (data.length === 0) {
+            listEl.innerHTML = '<li class="text-muted">Нет дедлайнов. Добавьте ниже.</li>';
+            return;
+        }
+        const today = new Date().toISOString().slice(0, 10);
+        listEl.innerHTML = data.map(d => {
+            const overdue = d.due_date < today;
+            return `<li class="deadline-item ${overdue ? 'overdue' : ''}" data-id="${d.id}">
+                <span class="deadline-title">${escapeHtml(d.title)}</span>
+                <span class="deadline-date">${formatDeadlineDate(d.due_date)}</span>
+                <button type="button" class="deadline-delete" data-id="${d.id}" aria-label="Удалить">×</button>
+            </li>`;
+        }).join('');
+        listEl.querySelectorAll('.deadline-delete').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const r = await fetch('/api/deadlines/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + t } });
+                if (r.ok) loadDeadlines();
+            });
+        });
+    } catch (_) {
+        listEl.innerHTML = '<li class="text-muted">Нет соединения</li>';
+    }
+}
+function formatDeadlineDate(s) {
+    const d = new Date(s);
+    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+const deadlineForm = document.getElementById('deadline-form');
+if (deadlineForm) {
+    deadlineForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('deadline-title').value.trim();
+        const due = document.getElementById('deadline-date').value;
+        if (!title || !due) return;
+        const t = localStorage.getItem('access_token');
+        if (!t) return;
+        try {
+            const res = await fetch('/api/deadlines', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t },
+                body: JSON.stringify({ title, due_date: due })
+            });
+            if (res.ok) {
+                document.getElementById('deadline-title').value = '';
+                document.getElementById('deadline-date').value = '';
+                loadDeadlines();
+                showToast('Дедлайн добавлен', 'success');
+            } else showToast('Ошибка', 'error');
+        } catch (_) { showToast('Ошибка сети', 'error'); }
+    });
+}
+loadDeadlines();
 
-// Check localStorage on load (handling defaults) - MOVED TO theme_init.js
-// Just sync toggle state
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'light') {
-    themeToggle.checked = true;
-} else {
-    themeToggle.checked = false;
+// --- Календарь заходов (стрик) ---
+function renderStreakCalendar() {
+    const el = document.getElementById('streak-calendar');
+    if (!el) return;
+    const history = getVisitHistory();
+    if (history.length === 0) {
+        el.innerHTML = '<p class="text-muted" style="font-size:0.85rem;margin:8px 0 0;">Заходите каждый день — здесь появится календарь заходов</p>';
+        return;
+    }
+    const set = new Set(history);
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 89);
+    const days = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        days.push(d.toISOString().slice(0, 10));
+    }
+    // Сетка: колонки = недели (слева направо), строки = дни недели (7 строк). Так заходы идут вправо, без пустого места справа.
+    const cols = 13;
+    const rows = 7;
+    const cells = [];
+    for (let col = 0; col < cols; col++) {
+        for (let row = 0; row < rows; row++) {
+            const idx = col * rows + row;
+            const day = idx < days.length ? days[idx] : null;
+            const filled = day ? set.has(day) : false;
+            cells.push(`<span class="streak-cell ${filled ? 'filled' : ''}" title="${day || ''}" aria-label="${day || ''} ${filled ? 'был заход' : ''}"></span>`);
+        }
+    }
+    el.innerHTML = '<p class="streak-calendar-title">Заходы за последние 90 дней</p><div class="streak-grid streak-grid-wide">' + cells.join('') + '</div>';
+}
+renderStreakCalendar();
+
+// --- Достижения (с сервера /api/achievements/me) ---
+async function loadAndRenderAchievements() {
+    const el = document.getElementById('achievements-list');
+    if (!el) return;
+    const t = localStorage.getItem('access_token');
+    if (!t) {
+        el.innerHTML = '<p class="text-muted">Войдите, чтобы видеть достижения</p>';
+        return;
+    }
+    try {
+        const res = await fetch('/api/achievements/me', { headers: { Authorization: 'Bearer ' + t } });
+        const data = await res.json();
+        const list = data.achievements || [];
+        el.innerHTML = list.length ? list.map(a => {
+            const has = !!a.unlocked_at;
+            return `<div class="achievement-item ${has ? 'unlocked' : ''}"><span class="achievement-icon">${has ? (a.icon || '🏆') : '🔒'}</span><div><strong>${a.name}</strong><br><span class="text-muted">${a.description || ''}</span></div></div>`;
+        }).join('') : '<p class="text-muted">Пока нет достижений</p>';
+    } catch (_) {
+        el.innerHTML = '<p class="text-muted">Не удалось загрузить</p>';
+    }
+}
+loadAndRenderAchievements();
+
+// --- Google Calendar (один тап) ---
+const googleBtn = document.getElementById('google-calendar-btn');
+if (googleBtn) {
+    const icsUrl = window.location.origin + '/api/calendar.ics';
+    googleBtn.href = 'https://calendar.google.com/calendar/render?cid=' + encodeURIComponent(icsUrl);
 }
 
 // Global function for password toggle

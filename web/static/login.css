@@ -5,64 +5,110 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: var(--space-6, 24px);
 }
 
 .login-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 40px;
-    max-width: 450px;
+    border-radius: var(--radius-xl, 24px);
+    padding: var(--space-10, 40px);
+    max-width: 420px;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.3));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .login-header {
     text-align: center;
-    margin-bottom: 32px;
-}
-
-.login-header .badge {
-    display: inline-block;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 .login-header h1 {
-    font-size: 2rem;
-    margin-bottom: 8px;
+    font-size: clamp(1.6rem, 4vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-2);
 }
 
 .login-header .subtitle {
     color: var(--text-muted);
+    font-size: 0.95rem;
 }
 
 .form-group {
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .form-group label {
     display: block;
     font-weight: 500;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
     color: var(--text-main);
+    font-size: 0.9rem;
 }
 
 .form-group input {
     width: 100%;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.05);
+    padding: 14px 16px;
+    background: var(--glass-highlight, rgba(255, 255, 255, 0.05));
     border: 1px solid var(--card-border);
-    border-radius: 10px;
+    border-radius: var(--radius-md, 12px);
     color: var(--text-main);
     font-family: inherit;
     font-size: 1rem;
-    transition: border-color 0.2s;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+/* Поле пароля с глазком */
+.password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.password-wrap input {
+    padding-right: 48px;
+}
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+}
+.password-toggle:hover {
+    color: var(--primary);
+    background: var(--glass-highlight, rgba(255, 255, 255, 0.06));
+}
+.password-toggle:focus {
+    outline: none;
+    color: var(--primary);
+}
+.password-toggle .icon-eye-off {
+    display: none;
+}
+.password-toggle[aria-pressed="true"] .icon-eye {
+    display: none;
+}
+.password-toggle[aria-pressed="true"] .icon-eye-off {
+    display: block;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-dim, rgba(91, 124, 255, 0.15));
 }
 
 .form-group small {
@@ -72,22 +118,28 @@
     margin-top: 6px;
 }
 
+
 .login-btn {
     width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    padding: 14px 20px;
+    background: var(--primary);
+    color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md, 12px);
     font-size: 1rem;
     font-weight: 600;
+    font-family: var(--font-family);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .login-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(91, 124, 255, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(0);
 }
 
 .login-btn:disabled {
@@ -96,43 +148,33 @@
     transform: none;
 }
 
-.students-list {
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--card-border);
+/* Чекбокс «Запомнить меня» — ровное выравнивание */
+.form-group-checkbox {
+    margin-bottom: var(--space-5, 20px);
 }
-
-.list-title {
+.form-group-checkbox .checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
     font-weight: 500;
-    margin-bottom: 12px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    margin-bottom: 0;
 }
-
-.students-list ul {
-    list-style: none;
-    padding: 0;
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
     margin: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
 }
-
-.students-list li {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    padding: 6px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 6px;
-    text-align: center;
+.checkbox-label span {
+    user-select: none;
 }
 
 @media (max-width: 480px) {
     .login-card {
         padding: 24px;
-    }
-
-    .students-list ul {
-        grid-template-columns: repeat(2, 1fr);
     }
 }

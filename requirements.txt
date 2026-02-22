@@ -1,17 +1,32 @@
-fastapi
-uvicorn
-databases[postgresql]
-psycopg2-binary
-python-dotenv
-bcrypt<5.0.0
-passlib[bcrypt]
-python-jose[cryptography]
-cachetools
-pywebpush
-aiosqlite
-pytest
-pytest-asyncio
-httpx
-sentry-sdk
-apscheduler
-pytz
+# Web (upper bounds for reproducible installs)
+fastapi>=0.109,<0.116
+uvicorn[standard]>=0.27,<0.31
+
+# Database
+databases[postgresql]>=0.8,<0.10
+psycopg2-binary>=2.9,<3
+aiosqlite>=0.19,<0.20
+
+# Auth & env
+python-dotenv>=1.0,<2
+bcrypt>=4.0,<5
+passlib[bcrypt]>=1.7
+python-jose[cryptography]>=3.3,<3.4
+pyotp>=2.9,<3
+qrcode[pil]>=7.4,<8
+
+# Cache & push
+cachetools>=5.3,<6
+pywebpush>=1.14,<2
+
+# Scheduler
+apscheduler>=3.10,<4
+pytz>=2024.1
+
+# Monitoring
+sentry-sdk>=1.39,<2
+
+# Tests
+pytest>=7.4,<9
+pytest-asyncio>=0.23,<0.24
+httpx>=0.26,<0.28

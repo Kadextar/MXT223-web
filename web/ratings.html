@@ -10,7 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/ratings.css?v=78">
+    <link rel="stylesheet" href="/static/ratings.css">
+    <link rel="stylesheet" href="/static/toast.css">
+    <meta name="description" content="Рейтинг преподавателей МХТ-223">
     <meta name="theme-color" content="#fff7ed">
 </head>
 
@@ -33,6 +35,7 @@
             <div class="tabs-pill" style="margin: 0 auto;">
                 <button class="tab-btn active" id="tab-btn-eval">Оценка</button>
                 <button class="tab-btn" id="tab-btn-rate">Лидеры</button>
+                <button class="tab-btn" id="tab-btn-my">Мои оценки</button>
             </div>
         </div>
 
@@ -40,8 +43,10 @@
 
             <!-- VIEW: EVALUATION -->
             <div id="evaluation-view">
-                <div id="loading" class="empty-state hidden">
-                    <p>Загрузка...</p>
+                <div id="loading" class="empty-state ratings-skeleton hidden" aria-busy="true">
+                    <div class="skeleton-line" style="width:80%;height:60px;margin:0 auto 12px;border-radius:12px"></div>
+                    <div class="skeleton-line" style="width:90%;height:60px;margin:0 auto 12px;border-radius:12px"></div>
+                    <div class="skeleton-line" style="width:70%;height:60px;margin:0 auto;border-radius:12px"></div>
                 </div>
 
                 <div id="empty-state" class="empty-state hidden">
@@ -61,37 +66,54 @@
                 </div>
             </div>
 
+            <!-- VIEW: MY RATINGS -->
+            <div id="my-ratings-view" class="hidden">
+                <div id="my-ratings-loading" class="empty-state ratings-skeleton hidden">
+                    <div class="skeleton-line" style="width:80%;height:40px;margin:0 auto 8px;border-radius:8px"></div>
+                    <div class="skeleton-line" style="width:90%;height:60px;margin:0 auto;border-radius:8px"></div>
+                </div>
+                <div id="my-ratings-empty" class="empty-state hidden">
+                    <p>Вы ещё не ставили оценок</p>
+                    <p class="subtitle">Оцените пару на вкладке «Оценка»</p>
+                </div>
+                <div id="my-ratings-content" class="hidden">
+                    <h3 style="text-align: center; color: var(--text-main); margin-bottom: 12px;">Средний балл по неделям</h3>
+                    <div id="my-ratings-chart-wrap" class="my-ratings-chart-wrap"></div>
+                    <h3 style="text-align: center; color: var(--text-main); margin: 20px 0 12px;">История оценок</h3>
+                    <div id="my-ratings-list" class="my-ratings-list"></div>
+                </div>
+            </div>
+
         </main>
 
         <!-- Modal -->
         <div id="rating-modal" class="modal hidden">
             <div class="modal-overlay"></div>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modal-teacher-name">Преподаватель</h2>
-                    <p id="modal-subject" class="text-muted">Предмет</p>
-                </div>
+            <div class="modal-content rating-modal-content">
+                <header class="rating-modal-hero">
+                    <h2 id="modal-teacher-name" class="rating-modal-subject-name">Название предмета</h2>
+                    <div class="rating-modal-type-wrap">
+                        <span id="modal-subject" class="rating-modal-type-badge">Оцениваем: Лекции</span>
+                    </div>
+                </header>
 
-                <form id="rating-form">
-                    <!-- Rating Logic -->
+                <form id="rating-form" class="rating-modal-form">
                     <div class="rating-section">
-                        <label>Ваша оценка:</label>
+                        <label class="rating-section-label">Ваша оценка</label>
                         <div class="rating-display" id="rating-verdict">
                             <span class="rating-emoji">😐</span>
                             <span class="rating-text">Нормально</span>
                         </div>
-                        <div class="rating-value-row"
-                            style="display: flex; gap: 10px; align-items: center; justify-content: center; margin: 15px 0;">
-                            <input type="number" id="rating-number" value="50" min="0" max="100"
-                                class="rating-number-input">
-                            <span>/ 100</span>
+                        <div class="rating-value-row">
+                            <input type="number" id="rating-number" value="50" min="0" max="100" class="rating-number-input" aria-label="Оценка">
+                            <span class="rating-value-suffix">/ 100</span>
                         </div>
-                        <input type="range" id="rating-range" min="0" max="100" value="50" class="rating-slider">
+                        <input type="range" id="rating-range" min="0" max="100" value="50" class="rating-slider" aria-label="Слайдер оценки">
                         <input type="hidden" id="rating-input" name="rating" value="50">
                     </div>
 
                     <div class="tags-section">
-                        <label>Что понравилось/не понравилось?</label>
+                        <label class="rating-section-label">Что понравилось / не понравилось?</label>
                         <div class="tags-grid">
                             <span class="tag-btn" data-tag="clear">Понятно</span>
                             <span class="tag-btn" data-tag="interesting">Интересно</span>
@@ -101,22 +123,25 @@
                         </div>
                     </div>
 
-                    <!-- Lesson Selection Logic (Hidden for now in JS logic) -->
-                    <div id="no-lessons-alert" class="alert-box hidden"
-                        style="background: rgba(255,0,0,0.1); color: #ef4444; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                    <div id="no-lessons-alert" class="rating-no-lessons-alert hidden">
                         Сегодня не было этого занятия
                     </div>
                     <p id="select-lesson-label" class="hidden">Выберите занятие:</p>
                     <div id="lessons-list" class="lessons-list hidden"></div>
 
-                    <div class="form-group">
-                        <textarea id="comment-input" placeholder="Комментарий (анонимно)..." rows="3"></textarea>
+                    <div class="rating-form-group" id="subject-reviews-block">
+                        <label class="rating-section-label">Что пишут другие</label>
+                        <div id="subject-reviews-list" class="subject-reviews-list"></div>
                     </div>
 
-                    <button type="submit" class="submit-btn">Отправить анонимно</button>
-                    <!-- Back button strictly for logic, usually hidden -->
-                    <button type="button" id="back-to-lessons" style="display:none;">Назад</button>
-                    <button type="button" id="close-modal" class="back-btn" style="margin-top: 10px;">Отмена</button>
+                    <div class="rating-form-group">
+                        <label class="rating-section-label">Короткий отзыв (анонимно)</label>
+                        <textarea id="comment-input" class="rating-textarea" placeholder="Напишите отзыв — он уйдёт с вашей оценкой и может быть опубликован после модерации" rows="3" maxlength="300"></textarea>
+                    </div>
+
+                    <button type="submit" class="rating-btn rating-btn-submit">Отправить анонимно</button>
+                    <button type="button" id="back-to-lessons" class="hidden" style="display:none;">Назад</button>
+                    <button type="button" id="close-modal" class="rating-btn rating-btn-secondary">Отмена</button>
                 </form>
             </div>
         </div>

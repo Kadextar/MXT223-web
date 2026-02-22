@@ -2,9 +2,11 @@ const CACHE_NAME = 'mxt223-v57'; // Bump: Removed FontAwesome to fix Install Han
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
+    '/offline.html',
     '/static/styles.css',
     '/static/app.js',
     '/static/schedule_data.js',
+    '/static/toast.css',
     '/manifest.json',
     'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap'
 ];
@@ -22,20 +24,20 @@ self.addEventListener('install', (event) => {
 
 // Fetch Event
 self.addEventListener('fetch', (event) => {
-    // Network First strategy for HTML (documents)
+    // Network First for HTML; on failure serve offline.html for navigation
     if (event.request.mode === 'navigate' || event.request.destination === 'document') {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
-                    // Update cache with new version if successful
                     const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
                     return response;
                 })
                 .catch(() => {
-                    return caches.match(event.request);
+                    return caches.match(event.request).then((cached) => {
+                        if (cached) return cached;
+                        return caches.match('/offline.html').then((offline) => offline || new Response('Offline', { status: 503 }));
+                    });
                 })
         );
         return;
@@ -75,7 +77,7 @@ self.addEventListener('push', (event) => {
         const options = {
             body: data.body,
             icon: data.icon || '/static/icons/icon-192x192.png',
-            badge: '/static/icons/icon-72x72.png',
+            badge: '/static/icons/icon-192x192.png',
             data: {
                 url: data.url || '/'
             }

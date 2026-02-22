@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Следующая пара — МХТ-223</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body { padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
+        .next-page-title { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 16px; }
+        .next-page-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px; max-width: 400px; width: 100%; }
+        .next-page-subject { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+        .next-page-meta { color: var(--text-muted); margin-top: 12px; }
+        .next-page-link { margin-top: 24px; font-size: 0.9rem; }
+        .next-page-link a { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <p class="next-page-title">Следующая пара</p>
+    <div class="next-page-card" id="next-card">
+        <div id="next-content">Загрузка...</div>
+    </div>
+    <p class="next-page-link"><a href="/">Открыть расписание</a></p>
+    <script>
+        (async function() {
+            const el = document.getElementById('next-content');
+            try {
+                const res = await fetch('/api/next');
+                const data = await res.json();
+                if (data.next) {
+                    const n = data.next;
+                    el.innerHTML = `<div class="next-page-subject">${n.subject}</div><div class="next-page-meta">${n.start} · ${n.room}<br>${n.teacher}</div><div style="margin-top:12px;color:var(--primary);">Через ${n.in_minutes} мин</div>`;
+                } else {
+                    el.textContent = data.message || 'Нет пар';
+                }
+            } catch (e) {
+                el.textContent = 'Ошибка загрузки';
+            }
+        })();
+    </script>
+</body>
+</html>

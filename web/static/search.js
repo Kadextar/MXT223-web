@@ -17,25 +17,20 @@ async function loadSearchData() {
             fetch('/api/teachers', { headers }).catch(() => ({ json: async () => [] }))
         ]);
 
-        const schedule = await scheduleRes.json();
+        const scheduleRaw = await scheduleRes.json();
+        const schedule = Array.isArray(scheduleRaw) ? scheduleRaw : (scheduleRaw.items || []);
         const teachers = await teachersRes.json();
 
-        // Build search index
         searchData = [];
-
-        // Add schedule items
-        if (Array.isArray(schedule)) {
-            schedule.forEach(item => {
+        schedule.forEach(item => {
                 searchData.push({
                     type: 'lesson',
                     title: item.subject,
                     meta: `${item.teacher} • ${item.room} • ${item.day_of_week}`,
                     data: item
-                });
             });
-        }
+        });
 
-        // Add unique subjects
         const subjects = new Set();
         schedule.forEach(item => {
             if (!subjects.has(item.subject)) {

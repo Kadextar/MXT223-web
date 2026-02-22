@@ -39,14 +39,20 @@
                 </div>
             </div>
 
-            <!-- Teachers List (Hidden or below? JS populates it, let's keep it just in case logic uses it, 
-                 but typically users want just subjects properly listed first. 
-                 Previous code had it. Let's include it for completeness.) -->
             <div class="section-title" style="margin-top: 30px; margin-bottom: 15px; padding: 0 20px; display: none;">
                 Преподаватели</div>
             <div id="teachers-list" class="teachers-list" style="display: none;"></div>
 
         </main>
+
+        <!-- Subject detail modal -->
+        <div id="subject-modal" class="modal hidden" aria-modal="true">
+            <div class="modal-overlay subject-modal-overlay"></div>
+            <div class="modal-content subject-modal-content">
+                <button type="button" class="subject-modal-close" id="subject-modal-close" aria-label="Закрыть"><i class="fas fa-times"></i></button>
+                <div id="subject-modal-body"><!-- filled by JS --></div>
+            </div>
+        </div>
 
         <!-- Navigation -->
         <nav class="profile-nav">

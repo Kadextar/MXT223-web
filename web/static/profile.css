@@ -1,39 +1,53 @@
-/* Profile Page Styles (Glassmorphism) */
+/* Profile Page Styles */
 
 .profile-nav {
-    /* Ensure visible */
     display: flex;
 }
 
 .profile-container {
-    max-width: 600px;
+    max-width: 560px;
     margin: 0 auto;
-    padding: 20px 20px 100px 20px;
-    /* Extra padding for bottom nav */
+    padding: var(--space-5) var(--space-4) 100px;
 }
 
 .profile-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-radius: 24px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-section {
+    margin-top: 0;
+}
+.profile-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 var(--space-2);
+    letter-spacing: -0.02em;
+}
+.profile-section-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0 var(--space-4);
 }
 
 .profile-header {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 10px;
+    gap: var(--space-5);
+    margin-bottom: var(--space-3);
 }
 
 .profile-avatar-container {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 88px;
+    height: 88px;
 }
 
 .profile-avatar-img {
@@ -41,15 +55,15 @@
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--glass-highlight);
-    background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--card-border);
+    background: var(--glass-highlight);
+    box-shadow: var(--shadow-md);
 }
 
 .edit-avatar-btn {
     position: absolute;
-    bottom: -5px;
-    right: -5px;
+    bottom: -4px;
+    right: -4px;
     background: var(--primary);
     border: 2px solid var(--bg-dark);
     border-radius: 50%;
@@ -59,37 +73,35 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    transition: transform 0.2s;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(91, 124, 255, 0.4);
+    transition: transform 0.2s var(--ease-out);
 }
 
 .edit-avatar-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.08);
 }
 
 .profile-info h2 {
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    background: linear-gradient(to right, #fff, #cbd5e1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
 }
 
 .student-id {
     color: var(--text-muted);
-    font-family: 'SF Mono', monospace;
+    font-variant-numeric: tabular-nums;
     font-size: 0.85rem;
-    margin-top: 4px;
-    opacity: 0.7;
+    margin-top: var(--space-1);
 }
 
 .profile-stats {
     display: flex;
-    gap: 15px;
-    margin-top: 20px;
-    padding-top: 20px;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
     border-top: 1px solid var(--card-border);
 }
 
@@ -100,17 +112,73 @@
 
 .stat-value {
     display: block;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    color: white;
+    color: var(--text-main);
 }
 
 .stat-label {
     font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.04em;
 }
+
+/* Объединённая секция: расписание + календарь, скруглённые кнопки (pill) */
+.profile-schedule-calendar-card { margin-top: 0; }
+.profile-schedule-calendar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 0;
+}
+/* Все 4 кнопки в одном тоне (Apple-style: нейтральный fill + акцент по наведению) */
+.profile-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 1px solid var(--card-border);
+    cursor: pointer;
+    transition: transform 0.2s var(--ease-out), background 0.2s, border-color 0.2s, color 0.2s;
+    min-height: 48px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+}
+.profile-pill-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+.profile-pill-pdf,
+.profile-pill-fav,
+.profile-pill-google,
+.profile-pill-apple {
+    /* единый тон — стили заданы в .profile-pill-btn */
+}
+
+.schedule-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+.schedule-stats-grid {
+    display: grid;
+    gap: 10px;
+}
+.schedule-stats b { color: var(--text-main); }
+
+.achievements-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.achievement-item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); opacity: 0.7; }
+.achievement-item.unlocked { opacity: 1; }
+.achievement-icon { font-size: 1.5rem; }
 
 /* Forms */
 .form-group {
@@ -175,8 +243,7 @@
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     border: none;
-    border-radius: 16px;
-    /* Pill-ish */
+    border-radius: 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -195,7 +262,7 @@
     background: rgba(255, 59, 48, 0.1);
     color: #ff3b30;
     border: 1px solid rgba(255, 59, 48, 0.2);
-    border-radius: 16px;
+    border-radius: 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -351,3 +418,65 @@ body.light-mode .form-group input:focus {
 body.light-mode .text-muted {
     color: #64748b !important;
 }
+
+body.light-mode .profile-pill-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #0f172a;
+}
+body.light-mode .profile-pill-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.profile-version-card { padding: var(--space-4) var(--space-6); }
+.profile-version-text { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+.profile-version-text strong { color: var(--text-main); }
+body.light-mode .profile-version-text strong { color: var(--text-dark); }
+
+/* Deadlines */
+.deadlines-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-4);
+}
+.deadline-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--card-border);
+}
+.deadline-item:last-child { border-bottom: none; }
+.deadline-title { flex: 1; color: var(--text-main); }
+.deadline-date { font-size: 0.9rem; color: var(--text-muted); }
+.deadline-item.overdue .deadline-date { color: #f87171; }
+.deadline-delete {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+.deadline-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: flex-end;
+}
+.deadline-form input[type="text"] { flex: 1; min-width: 140px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main); }
+.deadline-form input[type="date"] { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main); }
+
+/* Streak calendar */
+.streak-calendar { margin-top: var(--space-4); }
+.streak-calendar-title { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 8px; }
+.streak-grid { display: grid; gap: 3px; }
+.streak-grid-wide { grid-template-columns: repeat(13, 1fr); grid-template-rows: repeat(7, 1fr); max-width: 100%; width: min(260px, 100%); }
+.streak-grid .streak-cell { width: 100%; aspect-ratio: 1; max-width: 14px; max-height: 14px; border-radius: 3px; background: rgba(255,255,255,0.08); }
+.streak-grid .streak-cell.filled { background: var(--primary); }
+body.light-mode .streak-grid .streak-cell { background: #e2e8f0; }
+body.light-mode .streak-grid .streak-cell.filled { background: var(--primary); }

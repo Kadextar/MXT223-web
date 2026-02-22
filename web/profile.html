@@ -10,8 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/academics.css?v=78">
-    <link rel="stylesheet" href="/static/profile.css?v=78">
+    <link rel="stylesheet" href="/static/academics.css">
+    <link rel="stylesheet" href="/static/profile.css">
+    <link rel="stylesheet" href="/static/toast.css">
+    <meta name="description" content="Профиль студента МХТ-223">
     <meta name="theme-color" content="#0f172a">
     <style>
         /* Profile Specific Tab Tweaks */
@@ -123,12 +125,12 @@
                 <div class="profile-card">
                     <div class="profile-header">
                         <div class="profile-avatar-container">
-                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar"
+                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar" loading="lazy"
                                 class="profile-avatar-img">
                             <button class="edit-avatar-btn" id="edit-avatar-btn">🖊️</button>
                         </div>
                         <div class="profile-info">
-                            <h2 id="student-name">Загрузка...</h2>
+                            <h2 id="student-name" class="skeleton-line" style="width:160px;height:28px;border-radius:8px" aria-busy="true"> </h2>
                             <p class="student-id" id="student-id">ID: ...</p>
                             <div class="profile-stats"
                                 style="margin-top: 10px; font-size: 0.9em; color: var(--text-muted); display: flex; gap: 15px;">
@@ -137,6 +139,61 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="profile-card profile-section" id="schedule-stats-card">
+                    <h3 class="profile-section-title">📊 Статистика</h3>
+                    <p class="profile-section-desc">Полезная сводка</p>
+                    <div id="schedule-stats" class="schedule-stats schedule-stats-grid">
+                        <span>Семестр: <b id="stats-semester-pct">—</b></span>
+                        <span>Пар по плану: <b id="stats-lessons-progress">—</b></span>
+                        <span>Пар на этой неделе: <b id="stats-lessons-week">—</b></span>
+                        <span>Пар в этом месяце: <b id="stats-lessons-month">—</b></span>
+                        <span>Самый загруженный день: <b id="stats-busiest-day">—</b></span>
+                        <span>Больше на неделе: <b id="stats-most-type">—</b></span>
+                        <span>Чаще всего предмет: <b id="stats-top-subject">—</b></span>
+                        <span>Серия заходов: <b id="stats-login-streak">—</b></span>
+                    </div>
+                    <div id="streak-calendar" class="streak-calendar" aria-label="Календарь заходов"></div>
+                </div>
+
+                <!-- Дедлайны -->
+                <div class="profile-card profile-section">
+                    <h3 class="profile-section-title">📅 Дедлайны</h3>
+                    <p class="profile-section-desc">Курсовые, сдачи, экзамены</p>
+                    <ul id="deadlines-list" class="deadlines-list"></ul>
+                    <form id="deadline-form" class="deadline-form">
+                        <input type="text" id="deadline-title" placeholder="Название (например: Сдача курсовой)" required maxlength="120">
+                        <input type="date" id="deadline-date" required>
+                        <button type="submit" class="profile-pill-btn profile-pill-pdf">Добавить</button>
+                    </form>
+                </div>
+
+                <!-- Расписание и календарь (одна секция) -->
+                <div class="profile-card profile-section profile-schedule-calendar-card">
+                    <h3 class="profile-section-title">📄 Расписание и календарь</h3>
+                    <p class="profile-section-desc">PDF, избранное и добавление в календарь</p>
+                    <div class="profile-schedule-calendar-actions">
+                        <button type="button" class="profile-pill-btn profile-pill-pdf" id="profile-pdf-btn">
+                            <i class="fas fa-file-pdf"></i> Скачать PDF
+                        </button>
+                        <a href="/?fav=1" class="profile-pill-btn profile-pill-fav">
+                            <i class="fas fa-star"></i> Мои избранные
+                        </a>
+                        <a id="google-calendar-btn" href="#" target="_blank" rel="noopener" class="profile-pill-btn profile-pill-google">
+                            <i class="fab fa-google"></i> Google Calendar
+                        </a>
+                        <a id="apple-calendar-btn" href="/api/calendar.ics" download class="profile-pill-btn profile-pill-apple">
+                            <i class="fas fa-apple-alt"></i> Скачать для Apple
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Достижения (в конце) -->
+                <div class="profile-card profile-section">
+                    <h3 class="profile-section-title">🏆 Достижения</h3>
+                    <div id="achievements-list" class="achievements-list"></div>
                 </div>
             </div>
 
@@ -190,38 +247,60 @@
                 <!-- Appearance Card -->
                 <div class="profile-card">
                     <h3>🎨 Внешний вид</h3>
-                    <div class="setting-row"
-                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                    <div class="setting-row" style="margin-top: 16px;">
+                        <label style="color: var(--text-main); font-weight: 600;">Тема</label>
+                        <select id="theme-select" class="theme-select" style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
+                            <option value="dark">Тёмная</option>
+                            <option value="light">Светлая</option>
+                            <option value="system">Как в системе</option>
+                            <option value="time">По времени суток (светлая днём, тёмная ночью)</option>
+                        </select>
+                    </div>
+                    <div class="setting-row" style="margin-top: 12px;">
+                        <label style="color: var(--text-main); font-weight: 600;">Акцент</label>
+                        <select id="accent-select" style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
+                            <option value="blue">Синий</option>
+                            <option value="purple">Фиолетовый</option>
+                            <option value="green">Зелёный</option>
+                            <option value="orange">Оранжевый</option>
+                        </select>
+                    </div>
+                    <div class="setting-row" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong style="color: var(--text-main);">Светлая тема</strong>
-                            <p class="text-muted" style="font-size: 0.85rem; margin: 4px 0 0;">Переключить на "Светлая
-                                тема"</p>
+                            <strong style="color: var(--text-main);">AMOLED (чёрный фон)</strong>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Максимально тёмная тема</p>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="theme-toggle">
+                            <input type="checkbox" id="amoled-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: var(--text-main);">Крупный шрифт</strong>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Для слабого зрения</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="large-font-toggle">
                             <span class="slider round"></span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Calendar Export Card -->
-                <div class="profile-card" style="margin-top: 20px;">
-                    <h3>📅 Календарь</h3>
-                    <p class="text-muted" style="margin-bottom: 16px;">Добавить расписание в Google/Apple календарь</p>
-                    <button class="submit-btn" id="export-calendar-btn">
-                        <i class="fas fa-file-export"></i> Скачать расписание (ICS)
-                    </button>
-                </div>
-
                 <!-- Notifications Card -->
                 <div class="profile-card" style="margin-top: 20px;">
                     <h3>🔔 Уведомления</h3>
-                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о
-                        парах.
-                    </p>
-                    <button class="submit-btn" id="enable-notifications-btn">
-                        Включить уведомления
-                    </button>
+                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о парах.</p>
+                    <div class="setting-row" style="margin-bottom: 12px;">
+                        <label style="color: var(--text-main); font-weight: 600;">Напомнить за</label>
+                        <select id="reminder-minutes" class="theme-select" style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
+                            <option value="0">Выкл</option>
+                            <option value="15">15 минут</option>
+                            <option value="30">30 минут</option>
+                            <option value="60">60 минут</option>
+                        </select>
+                    </div>
+                    <button class="submit-btn" id="enable-notifications-btn">Включить уведомления</button>
                     <div id="push-message" class="message hidden" style="margin-top: 10px;"></div>
                 </div>
 
@@ -229,6 +308,11 @@
                 <div class="profile-card" style="margin-top: 20px;">
                     <h3>⚙️ Аккаунт</h3>
                     <button class="logout-btn" id="logout-btn">🚪 Выйти из аккаунта</button>
+                </div>
+
+                <!-- Version -->
+                <div class="profile-card profile-version-card" style="margin-top: 20px;">
+                    <p class="profile-version-text">Версия приложения: <strong id="app-version">—</strong></p>
                 </div>
             </div>
 
@@ -239,15 +323,15 @@
                     <h2 style="color: var(--text-main); margin-bottom: 20px;">Выберите аватар</h2>
                     <div class="avatars-grid">
                         <!-- 9 avatars -->
-                        <img src="/static/avatars/1.png" class="avatar-option" data-id="1.png">
-                        <img src="/static/avatars/2.png" class="avatar-option" data-id="2.png">
-                        <img src="/static/avatars/3.png" class="avatar-option" data-id="3.png">
-                        <img src="/static/avatars/4.png" class="avatar-option" data-id="4.png">
-                        <img src="/static/avatars/5.png" class="avatar-option" data-id="5.png">
-                        <img src="/static/avatars/6.png" class="avatar-option" data-id="6.png">
-                        <img src="/static/avatars/7.png" class="avatar-option" data-id="7.png">
-                        <img src="/static/avatars/8.png" class="avatar-option" data-id="8.png">
-                        <img src="/static/avatars/9.png" class="avatar-option" data-id="9.png">
+                        <img src="/static/avatars/1.png" class="avatar-option" data-id="1.png" loading="lazy">
+                        <img src="/static/avatars/2.png" class="avatar-option" data-id="2.png" loading="lazy">
+                        <img src="/static/avatars/3.png" class="avatar-option" data-id="3.png" loading="lazy">
+                        <img src="/static/avatars/4.png" class="avatar-option" data-id="4.png" loading="lazy">
+                        <img src="/static/avatars/5.png" class="avatar-option" data-id="5.png" loading="lazy">
+                        <img src="/static/avatars/6.png" class="avatar-option" data-id="6.png" loading="lazy">
+                        <img src="/static/avatars/7.png" class="avatar-option" data-id="7.png" loading="lazy">
+                        <img src="/static/avatars/8.png" class="avatar-option" data-id="8.png" loading="lazy">
+                        <img src="/static/avatars/9.png" class="avatar-option" data-id="9.png" loading="lazy">
                     </div>
                     <button class="back-btn" id="close-avatar-modal"
                         style="width: 100%; margin-top: 20px;">Отмена</button>

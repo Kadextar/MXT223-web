@@ -1,5 +1,19 @@
 import { SEMESTER_START_DATE, PAIR_TIMES, getLessonsForDay, setScheduleData } from './schedule_data.js';
+import { showToast } from './toast.js';
+import { getSchedule } from './api/schedule.js';
+import { getMe } from './api/auth.js';
+import { getFlags } from './api/flags.js';
 import './theme_init.js';
+import './metrics.js';
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+function showMessage(text, type) {
+    showToast(text, type || 'info');
+}
 
 // --- Authentication Check ---
 const AUTHORIZED_STUDENTS = [
@@ -18,11 +32,11 @@ if (!token) {
 // For now, let's remove the student_id check entirely as it's causing loops.
 // The app can work in "Guest Mode" (Student) or "User Mode" (Name).
 
-// --- State ---
 const state = {
     currentDate: new Date(),
-    selectedDay: null, // 'monday', 'tuesday', etc.
-    currentWeek: 1
+    selectedDay: null,
+    currentWeek: 1,
+    showFavoritesOnly: false
 };
 
 // --- DOM Elements ---
@@ -34,6 +48,7 @@ const dom = {
     prevWeekBtn: document.getElementById('prev-week-btn'),
     nextWeekBtn: document.getElementById('next-week-btn'),
     liveWidget: document.getElementById('live-status'),
+    nextLessonWidget: document.getElementById('next-lesson-widget'),
 };
 
 const DAYS_MAP = {
@@ -43,6 +58,32 @@ const DAYS_MAP = {
 const DAYS_LABELS = {
     'monday': 'Пн', 'tuesday': 'Вт', 'wednesday': 'Ср', 'thursday': 'Чт', 'friday': 'Пт'
 };
+const VALID_DAYS = new Set(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'weekend']);
+
+function readStateFromUrl() {
+    const params = new URLSearchParams(location.hash.slice(1) || location.search);
+    const week = params.get('week');
+    const day = params.get('day');
+    const fav = params.get('fav');
+    if (week) {
+        const w = parseInt(week, 10);
+        if (w >= 1 && w <= 20) state.currentWeek = w;
+    }
+    if (day && VALID_DAYS.has(day)) state.selectedDay = day;
+    if (fav === '1') state.showFavoritesOnly = true;
+}
+
+function pushStateToUrl() {
+    const params = new URLSearchParams();
+    params.set('week', String(state.currentWeek));
+    params.set('day', state.selectedDay || 'monday');
+    const q = params.toString();
+    if (location.hash) {
+        history.replaceState(null, '', '#' + q);
+    } else {
+        history.replaceState(null, '', (location.pathname || '/') + '?' + q);
+    }
+}
 
 // --- Utils ---
 function getWeekNumber(date) {
@@ -145,18 +186,41 @@ function renderWeekInfo() {
     // (Moved to week-text-container block above)
 }
 
+const DAYS_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
 function renderTabs() {
     const tabsContainer = dom.daysTabs;
     tabsContainer.innerHTML = '';
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-
-    days.forEach(day => {
+    DAYS_ORDER.forEach(day => {
         const btn = document.createElement('button');
         btn.className = `tab ${state.selectedDay === day ? 'active' : ''}`;
         btn.textContent = DAYS_LABELS[day];
+        btn.setAttribute('data-day', day);
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', state.selectedDay === day ? 'true' : 'false');
         btn.onclick = () => selectDay(day);
         tabsContainer.appendChild(btn);
     });
+    if (!tabsContainer._keyNavBound) {
+        tabsContainer._keyNavBound = true;
+        tabsContainer.addEventListener('keydown', (e) => {
+            const t = e.target.closest('[data-day]');
+            if (!t) return;
+            const idx = DAYS_ORDER.indexOf(t.getAttribute('data-day'));
+            if (e.key === 'ArrowLeft' && idx > 0) {
+                e.preventDefault();
+                selectDay(DAYS_ORDER[idx - 1]);
+                tabsContainer.querySelector(`[data-day="${DAYS_ORDER[idx - 1]}"]`)?.focus();
+            } else if (e.key === 'ArrowRight' && idx >= 0 && idx < DAYS_ORDER.length - 1) {
+                e.preventDefault();
+                selectDay(DAYS_ORDER[idx + 1]);
+                tabsContainer.querySelector(`[data-day="${DAYS_ORDER[idx + 1]}"]`)?.focus();
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                selectDay(t.getAttribute('data-day'));
+            }
+        });
+    }
 }
 /* Note: The main navigation handled in HTML structure, checking if we need to inject the bottom nav */
 function initFloatingNav() {
@@ -226,10 +290,46 @@ function openNoteModal(subject) {
 
     modal.classList.remove('hidden');
     input.focus();
+    modal.setAttribute('aria-hidden', 'false');
+    trapModalFocus(modal);
+}
+
+function trapModalFocus(modalEl) {
+    const focusables = modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    function onKeyDown(e) {
+        if (e.key !== 'Tab' && e.key !== 'Escape') return;
+        if (e.key === 'Escape') {
+            closeNoteModal();
+            return;
+        }
+        if (e.key === 'Tab') {
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last?.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first?.focus();
+                }
+            }
+        }
+    }
+    modalEl._noteModalKeyHandler = onKeyDown;
+    modalEl.addEventListener('keydown', onKeyDown);
 }
 
 function closeNoteModal() {
-    document.getElementById('note-modal').classList.add('hidden');
+    const modal = document.getElementById('note-modal');
+    if (modal._noteModalKeyHandler) {
+        modal.removeEventListener('keydown', modal._noteModalKeyHandler);
+        modal._noteModalKeyHandler = null;
+    }
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
     currentNoteSubject = null;
 }
 
@@ -263,11 +363,38 @@ function deleteNote() {
     showMessage('Заметка удалена', 'info');
 }
 
-// Expose to window for HTML onclick events
+function getFavoriteSubjects() {
+    return JSON.parse(localStorage.getItem('favorite_subjects') || '[]');
+}
+
+async function syncFavoritesToServer(subjects) {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    try {
+        await fetch('/api/favorites', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ subjects: subjects || getFavoriteSubjects() }),
+        });
+    } catch (_) {}
+}
+
+function toggleFavorite(btn) {
+    const subject = btn.getAttribute('data-subject');
+    let favs = getFavoriteSubjects();
+    if (favs.includes(subject)) favs = favs.filter(s => s !== subject);
+    else favs.push(subject);
+    localStorage.setItem('favorite_subjects', JSON.stringify(favs));
+    btn.classList.toggle('active', favs.includes(subject));
+    btn.querySelector('i').className = favs.includes(subject) ? 'fas fa-star' : 'far fa-star';
+    syncFavoritesToServer(favs);
+}
+
 window.openNoteModal = openNoteModal;
 window.closeNoteModal = closeNoteModal;
 window.saveNote = saveNote;
 window.deleteNote = deleteNote;
+window.toggleFavorite = toggleFavorite;
 
 // Bind Note Modal Events
 document.addEventListener('DOMContentLoaded', () => {
@@ -281,6 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderSchedule() {
     const container = dom.scheduleContainer;
     container.innerHTML = '';
+    const favFilterChip = document.getElementById('fav-filter-chip');
+    if (favFilterChip) favFilterChip.classList.toggle('hidden', !state.showFavoritesOnly);
 
     // Load Notes
     const notes = JSON.parse(localStorage.getItem('lesson_notes') || '{}');
@@ -288,7 +417,7 @@ function renderSchedule() {
     // If it's a weekend (or no day selected)
     if (state.selectedDay === 'weekend') {
         container.innerHTML = `
-            <div class="empty-state">
+            <div class="empty-state empty-state-friendly">
                 <div class="empty-icon">😌</div>
                 <p>В этот день занятий нет</p>
                 <p class="subtitle">Отдыхайте!</p>
@@ -297,14 +426,21 @@ function renderSchedule() {
         return;
     }
 
-    const lessons = getLessonsForDay(state.selectedDay, state.currentWeek);
+    let lessons = getLessonsForDay(state.selectedDay, state.currentWeek);
+    if (state.showFavoritesOnly) {
+        const favs = JSON.parse(localStorage.getItem('favorite_subjects') || '[]');
+        if (favs.length) lessons = lessons.filter(l => favs.includes(l.subject));
+        else lessons = [];
+    }
 
     if (lessons.length === 0) {
-        // Fallback for weekdays with no classes (though rare)
+        const favMsg = state.showFavoritesOnly
+            ? '<p>В избранном ничего нет</p><p class="subtitle">Отметьте предметы звёздочкой на карточках</p>'
+            : '<p>В этот день занятий нет</p><p class="subtitle">Выберите другой день или неделю</p>';
         container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">📅</div>
-                <p>В этот день занятий нет</p>
+            <div class="empty-state empty-state-friendly">
+                <div class="empty-icon">${state.showFavoritesOnly ? '★' : '📅'}</div>
+                ${favMsg}
             </div>
         `;
         return;
@@ -317,20 +453,18 @@ function renderSchedule() {
         const typeClass = lesson.type === 'lecture' ? 'lecture' : 'seminar';
         const typeLabel = lesson.type === 'lecture' ? 'Лекция' : 'Семинар';
 
-        // Check for note
+        // Check for note (escape for XSS)
         const note = notes[lesson.subject];
-        const noteHtml = note ? `<div class="lesson-note"><i class="fas fa-sticky-note"></i> ${note}</div>` : '';
+        const noteHtml = note ? `<div class="lesson-note"><i class="fas fa-sticky-note"></i> ${escapeHtml(note)}</div>` : '';
         const noteBtnClass = note ? 'active' : '';
+        const favs = JSON.parse(localStorage.getItem('favorite_subjects') || '[]');
+        const isFav = favs.includes(lesson.subject);
 
-        // ID для поиска при обновлении Live статуса
         const lessonId = `lesson-${lesson.pair}`;
 
         const card = document.createElement('div');
         card.className = `lesson-card ${typeClass}`;
         card.id = lessonId;
-
-        // Make card relative for button positioning if needed, usually css handles it
-        // We add a specific 'note-btn'
 
         card.innerHTML = `
             <div class="card-header">
@@ -339,9 +473,17 @@ function renderSchedule() {
             </div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
                  <h3 class="lesson-subject">${lesson.subject}</h3>
-                 <button class="icon-btn note-btn ${noteBtnClass}" onclick="openNoteModal('${lesson.subject}')" title="Заметка">
+                 <div class="lesson-card-actions">
+                    <button class="icon-btn fav-btn ${isFav ? 'active' : ''}" data-subject="${escapeHtml(lesson.subject)}" onclick="window.toggleFavorite(this)" title="Избранное" aria-label="В избранное">
+                        <i class="fa${isFav ? 's' : 'r'} fa-star"></i>
+                    </button>
+                    <button class="icon-btn note-btn ${noteBtnClass}" 
+                    data-subject="${lesson.subject.replace(/"/g, '&quot;')}" 
+                    onclick="openNoteModal(this.getAttribute('data-subject'))" 
+                    title="Заметка">
                     <i class="far fa-edit"></i>
                  </button>
+                 </div>
             </div>
             ${noteHtml}
             <div class="lesson-details">
@@ -375,7 +517,7 @@ function updateLiveStatus() {
 
     if (!visualIsToday) {
         dom.liveWidget.classList.add('hidden');
-        // Убираем подсветку
+        if (dom.nextLessonWidget) dom.nextLessonWidget.classList.add('hidden');
         document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
         return;
     }
@@ -463,11 +605,69 @@ function updateLiveStatus() {
     } else {
         dom.liveWidget.classList.add('hidden');
     }
+    // Блок «Следующая пара» (время, предмет, аудитория)
+    if (dom.nextLessonWidget && nextLesson) {
+        const timeStr = PAIR_TIMES[nextLesson.pair] ? PAIR_TIMES[nextLesson.pair].split(' - ')[0] : '—';
+        dom.nextLessonWidget.classList.remove('hidden');
+        dom.nextLessonWidget.innerHTML = `
+            <span class="next-lesson-label">Следующая пара</span>
+            <span class="next-lesson-time">${timeStr}</span>
+            <span class="next-lesson-subject">${nextLesson.subject}</span>
+            <span class="next-lesson-room"><i class="fas fa-map-marker-alt"></i> ${nextLesson.room}</span>
+        `;
+    } else if (dom.nextLessonWidget) {
+        dom.nextLessonWidget.classList.add('hidden');
+    }
+    updatePersonalTip();
+}
+
+function updatePersonalTip() {
+    const el = document.getElementById('personal-tip');
+    if (!el) return;
+    const now = new Date();
+    const dayName = DAYS_MAP[now.getDay()];
+    const realWeek = getWeekNumber(now);
+    const lessonsToday = getLessonsForDay(dayName, realWeek);
+    if (lessonsToday.length === 0) {
+        el.textContent = '';
+        el.classList.add('hidden');
+        return;
+    }
+    const userName = localStorage.getItem('user_name') || localStorage.getItem('student_name') || '';
+    const name = userName ? userName.split(/\s/)[0] : '';
+    let tip = '';
+    const sorted = [...lessonsToday].sort((a, b) => a.pair - b.pair);
+    const nextLesson = sorted.find(l => {
+        const timeRange = PAIR_TIMES[l.pair];
+        if (!timeRange) return false;
+        const start = parseTime(timeRange.split(' - ')[0], now);
+        return start > now;
+    });
+    if (nextLesson && name) {
+        const timeRange = PAIR_TIMES[nextLesson.pair];
+        const start = parseTime(timeRange.split(' - ')[0], now);
+        const minLeft = Math.round((start - now) / (60 * 1000));
+        const room = nextLesson.room || '';
+        const corpus = (room.match(/^(\d+)/) || [])[1] || '';
+        if (minLeft > 0 && minLeft <= 60) tip = `${name}, до пары ${minLeft} мин`;
+        else if (minLeft > 60) tip = `${name}, до пары больше часа — успеешь позавтракать`;
+        if (corpus && tip) tip += `, аудитория ${room}`;
+    }
+    if (!tip && sorted.length >= 3 && name) tip = `${name}, сегодня ${sorted.length} пары подряд — не забудь перекус`;
+    if (!tip && name) tip = `${name}, сегодня ${sorted.length} ${sorted.length === 1 ? 'пара' : 'пары'}`;
+    if (tip) {
+        el.textContent = tip;
+        el.classList.remove('hidden');
+    } else {
+        el.textContent = '';
+        el.classList.add('hidden');
+    }
 }
 
 // --- Logic ---
 function selectDay(day) {
     state.selectedDay = day;
+    pushStateToUrl();
     renderTabs();
     renderSchedule();
     updateLiveStatus();
@@ -477,71 +677,77 @@ function updateWeek(offset) {
     state.currentWeek += offset;
     if (state.currentWeek < 1) state.currentWeek = 1;
     if (state.currentWeek > 20) state.currentWeek = 20;
-
-    // Fix: Always reset to Monday when switching weeks
     state.selectedDay = 'monday';
-
+    pushStateToUrl();
     renderWeekInfo();
-    renderTabs(); // Need to re-render tabs to show Monday active
+    renderTabs();
     renderSchedule();
     updateLiveStatus();
 }
 
-async function init() {
-    // 1. Initialize Navigation IMMEDIATELY
-    initFloatingNav();
+function updateStreak() {
+    const today = new Date().toDateString();
+    const last = localStorage.getItem('last_visit_date');
+    let streak = parseInt(localStorage.getItem('visit_streak') || '0', 10);
+    if (last === today) return;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toDateString();
+    if (last === yesterdayStr) streak += 1;
+    else if (last) streak = 1;
+    else streak = 1;
+    localStorage.setItem('last_visit_date', today);
+    localStorage.setItem('visit_streak', String(streak));
+    if (streak >= 2) showMessage(`Ты заходил ${streak} дней подряд 🔥`, 'success');
+}
 
-    // 2. Load User Profile & Greeting IMMEDIATELY (Cached or Network)
+async function init() {
+    updateStreak();
+    initFloatingNav();
+    getFlags().then((f) => { window.__flags = f; });
     updateGreetingTime();
     fetchUserProfile();
 
     // 3. Load Announcement
     loadAnnouncement();
 
-    // 4. Live Update initialization
+    // 4. Live Update and widgets
     updateLiveStatus();
-    setInterval(updateLiveStatus, 30000); // Every 30 sec
+    setInterval(updateLiveStatus, 30000);
+    loadNextLessonWidget();
+    loadVisitors();
 
-    // 5. Load Schedule (This might be slow, so do it last to not block UI)
-    // 5. Load Schedule with Offline Caching
+    // 5. Load Schedule with offline caching (timeout 15s so we never hang)
+    let scheduleLoadFailed = false;
     try {
-        // Try to fetch from server
-        // Using standard endpoint (cached on server if enabled)
-        const response = await fetch('/api/schedule');
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const data = await response.json();
-        setScheduleData(data);
-
-        // Cache for offline use
-        localStorage.setItem('cached_schedule', JSON.stringify(data));
+        const list = await getSchedule();
+        setScheduleData(list);
+        localStorage.setItem('cached_schedule', JSON.stringify(list));
         localStorage.setItem('cached_schedule_time', new Date().toISOString());
-
     } catch (error) {
         console.error('Network load failed, checking cache:', error);
-
-        // Fallback to cache
+        const offlineBanner = document.getElementById('offline-banner');
+        if (offlineBanner) offlineBanner.classList.add('hidden');
         const cached = localStorage.getItem('cached_schedule');
         const cachedTime = localStorage.getItem('cached_schedule_time');
-
         if (cached) {
             console.log('Using offline cache');
-            setScheduleData(JSON.parse(cached));
-
-            // Show Offline Notification
-            const timeStr = cachedTime ? new Date(cachedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-            showMessage(`Режим офлайн 📶 (Данные от ${timeStr})`, 'info'); // Using 'info' style (orange/blue)
+            const parsed = JSON.parse(cached);
+            setScheduleData(Array.isArray(parsed) ? parsed : (parsed.items || []));
+            const offlineBanner = document.getElementById('offline-banner');
+            if (offlineBanner) {
+                offlineBanner.classList.remove('hidden');
+            }
         } else {
-            // Show error to user if no cache
+            scheduleLoadFailed = true;
             const container = document.getElementById('schedule-container');
             if (container) {
                 container.innerHTML = `
-                    <div class="empty-state">
+                    <div class="empty-state empty-state-friendly">
                         <div class="empty-icon">⚠️</div>
                         <p>Ошибка загрузки</p>
-                        <p class="subtitle">Нет интернета и сохраненной копии.</p>
-                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 12px 20px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight:600;">Попробовать снова</button>
+                        <p class="subtitle">Нет интернета и сохранённой копии.</p>
+                        <button class="empty-state-btn" onclick="location.reload()">Попробовать снова</button>
                     </div>
                 `;
             }
@@ -550,18 +756,37 @@ async function init() {
 
     const now = new Date();
     state.currentWeek = getWeekNumber(now);
-
-    // --- Weekend Logic Fix ---
     let dayIdx = now.getDay();
-    if (dayIdx === 0 || dayIdx === 6) {
-        state.selectedDay = 'weekend'; // Special state for Sat/Sun
-    } else {
-        state.selectedDay = DAYS_MAP[dayIdx];
+    if (dayIdx === 0 || dayIdx === 6) state.selectedDay = 'weekend';
+    else state.selectedDay = DAYS_MAP[dayIdx];
+    readStateFromUrl();
+    pushStateToUrl();
+
+    // Load favorites from server (sync across devices)
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        try {
+            const r = await fetch('/api/favorites', { headers: { Authorization: `Bearer ${token}` } });
+            if (r.ok) {
+                const data = await r.json();
+                if (Array.isArray(data.subjects)) {
+                    localStorage.setItem('favorite_subjects', JSON.stringify(data.subjects));
+                }
+            }
+        } catch (_) {}
     }
 
     renderWeekInfo();
     renderTabs();
-    renderSchedule();
+    if (!scheduleLoadFailed) renderSchedule();
+    updateAppBadge();
+    updateRateAfterLessonBanner();
+    setInterval(updateRateAfterLessonBanner, 60 * 1000);
+    updatePersonalTip();
+    loadPoll();
+    initCopyTodayAndPdf();
+    initDaysSwipe();
+    initNoteVoice();
 
     // Listeners for Week Navigation
     const currentWeekBtn = document.getElementById('current-week-btn');
@@ -571,20 +796,26 @@ async function init() {
         currentWeekBtn.onclick = () => {
             const now = new Date();
             state.currentWeek = getWeekNumber(now);
+            state.selectedDay = DAYS_MAP[now.getDay()] || 'monday';
+            if (state.selectedDay === 'saturday' || state.selectedDay === 'sunday') state.selectedDay = 'weekend';
+            pushStateToUrl();
             currentWeekBtn.classList.add('active');
             nextWeekBtn.classList.remove('active');
             renderWeekInfo();
+            renderTabs();
             renderSchedule();
             updateLiveStatus();
         };
 
         nextWeekBtn.onclick = () => {
             const now = new Date();
-            const currentRealWeek = getWeekNumber(now);
-            state.currentWeek = currentRealWeek + 1;
+            state.currentWeek = getWeekNumber(now) + 1;
+            state.selectedDay = 'monday';
+            pushStateToUrl();
             nextWeekBtn.classList.add('active');
             currentWeekBtn.classList.remove('active');
             renderWeekInfo();
+            renderTabs();
             renderSchedule();
             updateLiveStatus();
         };
@@ -594,19 +825,229 @@ async function init() {
         dom.nextWeekBtn.onclick = () => updateWeek(1);
     }
 
-    // Close banner
     const closeBannerBtn = document.getElementById('close-banner-btn');
     if (closeBannerBtn) {
         closeBannerBtn.onclick = () => {
             const banner = document.getElementById('announcement-banner');
             banner.classList.add('hidden');
+            if (banner.dataset.createdAt) localStorage.setItem('closed_announcement_date', banner.dataset.createdAt);
+        };
+    }
+    const favFilterChip = document.getElementById('fav-filter-chip');
+    const favFilterChipClose = document.getElementById('fav-filter-chip-close');
+    if (favFilterChip && favFilterChipClose) {
+        favFilterChipClose.onclick = () => {
+            state.showFavoritesOnly = false;
+            favFilterChip.classList.add('hidden');
+            pushStateToUrl();
+            renderSchedule();
+        };
+        if (state.showFavoritesOnly) favFilterChip.classList.remove('hidden');
+    }
+    initPullToRefresh();
+    initLessonReminders();
+}
 
-            // Remember that we closed this announcement
-            if (banner.dataset.createdAt) {
-                localStorage.setItem('closed_announcement_date', banner.dataset.createdAt);
+async function loadPoll() {
+    const block = document.getElementById('poll-block');
+    const questionEl = document.getElementById('poll-question');
+    const optionsEl = document.getElementById('poll-options');
+    const thanksEl = document.getElementById('poll-thanks');
+    if (!block || !questionEl || !optionsEl) return;
+    try {
+        const r = await fetch('/api/polls');
+        if (!r.ok) return;
+        const polls = await r.json();
+        const poll = Array.isArray(polls) && polls.length > 0 ? polls[0] : null;
+        if (!poll || !poll.question || !poll.options || !poll.options.length) {
+            block.classList.add('hidden');
+            return;
+        }
+        block.classList.remove('hidden');
+        thanksEl.classList.add('hidden');
+        questionEl.textContent = poll.question;
+        optionsEl.innerHTML = poll.options.map((opt, i) =>
+            `<button type="button" class="poll-option-btn" data-poll-id="${poll.id}" data-option-index="${i}">${escapeHtml(opt)}</button>`
+        ).join('');
+        optionsEl.classList.remove('hidden');
+        optionsEl.querySelectorAll('.poll-option-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const pollId = parseInt(btn.getAttribute('data-poll-id'), 10);
+                const optionIndex = parseInt(btn.getAttribute('data-option-index'), 10);
+                const token = localStorage.getItem('access_token');
+                try {
+                    const res = await fetch(`/api/polls/${pollId}/vote`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        },
+                        body: JSON.stringify({ option_index: optionIndex }),
+                    });
+                    if (res.ok) {
+                        optionsEl.classList.add('hidden');
+                        questionEl.classList.add('hidden');
+                        thanksEl.classList.remove('hidden');
+                        setTimeout(() => {
+                            block.classList.add('hidden');
+                        }, 2000);
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        showMessage(err.detail || 'Не удалось проголосовать', 'error');
+                    }
+                } catch (e) {
+                    showMessage('Ошибка сети', 'error');
+                }
+            });
+        });
+    } catch (_) {
+        block.classList.add('hidden');
+    }
+}
+
+function updateAppBadge() {
+    if (typeof navigator.setAppBadge !== 'function') return;
+    const now = new Date();
+    const dayIdx = now.getDay();
+    if (dayIdx === 0 || dayIdx === 6) {
+        navigator.setAppBadge(0);
+        return;
+    }
+    const dayName = DAYS_MAP[dayIdx];
+    const week = getWeekNumber(now);
+    const lessons = getLessonsForDay(dayName, week);
+    const count = lessons.length;
+    try {
+        navigator.setAppBadge(count);
+    } catch (_) {}
+}
+
+function initPullToRefresh() {
+    const container = dom.scheduleContainer;
+    if (!container) return;
+    let startY = 0;
+    const threshold = 60;
+    const pullEl = document.createElement('div');
+    pullEl.className = 'pull-refresh-indicator';
+    pullEl.setAttribute('aria-hidden', 'true');
+    pullEl.innerHTML = '<i class="fas fa-sync-alt"></i> Потяните для обновления';
+    container.insertBefore(pullEl, container.firstChild);
+    container.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+    container.addEventListener('touchmove', (e) => {
+        const y = e.touches[0].clientY;
+        if (y > startY && container.scrollTop === 0 && y - startY < 120) {
+            const px = Math.min(y - startY, 80);
+            pullEl.style.setProperty('--pull', px + 'px');
+            pullEl.classList.toggle('active', px > 10);
+        }
+    }, { passive: true });
+    container.addEventListener('touchend', async () => {
+        const pull = parseInt(getComputedStyle(pullEl).getPropertyValue('--pull') || '0', 10);
+        pullEl.style.setProperty('--pull', '0');
+        pullEl.classList.remove('active');
+        if (pull >= threshold) {
+            pullEl.classList.add('active', 'refreshing');
+            try {
+                const list = await getSchedule();
+                setScheduleData(list);
+                localStorage.setItem('cached_schedule', JSON.stringify(list));
+                renderSchedule();
+                updateLiveStatus();
+                updateAppBadge();
+                showMessage('Расписание обновлено', 'success');
+            } catch (e) {
+                showMessage('Ошибка обновления', 'error');
             }
+            pullEl.classList.remove('refreshing');
+        }
+    }, { passive: true });
+}
+
+function updateRateAfterLessonBanner() {
+    const banner = document.getElementById('rate-after-lesson-banner');
+    const textEl = document.getElementById('rate-after-lesson-text');
+    const linkEl = document.getElementById('rate-after-lesson-link');
+    if (!banner || !textEl) return;
+    const now = new Date();
+    const dayIdx = now.getDay();
+    if (dayIdx === 0 || dayIdx === 6) {
+        banner.classList.add('hidden');
+        return;
+    }
+    const dayName = DAYS_MAP[dayIdx];
+    const week = getWeekNumber(now);
+    const lessons = getLessonsForDay(dayName, week);
+    const todayStr = now.toISOString().split('T')[0];
+    let toShow = null;
+    for (const lesson of lessons) {
+        const timeRange = PAIR_TIMES[lesson.pair];
+        if (!timeRange) continue;
+        const parts = timeRange.split(' - ');
+        const endStr = parts[1] ? parts[1].trim() : null;
+        if (!endStr) continue;
+        const end = parseTime(endStr, now);
+        if (now <= end) continue;
+        const type = (lesson.type || 'lecture').toLowerCase();
+        const key = `voted_${lesson.subject}_${type}_${todayStr}`;
+        if (!localStorage.getItem(key)) {
+            toShow = { subject: lesson.subject, type };
+            break;
         }
     }
+    if (toShow) {
+        textEl.textContent = `Как прошла пара по «${toShow.subject}»?`;
+        if (linkEl) linkEl.href = '/ratings.html';
+        banner.classList.remove('hidden');
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+
+function initLessonReminders() {
+    if (!('Notification' in window) || Notification.permission === 'denied') return;
+    if (Notification.permission === 'granted') scheduleReminderCheck();
+    else document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && Notification.permission === 'default') {
+            Notification.requestPermission().then(p => { if (p === 'granted') scheduleReminderCheck(); });
+        }
+    });
+    const asked = localStorage.getItem('notification_reminder_asked');
+    if (!asked) {
+        setTimeout(() => {
+            Notification.requestPermission().then(p => {
+                localStorage.setItem('notification_reminder_asked', '1');
+                if (p === 'granted') scheduleReminderCheck();
+            });
+        }, 3000);
+    }
+}
+
+function scheduleReminderCheck() {
+    const minutes = parseInt(localStorage.getItem('reminder_minutes') || '15', 10);
+    if (minutes <= 0) return;
+    const check = () => {
+        const now = new Date();
+        const dayIdx = now.getDay();
+        const dayName = DAYS_MAP[dayIdx];
+        const week = getWeekNumber(now);
+        const lessons = getLessonsForDay(dayName, week);
+        const inM = new Date(now.getTime() + minutes * 60 * 1000);
+        for (const lesson of lessons) {
+            const timeRange = PAIR_TIMES[lesson.pair];
+            if (!timeRange) continue;
+            const [startStr] = timeRange.split(' - ');
+            const start = parseTime(startStr, now);
+            if (start > now && start <= inM) {
+                if (!document.hidden) return;
+                try {
+                    new Notification(`Через ${minutes} мин пара`, { body: `${lesson.subject}, ${lesson.room}`, icon: '/static/icons/icon-192x192.png' });
+                } catch (_) {}
+                return;
+            }
+        }
+    };
+    setInterval(check, 60 * 1000);
+    check();
 }
 
 // --- Announcement Loading ---
@@ -615,33 +1056,19 @@ async function init() {
 // --- User Profile & Greeting ---
 async function fetchUserProfile() {
     try {
-        const token = localStorage.getItem('access_token');
-        // If no token, maybe we are in dev mode or just logged in. 
-        // Try getting name from localStorage if available as fallback
         const cachedName = localStorage.getItem('user_name');
         if (cachedName) {
             const nameEl = document.getElementById('user-name');
             if (nameEl) nameEl.textContent = cachedName;
         }
-
+        const token = localStorage.getItem('access_token');
         if (!token) return;
-
-        const response = await fetch('/api/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Profile Fetched:', data); // Debug
-            if (data.name) {
-                // Update Name
-                const nameEl = document.getElementById('user-name');
-                if (nameEl) nameEl.textContent = data.name;
-                // Cache it for next time to be instant
-                localStorage.setItem('user_name', data.name);
-            }
-        } else {
-            console.warn('Profile fetch failed:', response.status);
+        const data = await getMe();
+        console.log('Profile Fetched:', data);
+        if (data.name) {
+            const nameEl = document.getElementById('user-name');
+            if (nameEl) nameEl.textContent = data.name;
+            localStorage.setItem('user_name', data.name);
         }
     } catch (e) {
         console.error('Failed to fetch profile:', e);
@@ -671,11 +1098,116 @@ function updateGreetingTime() {
     // and the logic for `greeting` should not be repeated.
 }
 
+async function loadNextLessonWidget() {
+    const el = dom.nextLessonWidget;
+    if (!el) return;
+    try {
+        const res = await fetch('/api/next');
+        const data = await res.json();
+        const next = data.next;
+        if (next && next.subject) {
+            el.classList.remove('hidden');
+            const content = document.getElementById('next-lesson-content');
+            if (content) {
+                const min = next.in_minutes != null ? next.in_minutes : '?';
+                content.innerHTML = `<strong>${next.subject}</strong> через ${min} мин · ${next.room || ''}`;
+            }
+        } else {
+            el.classList.add('hidden');
+        }
+    } catch (_) {
+        el.classList.add('hidden');
+    }
+}
+
+let visitorsTodayCount = 0;
+
+async function loadVisitors() {
+    try {
+        const opts = {};
+        const t = localStorage.getItem('access_token');
+        if (t) opts.headers = { Authorization: 'Bearer ' + t };
+        const res = await fetch('/api/stats/visitors', opts);
+        const data = await res.json();
+        visitorsTodayCount = data.visitors_today || 0;
+        updateStatsBar();
+    } catch (_) {}
+}
+
+function updateStatsBar() {
+    const el = document.getElementById('stats-bar');
+    if (!el) return;
+    el.classList.add('hidden');
+}
+
+function initCopyTodayAndPdf() {
+    // Calendar, share, copy, PDF moved to profile/settings
+}
+
+function initDaysSwipe() {
+    const tabs = dom.daysTabs;
+    if (!tabs) return;
+    let startX = 0;
+    tabs.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+    tabs.addEventListener('touchend', (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = startX - endX;
+        const idx = DAYS_ORDER.indexOf(state.selectedDay);
+        if (Math.abs(diff) > 50) {
+            if (diff > 0 && idx < DAYS_ORDER.length - 1) {
+                state.selectedDay = DAYS_ORDER[idx + 1];
+                pushStateToUrl();
+                renderTabs();
+                renderSchedule();
+                tabs.querySelector(`[data-day="${state.selectedDay}"]`)?.focus();
+            } else if (diff < 0 && idx > 0) {
+                state.selectedDay = DAYS_ORDER[idx - 1];
+                pushStateToUrl();
+                renderTabs();
+                renderSchedule();
+                tabs.querySelector(`[data-day="${state.selectedDay}"]`)?.focus();
+            }
+        }
+    }, { passive: true });
+}
+
+function initNoteVoice() {
+    const btn = document.getElementById('note-voice-btn');
+    const input = document.getElementById('note-input');
+    if (!btn || !input) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        btn.style.display = 'none';
+        return;
+    }
+    const rec = new SpeechRecognition();
+    rec.lang = 'ru-RU';
+    rec.continuous = false;
+    rec.interimResults = false;
+    btn.onclick = () => {
+        if (rec.recording) {
+            rec.stop();
+            return;
+        }
+        btn.classList.add('recording');
+        rec.onresult = (e) => {
+            const text = e.results[0][0].transcript;
+            input.value = (input.value ? input.value + ' ' : '') + text;
+            btn.classList.remove('recording');
+        };
+        rec.onerror = () => btn.classList.remove('recording');
+        rec.onend = () => btn.classList.remove('recording');
+        rec.start();
+    };
+}
+
 // Call these in init
 async function loadAnnouncement() {
+    const skeleton = document.getElementById('announcement-skeleton');
     try {
         const response = await fetch('/api/announcement');
         const data = await response.json();
+        if (skeleton) skeleton.classList.add('hidden');
 
         if (data && data.message) {
             // Check if this specific announcement was already closed
@@ -686,18 +1218,28 @@ async function loadAnnouncement() {
 
             const banner = document.getElementById('announcement-banner');
             const text = document.getElementById('announcement-text');
-            text.textContent = data.message;
+            let msg = data.message;
+            if (data.schedule_context && (data.schedule_context.week_num || data.schedule_context.day)) {
+                const w = data.schedule_context.week_num;
+                const d = data.schedule_context.day;
+                const dayShort = { monday: 'пн', tuesday: 'вт', wednesday: 'ср', thursday: 'чт', friday: 'пт' }[d] || d;
+                msg = (w ? `Неделя ${w}` : '') + (w && dayShort ? ', ' : '') + (dayShort ? dayShort : '') + (msg ? ': ' + msg : '');
+            }
+            text.textContent = msg;
             banner.classList.remove('hidden');
-
-            // Store current announcement date for the close handler
             banner.dataset.createdAt = data.created_at;
+            const token = localStorage.getItem('access_token');
+            fetch('/api/announcement/read', { method: 'POST', headers: token ? { Authorization: 'Bearer ' + token } : {} }).catch(() => {});
         }
     } catch (error) {
         console.error('Failed to load announcement:', error);
+        if (skeleton) skeleton.classList.add('hidden');
     }
 }
 
 
+
+window.addEventListener('online', () => { showMessage('Соединение восстановлено', 'success'); });
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

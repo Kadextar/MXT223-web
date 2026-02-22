@@ -1,5 +1,6 @@
 from fastapi import Header, HTTPException
 from app.database import database
+from app.logging_config import logger
 
 async def get_current_user(authorization: str = Header(None)):
     """Get current user info from token"""
@@ -37,7 +38,7 @@ async def get_current_user(authorization: str = Header(None)):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Get user error: {e}")
+        logger.exception("Get user error")
         raise HTTPException(status_code=500, detail="Server error")
 
 async def require_admin(authorization: str = Header(None)):
@@ -73,5 +74,5 @@ async def require_admin(authorization: str = Header(None)):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Admin check error: {e}")
+        logger.exception("Admin check error")
         raise HTTPException(status_code=500, detail="Server error")
