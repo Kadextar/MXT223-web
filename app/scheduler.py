@@ -3,6 +3,16 @@ import logging
 from datetime import datetime, timedelta
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+
+def _row_to_dict(row):
+    """Convert DB Record to dict (Record has no .get(), only __getitem__)."""
+    if isinstance(row, dict):
+        return row
+    try:
+        return dict(row)
+    except Exception:
+        return {k: row[k] for k in row.keys()} if hasattr(row, "keys") else {}
 from apscheduler.triggers.cron import CronTrigger
 from app.database import database
 from app.config import VAPID_PRIVATE_KEY, VAPID_CLAIM_EMAIL, SEMESTER_START, NOTIFY_BEFORE_LESSON_MINUTES
@@ -71,29 +81,26 @@ async def check_upcoming_lessons():
 
     logger.info(f"Found {len(lessons)} lessons starting soon.")
 
-    # Fetch all subscribers
-    subs = await database.fetch_all("SELECT * FROM push_subscriptions")
-    if not subs:
+    # Fetch all subscribers (convert to dict: Record has no .get(), only __getitem__)
+    rows = await database.fetch_all("SELECT * FROM push_subscriptions")
+    if not rows:
         return
 
-    # For each lesson (usually just 1 common, or 2 for subgroups), notify relevant users.
-    # Since we don't have user subgroups stored yet, we send to ALL.
-    # TODO: Filter by subgroup if user profile has it.
+    subs = [_row_to_dict(r) for r in rows]
 
     for lesson in lessons:
-        message = f"Через 15 минут: {lesson['subject']} ({lesson['lesson_type']}) в {lesson['room']}."
+        lesson_dict = _row_to_dict(lesson)
+        message = f"Через {NOTIFY_BEFORE_LESSON_MINUTES} мин.: {lesson_dict.get('subject', '')} ({lesson_dict.get('lesson_type', '')}) в {lesson_dict.get('room', '')}."
         
-        # Send to all
         for sub in subs:
             try:
-                subscription_info = json.loads(sub["subscription_data"])
+                subscription_info = json.loads(sub.get("subscription_data") or "{}")
                 payload = json.dumps({
                     "title": "Напоминание ⏰",
                     "body": message,
                     "url": "/",
                     "icon": "/static/icons/icon-192x192.png"
                 })
-                
                 webpush(
                     subscription_info=subscription_info,
                     data=payload,
