@@ -8,6 +8,9 @@ import { apiRequest } from '../api.js';
  */
 export async function getSchedule() {
     const response = await apiRequest('/api/schedule');
+    if (!response.ok) {
+        throw new Error(response.status === 401 ? 'Требуется вход' : `Ошибка ${response.status}`);
+    }
     const data = await response.json();
     return Array.isArray(data) ? data : (data.items || []);
 }

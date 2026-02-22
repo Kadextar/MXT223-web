@@ -727,6 +727,8 @@ async function init() {
     } catch (error) {
         console.error('Network load failed, checking cache:', error);
         const offlineBanner = document.getElementById('offline-banner');
+        const offlineText = document.getElementById('offline-banner-text');
+        const offlineRetryBtn = document.getElementById('offline-retry-btn');
         if (offlineBanner) offlineBanner.classList.add('hidden');
         const cached = localStorage.getItem('cached_schedule');
         const cachedTime = localStorage.getItem('cached_schedule_time');
@@ -734,9 +736,16 @@ async function init() {
             console.log('Using offline cache');
             const parsed = JSON.parse(cached);
             setScheduleData(Array.isArray(parsed) ? parsed : (parsed.items || []));
-            const offlineBanner = document.getElementById('offline-banner');
             if (offlineBanner) {
                 offlineBanner.classList.remove('hidden');
+                if (offlineText) {
+                    offlineText.textContent = navigator.onLine
+                        ? 'Не удалось загрузить расписание. Показаны сохранённые данные.'
+                        : 'Режим офлайн. Данные могут быть устаревшими.';
+                }
+                if (offlineRetryBtn) {
+                    offlineRetryBtn.classList.toggle('hidden', !navigator.onLine);
+                }
             }
         } else {
             scheduleLoadFailed = true;
@@ -781,6 +790,26 @@ async function init() {
     if (!scheduleLoadFailed) renderSchedule();
     updateAppBadge();
     updateRateAfterLessonBanner();
+
+    // Retry schedule load (when banner "Обновить" is shown)
+    document.getElementById('offline-retry-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('offline-retry-btn');
+        const banner = document.getElementById('offline-banner');
+        if (btn) btn.disabled = true;
+        try {
+            const list = await getSchedule();
+            setScheduleData(list);
+            localStorage.setItem('cached_schedule', JSON.stringify(list));
+            localStorage.setItem('cached_schedule_time', new Date().toISOString());
+            if (banner) banner.classList.add('hidden');
+            renderSchedule();
+            updateAppBadge();
+            showMessage('Расписание обновлено', 'success');
+        } catch (e) {
+            showMessage('Не удалось загрузить. Попробуйте позже.', 'error');
+        }
+        if (btn) btn.disabled = false;
+    });
     setInterval(updateRateAfterLessonBanner, 60 * 1000);
     updatePersonalTip();
     loadPoll();
