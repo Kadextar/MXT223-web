@@ -88,20 +88,15 @@ async def get_leaderboard():
         SELECT 
             subject_name, 
             AVG(rating) as average, 
-            COUNT(*) as count
+            COUNT(*) as cnt
         FROM subject_ratings
         GROUP BY subject_name
-        HAVING count > 0
+        HAVING COUNT(*) > 0
         ORDER BY average DESC
     """
     results = await database.fetch_all(query)
-    
     return [
-        {
-            "subject": r["subject_name"],
-            "average": int(r["average"]),
-            "count": r["count"]
-        }
+        {"subject": r["subject_name"], "average": int(r["average"]), "count": r["cnt"]}
         for r in results
     ]
 
