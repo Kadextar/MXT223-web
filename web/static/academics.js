@@ -1,5 +1,129 @@
 import { setScheduleData, getUniqueSubjects, getProgressBySubject } from './schedule_data.js';
+import { showToast } from './toast.js';
 import './theme_init.js';
+
+// --- Exams (second section on this page) ---
+function getAuthHeaders() {
+    const t = localStorage.getItem('access_token');
+    return t ? { Authorization: `Bearer ${t}` } : {};
+}
+function getCountdown(dateStr) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const examDate = new Date(dateStr + 'T12:00:00');
+    examDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((examDate - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return { label: 'Прошёл', className: 'past' };
+    if (diffDays === 0) return { label: 'Сегодня', className: 'today' };
+    if (diffDays === 1) return { label: 'Завтра', className: 'tomorrow' };
+    return { label: diffDays <= 31 ? `Через ${diffDays} дн.` : `${diffDays} дн.`, className: 'days' };
+}
+function escapeHtmlExam(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+async function loadExamReminders() {
+    try {
+        const r = await fetch('/api/exams/reminders', { headers: getAuthHeaders() });
+        if (!r.ok) return new Set();
+        const data = await r.json();
+        return new Set(data.exam_ids || []);
+    } catch {
+        return new Set();
+    }
+}
+function renderExams(exams, reminderExamIds) {
+    const container = document.getElementById('exams-list');
+    if (!container) return;
+    if (!exams || exams.length === 0) {
+        container.innerHTML = `<div class="empty-state exams-empty"><div class="empty-icon">📋</div><p>Пока нет экзаменов в расписании</p></div>`;
+        return;
+    }
+    container.innerHTML = exams.map((exam) => {
+        const countdown = getCountdown(exam.exam_date);
+        const isPast = countdown.className === 'past';
+        const hasReminder = reminderExamIds.has(exam.id);
+        const meta = [];
+        if (exam.exam_date) meta.push(`<span><i class="fas fa-calendar-day"></i> ${exam.exam_date}${exam.exam_time ? `, ${escapeHtmlExam(exam.exam_time)}` : ''}</span>`);
+        if (exam.teacher) meta.push(`<span><i class="fas fa-chalkboard-teacher"></i> ${escapeHtmlExam(exam.teacher)}</span>`);
+        if (exam.room) meta.push(`<span><i class="fas fa-door-open"></i> ${escapeHtmlExam(exam.room)}</span>`);
+        if (exam.exam_type) meta.push(`<span><i class="fas fa-tag"></i> ${escapeHtmlExam(exam.exam_type)}</span>`);
+        const remindBtn = isPast
+            ? '<button type="button" class="exam-remind-btn past" disabled>Экзамен прошёл</button>'
+            : hasReminder
+                ? `<button type="button" class="exam-remind-btn active" data-exam-id="${exam.id}" data-action="remove"><i class="fas fa-bell-slash"></i> Напоминание включено</button>`
+                : `<button type="button" class="exam-remind-btn" data-exam-id="${exam.id}" data-action="add"><i class="fas fa-bell"></i> Напомнить за день</button>`;
+        return `<article class="exam-card ${isPast ? 'past' : ''}">
+            <div class="exam-card-header"><h3>${escapeHtmlExam(exam.subject)}</h3><span class="exam-countdown ${countdown.className}">${countdown.label}</span></div>
+            <div class="exam-meta">${meta.join('')}</div>
+            ${exam.notes ? `<div class="exam-notes">${escapeHtmlExam(exam.notes)}</div>` : ''}
+            <div class="exam-remind-row">${remindBtn}</div>
+        </article>`;
+    }).join('');
+    container.querySelectorAll('.exam-remind-btn[data-exam-id]').forEach((btn) => btn.addEventListener('click', handleExamRemindClick));
+}
+async function handleExamRemindClick(e) {
+    const btn = e.currentTarget;
+    const examId = parseInt(btn.dataset.examId, 10);
+    const action = btn.dataset.action;
+    if (!examId || !action) return;
+    btn.disabled = true;
+    try {
+        if (action === 'add') {
+            const r = await fetch(`/api/exams/${examId}/remind`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' } });
+            if (!r.ok) { const err = await r.json().catch(() => ({})); showToast(err.detail || 'Не удалось включить напоминание', 'error'); btn.disabled = false; return; }
+            showToast('Напоминание за день до экзамена включено', 'success');
+        } else {
+            const r = await fetch(`/api/exams/${examId}/remind`, { method: 'DELETE', headers: getAuthHeaders() });
+            if (!r.ok) { showToast('Не удалось отменить напоминание', 'error'); btn.disabled = false; return; }
+            showToast('Напоминание отключено', 'info');
+        }
+        const reminders = await loadExamReminders();
+        renderExams(window.__examsList || [], reminders);
+    } catch {
+        showToast('Ошибка сети. Попробуйте позже.', 'error');
+        btn.disabled = false;
+    }
+}
+async function initExams() {
+    const container = document.getElementById('exams-list');
+    if (!container) return;
+    try {
+        const [examsRes, reminders] = await Promise.all([fetch('/api/exams'), loadExamReminders()]);
+        if (!examsRes.ok) { container.innerHTML = '<div class="empty-state exams-empty"><p>Ошибка загрузки экзаменов</p></div>'; return; }
+        const exams = await examsRes.json();
+        window.__examsList = Array.isArray(exams) ? exams : [];
+        renderExams(window.__examsList, reminders);
+    } catch {
+        container.innerHTML = '<div class="empty-state exams-empty"><p>Ошибка загрузки. Обновите страницу.</p></div>';
+    }
+}
+
+// Tabs: Предметы | Экзамены (как Оценка / Лидеры / Мои оценки в рейтинге)
+function initAcademicsTabs() {
+    const btnSubjects = document.getElementById('tab-btn-subjects');
+    const btnExams = document.getElementById('tab-btn-exams');
+    const viewSubjects = document.getElementById('subjects-view');
+    const viewExams = document.getElementById('exams-view');
+    if (!btnSubjects || !btnExams || !viewSubjects || !viewExams) return;
+
+    function showView(view, btn) {
+        [btnSubjects, btnExams].forEach((b) => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+        });
+        viewSubjects.classList.add('hidden');
+        viewExams.classList.add('hidden');
+        view.classList.remove('hidden');
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+    }
+
+    btnSubjects.addEventListener('click', () => showView(viewSubjects, btnSubjects));
+    btnExams.addEventListener('click', () => showView(viewExams, btnExams));
+}
 
 // Init
 async function initAcademics() {
@@ -11,6 +135,9 @@ async function initAcademics() {
         window.location.replace('/login.html');
         return;
     }
+
+    initAcademicsTabs();
+    initExams(); // load exams section in parallel
 
     try {
         // Try to load from cache first for immediate render

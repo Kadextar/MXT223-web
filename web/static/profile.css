@@ -36,6 +36,14 @@
     color: var(--text-muted);
     margin: 0 0 var(--space-4);
 }
+.profile-inline-link {
+    color: var(--primary, #6366f1);
+    text-decoration: none;
+    font-weight: 500;
+}
+.profile-inline-link:hover {
+    text-decoration: underline;
+}
 
 .profile-header {
     display: flex;

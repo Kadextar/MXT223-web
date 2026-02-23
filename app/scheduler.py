@@ -113,8 +113,66 @@ async def check_upcoming_lessons():
             except Exception as e:
                 logger.error(f"Push error: {e}")
 
+
+async def check_exam_reminders():
+    """Send push 'Завтра экзамен: X' to users who subscribed. Runs daily at 08:00 Tashkent."""
+    if not VAPID_PRIVATE_KEY:
+        return
+    now = datetime.now(TZ)
+    tomorrow = (now + timedelta(days=1)).date()
+    try:
+        exams_tomorrow = await database.fetch_all(
+            "SELECT id, subject FROM exams WHERE exam_date = :d",
+            {"d": tomorrow},
+        )
+        if not exams_tomorrow:
+            return
+        for exam in exams_tomorrow:
+            exam_dict = _row_to_dict(exam)
+            exam_id = exam_dict["id"]
+            subject = exam_dict.get("subject", "Экзамен")
+            reminders = await database.fetch_all(
+                "SELECT student_id FROM exam_reminders WHERE exam_id = :eid",
+                {"eid": exam_id},
+            )
+            for rem in reminders:
+                sid = rem["student_id"]
+                sub_row = await database.fetch_one(
+                    "SELECT id, subscription_data FROM push_subscriptions WHERE student_id = :sid",
+                    {"sid": sid},
+                )
+                if not sub_row:
+                    continue
+                try:
+                    sub = _row_to_dict(sub_row)
+                    subscription_info = json.loads(sub.get("subscription_data") or "{}")
+                    payload = json.dumps({
+                        "title": "Завтра экзамен 📚",
+                        "body": f"{subject}. Не забудьте подготовиться!",
+                        "url": "/exams.html",
+                        "icon": "/static/icons/icon-192x192.png",
+                    })
+                    webpush(
+                        subscription_info=subscription_info,
+                        data=payload,
+                        vapid_private_key=VAPID_PRIVATE_KEY,
+                        vapid_claims={"sub": VAPID_CLAIM_EMAIL},
+                    )
+                except WebPushException as ex:
+                    if ex.response and ex.response.status_code in [404, 410]:
+                        await database.execute("DELETE FROM push_subscriptions WHERE id = :id", {"id": sub_row["id"]})
+                except Exception as e:
+                    logger.error("exam reminder push: %s", e)
+    except Exception as e:
+        logger.exception("check_exam_reminders: %s", e)
+
+
 def start_scheduler():
-    scheduler.add_job(check_upcoming_lessons, CronTrigger(second='0')) # Run every minute at 00s
+    scheduler.add_job(check_upcoming_lessons, CronTrigger(second="0"))
+    scheduler.add_job(
+        check_exam_reminders,
+        CronTrigger(hour=8, minute=0, timezone=TZ),
+    )
     scheduler.start()
     logger.info("Scheduler started!")
 

@@ -35,6 +35,7 @@ PAGE_ROUTES = [
     ("/ratings.html", "ratings.html", None),
     ("/profile.html", "profile.html", None),
     ("/academics.html", "academics.html", None),
+    ("/exams.html", "exams.html", None),
     ("/admin.html", "admin.html", None),
     ("/promote-me.html", "promote-me.html", None),
     ("/offline.html", "offline.html", None),

@@ -364,6 +364,13 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 async function toggleNotifications() {
     const btn = document.getElementById('enable-notifications-btn');
     const msg = document.getElementById('push-message');
@@ -395,7 +402,13 @@ async function toggleNotifications() {
             showMessage('Уведомления выключены 🔕', 'success', 'push-message');
 
         } else {
-            // SUBSCRIBE LOGIC
+            // SUBSCRIBE LOGIC (с таймаутом 22 сек, чтобы не зависать)
+            const SUBSCRIBE_TIMEOUT_MS = 22000;
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Превышено время ожидания. Проверьте интернет и разрешения сайта.')), SUBSCRIBE_TIMEOUT_MS)
+            );
+
+            const doSubscribe = async () => {
             btn.textContent = 'Получение ключей...';
             console.log('[Push] Fetching config...');
 
@@ -405,7 +418,12 @@ async function toggleNotifications() {
             const configData = await configResp.json();
             const vapidKey = configData.vapid_public_key;
 
-            if (!vapidKey) throw new Error('Сервер не вернул VAPID ключ');
+            if (!vapidKey) {
+                if (configData.configured === false) {
+                    throw new Error('Уведомления не настроены на сервере. Администратор должен добавить VAPID ключи в настройки приложения.');
+                }
+                throw new Error('Сервер не вернул VAPID ключ');
+            }
 
             btn.textContent = 'Запрос разрешения...';
             console.log('[Push] Requesting permission...');
@@ -436,7 +454,14 @@ async function toggleNotifications() {
             }
 
             console.log('[Push] Sending to backend...');
-            // Send to backend
+            // Сериализуем подписку: toJSON() даёт endpoint + keys (p256dh, auth) в нужном формате
+            const subscriptionPayload = subscription.toJSON ? subscription.toJSON() : {
+                endpoint: subscription.endpoint,
+                keys: {
+                    p256dh: subscription.getKey ? arrayBufferToBase64(subscription.getKey('p256dh')) : null,
+                    auth: subscription.getKey ? arrayBufferToBase64(subscription.getKey('auth')) : null
+                }
+            };
             const token = localStorage.getItem('access_token');
             const response = await fetch('/api/subscribe', {
                 method: 'POST',
@@ -444,10 +469,18 @@ async function toggleNotifications() {
                     'Content-Type': 'application/json',
                     'Authorization': token ? `Bearer ${token}` : ''
                 },
-                body: JSON.stringify(subscription)
+                body: JSON.stringify(subscriptionPayload)
             });
 
-            if (!response.ok) throw new Error('Ошибка сервера при подписке');
+            if (!response.ok) {
+                const errText = await response.text();
+                let msg = 'Ошибка сервера при подписке';
+                try {
+                    const errJson = JSON.parse(errText);
+                    if (errJson.detail) msg = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+                } catch (_) {}
+                throw new Error(msg);
+            }
 
             const respData = await response.json();
             if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
@@ -459,11 +492,17 @@ async function toggleNotifications() {
             btn.classList.add('subscribed');
             btn.textContent = 'Выключить уведомления';
             btn.style.background = 'var(--accent)';
+            }; // end doSubscribe
+
+            await Promise.race([doSubscribe(), timeoutPromise]);
         }
 
     } catch (error) {
         console.error('Push error:', error);
         showMessage(`${error.message}`, 'error', 'push-message');
+        if (btn && !btn.classList.contains('subscribed')) {
+            btn.textContent = 'Включить уведомления';
+        }
     } finally {
         btn.disabled = false;
     }

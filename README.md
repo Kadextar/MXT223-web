@@ -31,7 +31,7 @@ make run
 | `ENV` | `development` (по умолчанию) или `production`. В production приложение не запустится без своего `JWT_SECRET_KEY`. |
 | `DATABASE_URL` | SQLite: `sqlite:///./schedule.db` или PostgreSQL URL |
 | `JWT_SECRET_KEY` | Секрет для JWT (обязательно свой в продакшене) |
-| `VAPID_PRIVATE_KEY` / `VAPID_PUBLIC_KEY` | Push-уведомления (скрипт: `python scripts/generate_vapid_keys.py`) |
+| `VAPID_PRIVATE_KEY` / `VAPID_PUBLIC_KEY` | Push-уведомления (обязательно оба в продакшене; скрипт: `python scripts/generate_vapid_keys.py`) |
 | `SENTRY_DSN` | Опционально: мониторинг ошибок |
 | `CORS_ORIGINS` | Опционально: через запятую (например `https://mxt223.com`). Пусто = все origins |
 | `LOG_LEVEL` | Опционально: `DEBUG`, `INFO`, `WARNING`, `ERROR` (по умолчанию `INFO`) |

@@ -10,7 +10,13 @@ vapid.generate_keys()
 
 # Get keys in the right format
 private_pem = vapid.private_pem().decode('utf-8')
-public_key = vapid.public_key.public_bytes_raw()
+# Support both old and new cryptography API (public_bytes_raw vs public_bytes)
+pk = vapid.public_key
+try:
+    public_key = pk.public_bytes_raw()
+except AttributeError:
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+    public_key = pk.public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
 public_key_b64 = base64.urlsafe_b64encode(public_key).decode('utf-8').rstrip('=')
 
 print("=" * 60)

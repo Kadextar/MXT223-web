@@ -201,9 +201,73 @@ async def get_exams():
     """Get all exams"""
     try:
         query = "SELECT * FROM exams ORDER BY exam_date"
-        return await database.fetch_all(query=query)
+        rows = await database.fetch_all(query=query)
+        return [
+            {
+                "id": r["id"],
+                "subject": r["subject"],
+                "teacher": r["teacher"] or "",
+                "exam_date": str(r["exam_date"]) if r.get("exam_date") else "",
+                "exam_time": r["exam_time"] or "",
+                "room": r["room"] or "",
+                "exam_type": r["exam_type"] or "",
+                "notes": r["notes"] or "",
+            }
+            for r in rows
+        ]
     except Exception as e:
         return []
+
+
+@router.get("/exams/reminders")
+async def get_exam_reminders(user=Depends(get_current_user)):
+    """List exam ids the current user wants reminder for."""
+    try:
+        rows = await database.fetch_all(
+            "SELECT exam_id FROM exam_reminders WHERE student_id = :sid",
+            {"sid": user["telegram_id"]},
+        )
+        return {"exam_ids": [r["exam_id"] for r in rows]}
+    except Exception:
+        return {"exam_ids": []}
+
+
+@router.post("/exams/{exam_id:int}/remind")
+async def add_exam_reminder(exam_id: int, user=Depends(get_current_user)):
+    """Subscribe to push reminder 1 day before this exam."""
+    try:
+        exam = await database.fetch_one("SELECT id FROM exams WHERE id = :eid", {"eid": exam_id})
+        if not exam:
+            raise HTTPException(status_code=404, detail="Exam not found")
+        existing = await database.fetch_one(
+            "SELECT 1 FROM exam_reminders WHERE student_id = :sid AND exam_id = :eid",
+            {"sid": user["telegram_id"], "eid": exam_id},
+        )
+        if not existing:
+            await database.execute(
+                "INSERT INTO exam_reminders (student_id, exam_id) VALUES (:sid, :eid)",
+                {"sid": user["telegram_id"], "eid": exam_id},
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("add_exam_reminder")
+        raise HTTPException(status_code=500, detail="Failed to add reminder")
+    return {"success": True}
+
+
+@router.delete("/exams/{exam_id:int}/remind")
+async def remove_exam_reminder(exam_id: int, user=Depends(get_current_user)):
+    """Unsubscribe from exam reminder."""
+    try:
+        await database.execute(
+            "DELETE FROM exam_reminders WHERE student_id = :sid AND exam_id = :eid",
+            {"sid": user["telegram_id"], "eid": exam_id},
+        )
+        return {"success": True}
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to remove reminder")
+
 
 @router.get("/ratings")
 async def get_ratings():

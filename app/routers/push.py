@@ -49,8 +49,11 @@ async def subscribe_push(data: dict, authorization: str = Header(None)):
 
 @router.get("/push/config")
 async def get_push_config():
-    """Return VAPID Public Key for frontend"""
-    return {"vapid_public_key": VAPID_PUBLIC_KEY}
+    """Return VAPID Public Key for frontend. If not configured, returns 200 with vapid_public_key: null."""
+    return {
+        "vapid_public_key": VAPID_PUBLIC_KEY if VAPID_PUBLIC_KEY else None,
+        "configured": bool(VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY),
+    }
 
 async def _send_push_to_all(title: str, body: str, url: str = "/"):
     """Send one push to all subscriptions. Used by admin push and schedule-changed."""

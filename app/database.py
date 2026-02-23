@@ -100,6 +100,16 @@ async def init_db():
         )
     """
     await database.execute(query)
+
+    # Exam reminders (push "завтра экзамен" for users who subscribed)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS exam_reminders (
+            student_id TEXT NOT NULL,
+            exam_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(student_id, exam_id)
+        )
+    """)
     
     # Push subscriptions table
     query = f"""
@@ -476,6 +486,10 @@ async def init_db():
         await database.execute("""
             CREATE INDEX IF NOT EXISTS idx_exams_date 
             ON exams(exam_date)
+        """)
+        await database.execute("""
+            CREATE INDEX IF NOT EXISTS idx_exam_reminders_exam_id
+            ON exam_reminders(exam_id)
         """)
 
         # Index on announcement_reads.announcement_id (for read count)
