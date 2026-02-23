@@ -402,10 +402,21 @@ async function toggleNotifications() {
             showMessage('Уведомления выключены 🔕', 'success', 'push-message');
 
         } else {
-            // SUBSCRIBE LOGIC (с таймаутом 22 сек, чтобы не зависать)
-            const SUBSCRIBE_TIMEOUT_MS = 22000;
+            // На iPhone пуш работает только когда приложение добавлено на экран домой (PWA), не во вкладке Safari
+            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone;
+            if (isIOS && !isStandalone) {
+                throw new Error('На iPhone уведомления работают только если открыть приложение с главного экрана. В Safari: «Поделиться» → «На экран „Домой“», затем откройте приложение с иконки и включите уведомления здесь.');
+            }
+
+            // SUBSCRIBE LOGIC: на мобильных дольше (SW и разрешения могут тормозить)
+            const isMobile = isIOS || /Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+            const SUBSCRIBE_TIMEOUT_MS = isMobile ? 45000 : 22000;
+            const timeoutMsg = isMobile
+                ? 'Долго ожидание. Убедитесь, что открыли приложение с главного экрана (не из Safari). Разрешите уведомления и попробуйте снова.'
+                : 'Превышено время ожидания. Проверьте интернет и разрешения сайта.';
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Превышено время ожидания. Проверьте интернет и разрешения сайта.')), SUBSCRIBE_TIMEOUT_MS)
+                setTimeout(() => reject(new Error(timeoutMsg)), SUBSCRIBE_TIMEOUT_MS)
             );
 
             const doSubscribe = async () => {
