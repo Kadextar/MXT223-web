@@ -191,10 +191,18 @@ const DAYS_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 function renderTabs() {
     const tabsContainer = dom.daysTabs;
     tabsContainer.innerHTML = '';
+    const now = new Date();
+    const todayDayName = DAYS_MAP[now.getDay()];
+
     DAYS_ORDER.forEach(day => {
         const btn = document.createElement('button');
         btn.className = `tab ${state.selectedDay === day ? 'active' : ''}`;
-        btn.textContent = DAYS_LABELS[day];
+
+        const isToday = day === todayDayName;
+        btn.innerHTML = isToday
+            ? `${DAYS_LABELS[day]}<span class="today-dot"></span>`
+            : DAYS_LABELS[day];
+
         btn.setAttribute('data-day', day);
         btn.setAttribute('role', 'tab');
         btn.setAttribute('aria-selected', state.selectedDay === day ? 'true' : 'false');
@@ -376,7 +384,7 @@ async function syncFavoritesToServer(subjects) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ subjects: subjects || getFavoriteSubjects() }),
         });
-    } catch (_) {}
+    } catch (_) { }
 }
 
 function toggleFavorite(btn) {
@@ -653,7 +661,7 @@ function updatePersonalTip() {
         else if (minLeft > 60) tip = `${name}, до пары больше часа — успеешь позавтракать`;
         if (corpus && tip) tip += `, аудитория ${room}`;
     }
-    if (!tip && sorted.length >= 3 && name) tip = `${name}, сегодня ${sorted.length} пары подряд — не забудь перекус`;
+    if (!tip && sorted.length >= 3 && name) tip = `${name}, сегодня насыщенный день: ${sorted.length} пары подряд. Захвати кофе и перекус! ☕🥪`;
     if (!tip && name) tip = `${name}, сегодня ${sorted.length} ${sorted.length === 1 ? 'пара' : 'пары'}`;
     if (tip) {
         el.textContent = tip;
@@ -782,7 +790,7 @@ async function init() {
                     localStorage.setItem('favorite_subjects', JSON.stringify(data.subjects));
                 }
             }
-        } catch (_) {}
+        } catch (_) { }
     }
 
     renderWeekInfo();
@@ -948,7 +956,7 @@ function updateAppBadge() {
     const count = lessons.length;
     try {
         navigator.setAppBadge(count);
-    } catch (_) {}
+    } catch (_) { }
 }
 
 function initPullToRefresh() {
@@ -1070,7 +1078,7 @@ function scheduleReminderCheck() {
                 if (!document.hidden) return;
                 try {
                     new Notification(`Через ${minutes} мин пара`, { body: `${lesson.subject}, ${lesson.room}`, icon: '/static/icons/icon-192x192.png' });
-                } catch (_) {}
+                } catch (_) { }
                 return;
             }
         }
@@ -1160,7 +1168,7 @@ async function loadVisitors() {
         const data = await res.json();
         visitorsTodayCount = data.visitors_today || 0;
         updateStatsBar();
-    } catch (_) {}
+    } catch (_) { }
 }
 
 function updateStatsBar() {
@@ -1258,7 +1266,7 @@ async function loadAnnouncement() {
             banner.classList.remove('hidden');
             banner.dataset.createdAt = data.created_at;
             const token = localStorage.getItem('access_token');
-            fetch('/api/announcement/read', { method: 'POST', headers: token ? { Authorization: 'Bearer ' + token } : {} }).catch(() => {});
+            fetch('/api/announcement/read', { method: 'POST', headers: token ? { Authorization: 'Bearer ' + token } : {} }).catch(() => { });
         }
     } catch (error) {
         console.error('Failed to load announcement:', error);
