@@ -78,13 +78,59 @@ async function loadContent() {
     }, 300);
 }
 
+function getTodaysSubjects() {
+    try {
+        const cachedStr = localStorage.getItem('cached_schedule');
+        if (!cachedStr) return null; // No cache, we can't filter reliably, fallback if needed
+        const cached = JSON.parse(cachedStr);
+        const list = Array.isArray(cached) ? cached : (cached.items || []);
+
+        const today = new Date();
+        const DAYS_MAP = {1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday', 6: 'saturday', 0: 'sunday'};
+        const dayName = DAYS_MAP[today.getDay()];
+        
+        const start = new Date('2026-01-12'); // SEMESTER_START_DATE
+        start.setHours(0, 0, 0, 0);
+        const nowNorm = new Date(today);
+        nowNorm.setHours(0, 0, 0, 0);
+        const diffMs = nowNorm - start;
+        const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+        const currentWeek = diffDays < 0 ? 0 : Math.floor(diffDays / 7) + 1;
+
+        const todaysLessons = list.filter(lesson => {
+            if (lesson.day !== dayName) return false;
+            if (Array.isArray(lesson.weeks)) {
+                if (currentWeek < lesson.weeks[0] || currentWeek > lesson.weeks[1]) return false;
+            }
+            return true;
+        });
+
+        const subjects = new Set();
+        todaysLessons.forEach(l => {
+            if (l.subject) subjects.add(l.subject);
+        });
+        return subjects;
+    } catch(e) {
+        return null;
+    }
+}
+
 function renderSubjects() {
-    const validSubjects = SUBJECTS_DATA.filter(s =>
-        (s.lectures > 0 || s.seminars > 0) &&
-        !s.isPractice &&
-        !s.isCoursework &&
-        s.id !== 'enlightenment'
-    );
+    const todaySubjects = getTodaysSubjects();
+
+    const validSubjects = SUBJECTS_DATA.filter(s => {
+        const isValidBase = (s.lectures > 0 || s.seminars > 0) &&
+            !s.isPractice &&
+            !s.isCoursework &&
+            s.id !== 'enlightenment';
+            
+        if (!isValidBase) return false;
+        
+        if (todaySubjects) {
+            return todaySubjects.has(s.name);
+        }
+        return true; // Fallback if no cache
+    });
 
     if (validSubjects.length === 0) {
         emptyState.classList.remove('hidden');

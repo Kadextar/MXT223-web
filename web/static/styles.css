@@ -224,7 +224,7 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
-    padding-bottom: safe-area-inset-bottom;
+    padding-bottom: env(safe-area-inset-bottom);
     transition: background-color 0.35s var(--ease-out), color 0.35s var(--ease-out);
 }
 
@@ -605,7 +605,7 @@ h1.greeting-date {
     .profile-nav {
         left: 15px;
         right: 15px;
-        bottom: 20px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
         border-radius: 30px;
         height: 65px;
         background: rgba(10, 10, 15, 0.75);
@@ -618,7 +618,7 @@ h1.greeting-date {
 
     /* Content Padding */
     .app-container {
-        padding-bottom: 110px;
+        padding-bottom: calc(110px + env(safe-area-inset-bottom));
     }
 }
 
