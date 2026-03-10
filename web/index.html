@@ -113,6 +113,43 @@
             <div id="next-lesson-content"></div>
         </div>
 
+        <!-- Social Mood Marquee -->
+        <div id="social-mood-container" class="social-mood-container">
+            <div class="mood-header">
+                <h3>👥 Настроение группы</h3>
+                <button id="add-mood-btn" class="add-mood-btn" aria-label="Поделиться настроением">Выбрать статус +</button>
+            </div>
+            <div class="marquee-wrapper">
+                <div id="mood-marquee" class="mood-marquee">
+                    <!-- Javascript will insert statuses here -->
+                    <span class="mood-item empty">Пока нет статусов на сегодня... Отметьтесь первым!</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mood Selector Modal -->
+        <div id="mood-modal" class="modal hidden">
+            <div class="modal-overlay" onclick="closeMoodModal()"></div>
+            <div class="modal-content" style="max-width: 320px;">
+                <h3 style="margin-bottom: 15px; text-align: center;">Твой статус сегодня</h3>
+                <div class="emoji-grid" id="emoji-grid">
+                    <button class="emoji-btn" data-emoji="🚀">🚀</button>
+                    <button class="emoji-btn" data-emoji="😎">😎</button>
+                    <button class="emoji-btn" data-emoji="😴">😴</button>
+                    <button class="emoji-btn" data-emoji="🤯">🤯</button>
+                    <button class="emoji-btn" data-emoji="🍕">🍕</button>
+                    <button class="emoji-btn" data-emoji="☕">☕</button>
+                    <button class="emoji-btn" data-emoji="📚">📚</button>
+                    <button class="emoji-btn" data-emoji="🎉">🎉</button>
+                </div>
+                <input type="text" id="mood-text" placeholder="Короткий комментарий (необязательно)" class="form-group mood-input" maxlength="40">
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="save-mood-btn" class="submit-btn" style="padding: 12px; font-size: 1rem;">Поделиться</button>
+                    <button class="back-btn" onclick="closeMoodModal()" style="flex: 1;">Отмена</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Active poll (from admin) -->
         <div id="poll-block" class="poll-block hidden" aria-label="Опрос">
             <div class="poll-inner">

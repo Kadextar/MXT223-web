@@ -251,7 +251,7 @@ body {
 .globe-1 {
     width: 400px;
     height: 400px;
-    background: var(--primary);
+    background: var(--globe-color-1, var(--primary));
     top: -10%;
     left: -10%;
 }
@@ -259,7 +259,7 @@ body {
 .globe-2 {
     width: 350px;
     height: 350px;
-    background: var(--secondary);
+    background: var(--globe-color-2, var(--secondary));
     bottom: 10%;
     right: -10%;
     animation-delay: -5s;
@@ -268,7 +268,7 @@ body {
 .globe-3 {
     width: 300px;
     height: 300px;
-    background: var(--accent);
+    background: var(--globe-color-3, var(--accent));
     top: 40%;
     left: 40%;
     opacity: 0.2;
@@ -1455,6 +1455,139 @@ body {
 
 .rate-after-lesson-link:active {
     transform: translateY(0);
+}
+
+/* Social Mood Marquee */
+.social-mood-container {
+    margin: var(--space-4);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-4);
+    overflow: hidden;
+}
+
+.mood-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.mood-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.add-mood-btn {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-mood-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.marquee-wrapper {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.mood-marquee {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 20s linear infinite;
+}
+
+.mood-marquee:hover {
+    animation-play-state: paused;
+}
+
+.mood-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 24px;
+    background: var(--bg-body);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    font-size: 0.9rem;
+}
+
+.mood-item.empty {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+}
+
+.mood-emoji {
+    font-size: 1.2rem;
+}
+
+.mood-name {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.mood-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(-100%, 0);
+    }
+}
+
+/* Emoji Grid Modal */
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.emoji-btn {
+    background: var(--bg-body);
+    border: 1px solid var(--card-border);
+    font-size: 1.8rem;
+    padding: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.emoji-btn:hover,
+.emoji-btn.selected {
+    transform: scale(1.1);
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.mood-input {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Poll block (active poll from admin) */

@@ -32,8 +32,10 @@
         <!-- Tabs как в Рейтинге: Предметы | Экзамены -->
         <div class="academics-tabs" style="height: auto; min-height: 0;">
             <div class="tabs-pill" style="margin: 0 auto;">
-                <button type="button" class="tab-btn active" id="tab-btn-subjects" aria-selected="true">Предметы</button>
-                <button type="button" class="tab-btn" id="tab-btn-exams" aria-selected="false">Экзамены</button>
+                <button type="button" class="tab-btn active" id="tab-btn-subjects"
+                    aria-selected="true">Предметы</button>
+                <button type="button" class="tab-btn" id="tab-btn-deadlines" aria-selected="false">Дедлайны и
+                    Экзамены</button>
             </div>
         </div>
 
@@ -46,15 +48,37 @@
                         <p>Загрузка предметов...</p>
                     </div>
                 </div>
-                <div class="section-title" style="margin-top: 30px; margin-bottom: 15px; padding: 0 20px; display: none;">
+                <div class="section-title"
+                    style="margin-top: 30px; margin-bottom: 15px; padding: 0 20px; display: none;">
                     Преподаватели</div>
                 <div id="teachers-list" class="teachers-list" style="display: none;"></div>
             </div>
 
-            <!-- VIEW: Экзамены -->
+            <!-- VIEW: Экзамены и Дедлайны -->
             <div id="exams-view" class="hidden">
+                <div class="section-title" style="margin: 0 20px 15px;">Мои дедлайны</div>
+                <div class="deadline-form-container"
+                    style="margin: 0 20px 20px; background: var(--card-bg); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                    <form id="deadline-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="deadline-title" placeholder="Что нужно сделать?" required
+                            class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                        <input type="date" id="deadline-date" required class="form-group"
+                            style="width: auto; margin-bottom: 0;">
+                        <button type="submit" class="submit-btn"
+                            style="width: auto; padding: 10px 15px; font-size: 0.9rem;">Добавить</button>
+                    </form>
+                </div>
+
+                <ul id="deadlines-list" class="deadlines-list"
+                    style="margin: 0 20px 30px; padding: 0; list-style: none;">
+                    <li class="empty-state text-muted" style="text-align: center;">Загрузка дедлайнов...</li>
+                </ul>
+
+                <div class="section-title" style="margin: 0 20px 15px;">Экзамены и сессии</div>
                 <div id="exams-list" class="exams-list">
-                    <div class="empty-state"><p>Загрузка экзаменов...</p></div>
+                    <div class="empty-state">
+                        <p>Загрузка экзаменов...</p>
+                    </div>
                 </div>
             </div>
 
@@ -64,7 +88,8 @@
         <div id="subject-modal" class="modal hidden" aria-modal="true">
             <div class="modal-overlay subject-modal-overlay"></div>
             <div class="modal-content subject-modal-content">
-                <button type="button" class="subject-modal-close" id="subject-modal-close" aria-label="Закрыть"><i class="fas fa-times"></i></button>
+                <button type="button" class="subject-modal-close" id="subject-modal-close" aria-label="Закрыть"><i
+                        class="fas fa-times"></i></button>
                 <div id="subject-modal-body"><!-- filled by JS --></div>
             </div>
         </div>

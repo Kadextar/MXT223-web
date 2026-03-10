@@ -126,9 +126,40 @@ async def login_student(http_request: Request, request: LoginRequest):
             days=refresh_days,
         )
         logger.info("login_success", extra={"user_id": student["telegram_id"]})
+        
+        # Gamification: Update Visit Streak
+        import datetime
+        today_str = datetime.date.today().isoformat()
+        
+        # Fetch current streak info
+        streak_row = await database.fetch_one(
+            "SELECT visit_streak, last_visit_date FROM students WHERE telegram_id = :tid",
+            {"tid": student["telegram_id"]}
+        )
+        if streak_row:
+            current_streak = streak_row["visit_streak"] or 0
+            last_visit = streak_row["last_visit_date"]
+            
+            if last_visit != today_str:
+                if last_visit:
+                    last_visit_date = datetime.date.fromisoformat(last_visit)
+                    if (datetime.date.today() - last_visit_date).days == 1:
+                        current_streak += 1
+                    else:
+                        current_streak = 1 # Reset streak
+                else:
+                    current_streak = 1
+                
+                await database.execute(
+                    "UPDATE students SET visit_streak = :streak, last_visit_date = :today WHERE telegram_id = :tid",
+                    {"streak": current_streak, "today": today_str, "tid": student["telegram_id"]}
+                )
+
         try:
             from app.routers.extras import _grant_achievement
             await _grant_achievement(student["telegram_id"], "first_login")
+            if current_streak >= 7:
+                await _grant_achievement(student["telegram_id"], "streak_7")
         except Exception:
             pass
 
@@ -140,7 +171,8 @@ async def login_student(http_request: Request, request: LoginRequest):
             "user": {
                 "telegram_id": student["telegram_id"],
                 "name": student["name"]
-            }
+            },
+            "streak": current_streak if 'current_streak' in locals() else 0
         }
     except Exception as e:
         logger.exception("Login error")

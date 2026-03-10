@@ -38,6 +38,17 @@ async def init_db():
             await database.execute("ALTER TABLE students ADD COLUMN avatar TEXT DEFAULT '1.png'")
         except Exception as e:
             logger.warning("Migration warning: %s", e)
+
+    # Simple migration: check if visit_streak column exists (for existing dbs)
+    try:
+        await database.fetch_one("SELECT visit_streak FROM students LIMIT 1")
+    except Exception:
+        logger.info("Migrating: Adding visit_streak and last_visit_date columns to students table...")
+        try:
+            await database.execute("ALTER TABLE students ADD COLUMN visit_streak INTEGER DEFAULT 0")
+            await database.execute("ALTER TABLE students ADD COLUMN last_visit_date TEXT")
+        except Exception as e:
+            logger.warning("Migration warning (streak): %s", e)
     
     # Teachers table
     query = f"""
@@ -254,6 +265,19 @@ async def init_db():
             user_identifier TEXT NOT NULL,
             body TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Daily Social Status (Moods)
+    await database.execute(f"""
+        CREATE TABLE IF NOT EXISTS daily_statuses (
+            id {id_type},
+            student_id TEXT NOT NULL,
+            emoji TEXT NOT NULL,
+            status_text TEXT,
+            status_date DATE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(student_id, status_date)
         )
     """)
 

@@ -130,13 +130,39 @@
                             <button class="edit-avatar-btn" id="edit-avatar-btn">🖊️</button>
                         </div>
                         <div class="profile-info">
-                            <h2 id="student-name" class="skeleton-line" style="width:160px;height:28px;border-radius:8px" aria-busy="true"> </h2>
+                            <h2 id="student-name" class="skeleton-line"
+                                style="width:160px;height:28px;border-radius:8px" aria-busy="true"> </h2>
                             <p class="student-id" id="student-id">ID: ...</p>
                             <div class="profile-stats"
                                 style="margin-top: 10px; font-size: 0.9em; color: var(--text-muted); display: flex; gap: 15px;">
                                 <span>🗓 С нами с: <b id="join-date">-</b></span>
                                 <span>⭐ Отзывов: <b id="reviews-count">0</b></span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Countdown Widget -->
+                <div class="profile-card profile-section" id="countdown-card"
+                    style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(59, 130, 246, 0.05)); border: 1px solid rgba(99, 102, 241, 0.3);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div
+                                style="font-size: 2.5rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));">
+                                🎓</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main); font-weight: 700;">
+                                    Летняя Сессия 2026</h3>
+                                <p style="margin: 2px 0 0; font-size: 0.9rem; color: var(--text-muted);">Осталось
+                                    времени</p>
+                            </div>
+                        </div>
+                        <div class="countdown-display"
+                            style="text-align: center; background: rgba(0, 0, 0, 0.2); padding: 10px 15px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span id="countdown-days"
+                                style="display: block; font-size: 1.8rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums;">--</span>
+                            <span
+                                style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Дней</span>
                         </div>
                     </div>
                 </div>
@@ -158,18 +184,6 @@
                     <div id="streak-calendar" class="streak-calendar" aria-label="Календарь заходов"></div>
                 </div>
 
-                <!-- Дедлайны -->
-                <div class="profile-card profile-section">
-                    <h3 class="profile-section-title">📅 Дедлайны</h3>
-                    <p class="profile-section-desc">Курсовые, сдачи, экзамены. <a href="/academics.html" class="profile-inline-link">Экзамены и сессия →</a></p>
-                    <ul id="deadlines-list" class="deadlines-list"></ul>
-                    <form id="deadline-form" class="deadline-form">
-                        <input type="text" id="deadline-title" placeholder="Название (например: Сдача курсовой)" required maxlength="120">
-                        <input type="date" id="deadline-date" required>
-                        <button type="submit" class="profile-pill-btn profile-pill-pdf">Добавить</button>
-                    </form>
-                </div>
-
                 <!-- Расписание и календарь (одна секция) -->
                 <div class="profile-card profile-section profile-schedule-calendar-card">
                     <h3 class="profile-section-title">📄 Расписание и календарь</h3>
@@ -181,10 +195,12 @@
                         <a href="/?fav=1" class="profile-pill-btn profile-pill-fav">
                             <i class="fas fa-star"></i> Мои избранные
                         </a>
-                        <a id="google-calendar-btn" href="#" target="_blank" rel="noopener" class="profile-pill-btn profile-pill-google">
+                        <a id="google-calendar-btn" href="#" target="_blank" rel="noopener"
+                            class="profile-pill-btn profile-pill-google">
                             <i class="fab fa-google"></i> Google Calendar
                         </a>
-                        <a id="apple-calendar-btn" href="/api/calendar.ics" download class="profile-pill-btn profile-pill-apple">
+                        <a id="apple-calendar-btn" href="/api/calendar.ics" download
+                            class="profile-pill-btn profile-pill-apple">
                             <i class="fas fa-apple-alt"></i> Скачать для Apple
                         </a>
                     </div>
@@ -249,7 +265,8 @@
                     <h3>🎨 Внешний вид</h3>
                     <div class="setting-row" style="margin-top: 16px;">
                         <label style="color: var(--text-main); font-weight: 600;">Тема</label>
-                        <select id="theme-select" class="theme-select" style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
+                        <select id="theme-select" class="theme-select"
+                            style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
                             <option value="dark">Тёмная</option>
                             <option value="light">Светлая</option>
                             <option value="system">Как в системе</option>
@@ -258,24 +275,28 @@
                     </div>
                     <div class="setting-row" style="margin-top: 12px;">
                         <label style="color: var(--text-main); font-weight: 600;">Акцент</label>
-                        <select id="accent-select" style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
+                        <select id="accent-select"
+                            style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
                             <option value="blue">Синий</option>
                             <option value="purple">Фиолетовый</option>
                             <option value="green">Зелёный</option>
                             <option value="orange">Оранжевый</option>
                         </select>
                     </div>
-                    <div class="setting-row" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="setting-row"
+                        style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <strong style="color: var(--text-main);">AMOLED (чёрный фон)</strong>
-                            <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Максимально тёмная тема</p>
+                            <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Максимально тёмная тема
+                            </p>
                         </div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="amoled-toggle">
                             <span class="slider round"></span>
                         </label>
                     </div>
-                    <div class="setting-row" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="setting-row"
+                        style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <strong style="color: var(--text-main);">Крупный шрифт</strong>
                             <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Для слабого зрения</p>
@@ -290,10 +311,13 @@
                 <!-- Notifications Card -->
                 <div class="profile-card" style="margin-top: 20px;">
                     <h3>🔔 Уведомления</h3>
-                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о парах. Если на вашем устройстве не получается — просто открывайте приложение, расписание всегда под рукой.</p>
+                    <p class="text-muted" style="margin-bottom: 16px;">Получайте важные объявления и напоминания о
+                        парах. Если на вашем устройстве не получается — просто открывайте приложение, расписание всегда
+                        под рукой.</p>
                     <div class="setting-row" style="margin-bottom: 12px;">
                         <label style="color: var(--text-main); font-weight: 600;">Напомнить за</label>
-                        <select id="reminder-minutes" class="theme-select" style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
+                        <select id="reminder-minutes" class="theme-select"
+                            style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
                             <option value="0">Выкл</option>
                             <option value="15">15 минут</option>
                             <option value="30">30 минут</option>
@@ -301,7 +325,8 @@
                         </select>
                     </div>
                     <button class="submit-btn" id="enable-notifications-btn">Включить уведомления</button>
-                    <p class="text-muted" style="font-size: 0.8rem; margin-top: 10px; opacity: 0.9;">На части устройств (особенно iPhone) пуш может не поддерживаться. На компьютере в Chrome обычно работает.</p>
+                    <p class="text-muted" style="font-size: 0.8rem; margin-top: 10px; opacity: 0.9;">На части устройств
+                        (особенно iPhone) пуш может не поддерживаться. На компьютере в Chrome обычно работает.</p>
                     <div id="push-message" class="message hidden" style="margin-top: 10px;"></div>
                 </div>
 

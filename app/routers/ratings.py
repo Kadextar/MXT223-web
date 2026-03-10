@@ -37,8 +37,21 @@ async def submit_rating(data: RatingRequest, user=Depends(get_current_user)):
         "lesson_date": data.date,
     }
     await database.execute(query=query, values=values)
+    
+    # Gamification: Check if user has rated 5 subjects
+    try:
+        count_row = await database.fetch_one(
+            "SELECT COUNT(*) as c FROM subject_ratings WHERE student_id = :sid",
+            {"sid": student_id}
+        )
+        if count_row and count_row["c"] >= 5:
+            from app.routers.extras import _grant_achievement
+            await _grant_achievement(student_id, "ratings_5")
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to grant ratings_5 achievement: {e}")
+        
     return {"status": "success", "message": "Rating saved"}
-
 
 @router.get("/my")
 async def get_my_ratings(user=Depends(get_current_user)):

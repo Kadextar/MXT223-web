@@ -10,7 +10,62 @@ from app.database import database
 from app.logging_config import logger
 from app.sanitize import sanitize_text
 
+from app.models import DailyStatusCreate
+
 router = APIRouter(tags=["Extras"])
+
+# ----- Social Status (Moods) -----
+@router.get("/status")
+async def get_daily_statuses():
+    """Get all statuses for today."""
+    today = date.today().isoformat()
+    # Join with students to get names and avatars
+    query = """
+        SELECT d.student_id, d.emoji, d.status_text, s.name, s.avatar 
+        FROM daily_statuses d
+        JOIN students s ON d.student_id = s.telegram_id
+        WHERE d.status_date = :today
+        ORDER BY d.created_at DESC
+    """
+    rows = await database.fetch_all(query, {"today": today})
+    return [dict(r) for r in rows]
+
+@router.post("/status")
+async def post_daily_status(
+    body: DailyStatusCreate,
+    authorization: str = Header(None),
+):
+    """Post or update a status for today."""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    from utils.jwt import verify_token, is_jwt_token
+    token = authorization.replace("Bearer ", "")
+    user_id = None
+    if is_jwt_token(token):
+        payload = verify_token(token, "access")
+        if payload:
+            user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    today = date.today().isoformat()
+    text = sanitize_text(body.status_text, max_length=100) if body.status_text else None
+    
+    # Upsert logic
+    try:
+        await database.execute(
+            """
+            INSERT INTO daily_statuses (student_id, emoji, status_text, status_date) 
+            VALUES (:uid, :emoji, :text, :today)
+            ON CONFLICT(student_id, status_date) 
+            DO UPDATE SET emoji = :emoji, status_text = :text, created_at = CURRENT_TIMESTAMP
+            """,
+            {"uid": user_id, "emoji": body.emoji, "text": text, "today": today}
+        )
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Error posting status: {e}")
+        raise HTTPException(status_code=500, detail="Could not post status")
 
 
 def _visitor_id(request: Request, auth_user_id: Optional[str]) -> str:

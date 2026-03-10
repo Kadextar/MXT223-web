@@ -104,7 +104,7 @@ async function initExams() {
 // Tabs: Предметы | Экзамены (как Оценка / Лидеры / Мои оценки в рейтинге)
 function initAcademicsTabs() {
     const btnSubjects = document.getElementById('tab-btn-subjects');
-    const btnExams = document.getElementById('tab-btn-exams');
+    const btnExams = document.getElementById('tab-btn-deadlines');
     const viewSubjects = document.getElementById('subjects-view');
     const viewExams = document.getElementById('exams-view');
     if (!btnSubjects || !btnExams || !viewSubjects || !viewExams) return;
@@ -125,6 +125,80 @@ function initAcademicsTabs() {
     btnExams.addEventListener('click', () => showView(viewExams, btnExams));
 }
 
+// --- Deadlines logic ---
+async function loadDeadlines() {
+    const listEl = document.getElementById('deadlines-list');
+    if (!listEl) return;
+    const t = localStorage.getItem('access_token');
+    if (!t) {
+        listEl.innerHTML = '<li class="text-muted" style="text-align:center;">Войдите, чтобы видеть дедлайны</li>';
+        return;
+    }
+    try {
+        const res = await fetch('/api/deadlines', { headers: { Authorization: 'Bearer ' + t } });
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+            listEl.innerHTML = '<li class="text-muted" style="text-align:center;">Ошибка загрузки</li>';
+            return;
+        }
+        if (data.length === 0) {
+            listEl.innerHTML = '<li class="text-muted" style="text-align:center;">Нет дедлайнов. Отличная работа! 🎉</li>';
+            return;
+        }
+        const today = new Date().toISOString().slice(0, 10);
+        listEl.innerHTML = data.map(d => {
+            const overdue = d.due_date < today;
+            return `<li class="deadline-item ${overdue ? 'overdue' : ''}" data-id="${d.id}" style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:12px 16px; margin-bottom:10px; border-radius:var(--radius-md); border:1px solid var(--card-border);">
+                <span class="deadline-title" style="flex:1; font-weight:600; color:var(--text-main);">${escapeHtmlExam(d.title)}</span>
+                <span class="deadline-date" style="color:var(--text-muted); font-size:0.85rem; padding-right:15px;">${formatDeadlineDate(d.due_date)}</span>
+                <button type="button" class="deadline-delete" data-id="${d.id}" aria-label="Удалить" style="background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;">&times;</button>
+            </li>`;
+        }).join('');
+        listEl.querySelectorAll('.deadline-delete').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const r = await fetch('/api/deadlines/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + t } });
+                if (r.ok) loadDeadlines();
+            });
+        });
+    } catch (_) {
+        listEl.innerHTML = '<li class="text-muted" style="text-align:center;">Нет соединения</li>';
+    }
+}
+
+function formatDeadlineDate(s) {
+    const d = new Date(s);
+    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function initDeadlines() {
+    const form = document.getElementById('deadline-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('deadline-title').value.trim();
+            const due = document.getElementById('deadline-date').value;
+            if (!title || !due) return;
+            const t = localStorage.getItem('access_token');
+            if (!t) return;
+            try {
+                const res = await fetch('/api/deadlines', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t },
+                    body: JSON.stringify({ title, due_date: due })
+                });
+                if (res.ok) {
+                    document.getElementById('deadline-title').value = '';
+                    document.getElementById('deadline-date').value = '';
+                    loadDeadlines();
+                    showToast('Дедлайн добавлен 📅', 'success');
+                } else showToast('Ошибка при добавлении', 'error');
+            } catch (_) { showToast('Ошибка сети', 'error'); }
+        });
+    }
+    loadDeadlines();
+}
+
 // Init
 async function initAcademics() {
     if (!document.getElementById('subjects-list')) return; // Guard: Only run on academics page
@@ -138,6 +212,7 @@ async function initAcademics() {
 
     initAcademicsTabs();
     initExams(); // load exams section in parallel
+    initDeadlines();
 
     try {
         // Try to load from cache first for immediate render
@@ -162,7 +237,7 @@ async function initAcademics() {
     } catch (error) {
         console.error(error);
         if (!localStorage.getItem('cached_schedule')) {
-             document.getElementById('subjects-list').innerHTML = `<p>Ошибка загрузки.</p>`;
+            document.getElementById('subjects-list').innerHTML = `<p>Ошибка загрузки.</p>`;
         }
     }
 }
@@ -327,7 +402,7 @@ async function openSubjectModal(sub) {
             }
             summaryBlock += '</div>';
         }
-    } catch (_) {}
+    } catch (_) { }
 
     document.getElementById('subject-modal-body').innerHTML = `
         <h2 class="subject-detail-title">${sub.name}</h2>

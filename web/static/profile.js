@@ -420,89 +420,89 @@ async function toggleNotifications() {
             );
 
             const doSubscribe = async () => {
-            btn.textContent = 'Получение ключей...';
-            console.log('[Push] Fetching config...');
+                btn.textContent = 'Получение ключей...';
+                console.log('[Push] Fetching config...');
 
-            // 1. Fetch VAPID Key from Server
-            const configResp = await fetch('/api/push/config');
-            if (!configResp.ok) throw new Error('Ошибка получения конфигурации Push');
-            const configData = await configResp.json();
-            const vapidKey = configData.vapid_public_key;
+                // 1. Fetch VAPID Key from Server
+                const configResp = await fetch('/api/push/config');
+                if (!configResp.ok) throw new Error('Ошибка получения конфигурации Push');
+                const configData = await configResp.json();
+                const vapidKey = configData.vapid_public_key;
 
-            if (!vapidKey) {
-                if (configData.configured === false) {
-                    throw new Error('Уведомления не настроены на сервере. Администратор должен добавить VAPID ключи в настройки приложения.');
+                if (!vapidKey) {
+                    if (configData.configured === false) {
+                        throw new Error('Уведомления не настроены на сервере. Администратор должен добавить VAPID ключи в настройки приложения.');
+                    }
+                    throw new Error('Сервер не вернул VAPID ключ');
                 }
-                throw new Error('Сервер не вернул VAPID ключ');
-            }
 
-            btn.textContent = 'Запрос разрешения...';
-            console.log('[Push] Requesting permission...');
+                btn.textContent = 'Запрос разрешения...';
+                console.log('[Push] Requesting permission...');
 
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                throw new Error('Разрешение отклонено');
-            }
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    throw new Error('Разрешение отклонено');
+                }
 
-            btn.textContent = 'Подписка...';
-            console.log('[Push] Registering SW...');
+                btn.textContent = 'Подписка...';
+                console.log('[Push] Registering SW...');
 
-            // Force Registration to ensure 'ready' resolves
-            await navigator.serviceWorker.register('/sw.js');
+                // Force Registration to ensure 'ready' resolves
+                await navigator.serviceWorker.register('/sw.js');
 
-            console.log('[Push] Waiting for SW ready...');
-            const registration = await navigator.serviceWorker.ready;
+                console.log('[Push] Waiting for SW ready...');
+                const registration = await navigator.serviceWorker.ready;
 
-            console.log('[Push] Checking existing subscription...');
-            let subscription = await registration.pushManager.getSubscription();
+                console.log('[Push] Checking existing subscription...');
+                let subscription = await registration.pushManager.getSubscription();
 
-            if (!subscription) {
-                console.log('[Push] Creating new subscription...');
-                subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(vapidKey)
+                if (!subscription) {
+                    console.log('[Push] Creating new subscription...');
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidKey)
+                    });
+                }
+
+                console.log('[Push] Sending to backend...');
+                // Сериализуем подписку: toJSON() даёт endpoint + keys (p256dh, auth) в нужном формате
+                const subscriptionPayload = subscription.toJSON ? subscription.toJSON() : {
+                    endpoint: subscription.endpoint,
+                    keys: {
+                        p256dh: subscription.getKey ? arrayBufferToBase64(subscription.getKey('p256dh')) : null,
+                        auth: subscription.getKey ? arrayBufferToBase64(subscription.getKey('auth')) : null
+                    }
+                };
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify(subscriptionPayload)
                 });
-            }
 
-            console.log('[Push] Sending to backend...');
-            // Сериализуем подписку: toJSON() даёт endpoint + keys (p256dh, auth) в нужном формате
-            const subscriptionPayload = subscription.toJSON ? subscription.toJSON() : {
-                endpoint: subscription.endpoint,
-                keys: {
-                    p256dh: subscription.getKey ? arrayBufferToBase64(subscription.getKey('p256dh')) : null,
-                    auth: subscription.getKey ? arrayBufferToBase64(subscription.getKey('auth')) : null
+                if (!response.ok) {
+                    const errText = await response.text();
+                    let msg = 'Ошибка сервера при подписке';
+                    try {
+                        const errJson = JSON.parse(errText);
+                        if (errJson.detail) msg = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+                    } catch (_) { }
+                    throw new Error(msg);
                 }
-            };
-            const token = localStorage.getItem('access_token');
-            const response = await fetch('/api/subscribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify(subscriptionPayload)
-            });
 
-            if (!response.ok) {
-                const errText = await response.text();
-                let msg = 'Ошибка сервера при подписке';
-                try {
-                    const errJson = JSON.parse(errText);
-                    if (errJson.detail) msg = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
-                } catch (_) {}
-                throw new Error(msg);
-            }
+                const respData = await response.json();
+                if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
 
-            const respData = await response.json();
-            if (!respData.success) throw new Error(respData.error || 'Ошибка сервера');
+                console.log('[Push] Success!');
+                localStorage.setItem('push_subscribed', '1');
+                showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
 
-            console.log('[Push] Success!');
-            localStorage.setItem('push_subscribed', '1');
-            showMessage('Уведомления успешно включены! 🎉', 'success', 'push-message');
-
-            btn.classList.add('subscribed');
-            btn.textContent = 'Выключить уведомления';
-            btn.style.background = 'var(--accent)';
+                btn.classList.add('subscribed');
+                btn.textContent = 'Выключить уведомления';
+                btn.style.background = 'var(--accent)';
             }; // end doSubscribe
 
             await Promise.race([doSubscribe(), timeoutPromise]);
@@ -649,80 +649,31 @@ if (largeFontToggle) {
     });
 }
 
-// --- Дедлайны ---
-async function loadDeadlines() {
-    const listEl = document.getElementById('deadlines-list');
-    if (!listEl) return;
-    const t = localStorage.getItem('access_token');
-    if (!t) {
-        listEl.innerHTML = '<li class="text-muted">Войдите, чтобы видеть дедлайны</li>';
-        return;
-    }
-    try {
-        const res = await fetch('/api/deadlines', { headers: { Authorization: 'Bearer ' + t } });
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-            listEl.innerHTML = '<li class="text-muted">Ошибка загрузки</li>';
-            return;
+// --- Countdown Widget ---
+function initCountdown() {
+    const el = document.getElementById('countdown-days');
+    if (!el) return;
+
+    // Target date: Summer session (example: June 1, 2026)
+    const targetDate = new Date('2026-06-01T00:00:00');
+
+    function updateCountdown() {
+        const now = new Date();
+        const diffTime = targetDate - now;
+
+        if (diffTime > 0) {
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            el.textContent = diffDays;
+        } else {
+            el.textContent = '0';
         }
-        if (data.length === 0) {
-            listEl.innerHTML = '<li class="text-muted">Нет дедлайнов. Добавьте ниже.</li>';
-            return;
-        }
-        const today = new Date().toISOString().slice(0, 10);
-        listEl.innerHTML = data.map(d => {
-            const overdue = d.due_date < today;
-            return `<li class="deadline-item ${overdue ? 'overdue' : ''}" data-id="${d.id}">
-                <span class="deadline-title">${escapeHtml(d.title)}</span>
-                <span class="deadline-date">${formatDeadlineDate(d.due_date)}</span>
-                <button type="button" class="deadline-delete" data-id="${d.id}" aria-label="Удалить">×</button>
-            </li>`;
-        }).join('');
-        listEl.querySelectorAll('.deadline-delete').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                const r = await fetch('/api/deadlines/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + t } });
-                if (r.ok) loadDeadlines();
-            });
-        });
-    } catch (_) {
-        listEl.innerHTML = '<li class="text-muted">Нет соединения</li>';
     }
+
+    updateCountdown();
+    // Update every minute just in case they leave it open for days
+    setInterval(updateCountdown, 60000);
 }
-function formatDeadlineDate(s) {
-    const d = new Date(s);
-    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-const deadlineForm = document.getElementById('deadline-form');
-if (deadlineForm) {
-    deadlineForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const title = document.getElementById('deadline-title').value.trim();
-        const due = document.getElementById('deadline-date').value;
-        if (!title || !due) return;
-        const t = localStorage.getItem('access_token');
-        if (!t) return;
-        try {
-            const res = await fetch('/api/deadlines', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t },
-                body: JSON.stringify({ title, due_date: due })
-            });
-            if (res.ok) {
-                document.getElementById('deadline-title').value = '';
-                document.getElementById('deadline-date').value = '';
-                loadDeadlines();
-                showToast('Дедлайн добавлен', 'success');
-            } else showToast('Ошибка', 'error');
-        } catch (_) { showToast('Ошибка сети', 'error'); }
-    });
-}
-loadDeadlines();
+initCountdown();
 
 // --- Календарь заходов (стрик) ---
 function renderStreakCalendar() {

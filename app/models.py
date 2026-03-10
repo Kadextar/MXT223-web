@@ -66,3 +66,7 @@ class TeacherCreate(BaseModel):
 class AnnouncementUpdate(BaseModel):
     message: Optional[str] = None
     schedule_context: Optional[dict] = None
+
+class DailyStatusCreate(BaseModel):
+    emoji: str
+    status_text: Optional[str] = None

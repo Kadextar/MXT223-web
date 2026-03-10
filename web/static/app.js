@@ -709,7 +709,35 @@ function updateStreak() {
     if (streak >= 2) showMessage(`Ты заходил ${streak} дней подряд 🔥`, 'success');
 }
 
+function applySmartBackgrounds() {
+    const hour = new Date().getHours();
+    const root = document.documentElement;
+
+    if (hour >= 6 && hour < 12) {
+        // Утро: Нежные, рассветные тона
+        root.style.setProperty('--globe-color-1', 'rgba(253, 164, 175, 0.4)'); /* Rose */
+        root.style.setProperty('--globe-color-2', 'rgba(125, 211, 252, 0.4)'); /* Sky */
+        root.style.setProperty('--globe-color-3', 'rgba(253, 230, 138, 0.3)'); /* Amber */
+    } else if (hour >= 12 && hour < 18) {
+        // День: Энергичные, яркие
+        root.style.setProperty('--globe-color-1', 'rgba(59, 130, 246, 0.3)');  /* Blue */
+        root.style.setProperty('--globe-color-2', 'rgba(139, 92, 246, 0.3)');  /* Purple */
+        root.style.setProperty('--globe-color-3', 'rgba(16, 185, 129, 0.2)');  /* Emerald */
+    } else if (hour >= 18 && hour < 23) {
+        // Вечер: Закатные, спокойные
+        root.style.setProperty('--globe-color-1', 'rgba(249, 115, 22, 0.3)');  /* Orange */
+        root.style.setProperty('--globe-color-2', 'rgba(168, 85, 247, 0.3)');  /* Purple */
+        root.style.setProperty('--globe-color-3', 'rgba(236, 72, 153, 0.2)');  /* Pink */
+    } else {
+        // Ночь: Темные, глубокие
+        root.style.setProperty('--globe-color-1', 'rgba(30, 58, 138, 0.4)');   /* Deep Blue */
+        root.style.setProperty('--globe-color-2', 'rgba(88, 28, 135, 0.4)');   /* Deep Purple */
+        root.style.setProperty('--globe-color-3', 'rgba(55, 65, 81, 0.3)');    /* Slate */
+    }
+}
+
 async function init() {
+    applySmartBackgrounds();
     updateStreak();
     initFloatingNav();
     getFlags().then((f) => { window.__flags = f; });
@@ -821,6 +849,8 @@ async function init() {
     setInterval(updateRateAfterLessonBanner, 60 * 1000);
     updatePersonalTip();
     loadPoll();
+    initSocialMood();
+    loadSocialStatus();
     initCopyTodayAndPdf();
     initDaysSwipe();
     initNoteVoice();
@@ -1275,6 +1305,105 @@ async function loadAnnouncement() {
 }
 
 
+
+// --- Social Mood Status ---
+let selectedEmoji = null;
+
+async function loadSocialStatus() {
+    const marquee = document.getElementById('mood-marquee');
+    if (!marquee) return;
+    try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const statuses = await res.json();
+        if (statuses && statuses.length > 0) {
+            marquee.innerHTML = statuses.map(s => {
+                const name = s.name ? s.name.split(' ')[0] : 'Студент';
+                const text = s.status_text ? `<span class="mood-text">${escapeHtml(s.status_text)}</span>` : '';
+                return `
+                    <div class="mood-item">
+                        <span class="mood-emoji">${escapeHtml(s.emoji)}</span>
+                        <span class="mood-name">${escapeHtml(name)}</span>
+                        ${text}
+                    </div>
+                `;
+            }).join('');
+        } else {
+            marquee.innerHTML = '<span class="mood-item empty">Пока нет статусов на сегодня... Отметьтесь первым!</span>';
+        }
+    } catch (e) {
+        console.error('Failed to load social status:', e);
+    }
+}
+
+function initSocialMood() {
+    const btn = document.getElementById('add-mood-btn');
+    const modal = document.getElementById('mood-modal');
+    const saveBtn = document.getElementById('save-mood-btn');
+    const emojiBtns = document.querySelectorAll('.emoji-btn');
+    const input = document.getElementById('mood-text');
+
+    if (!btn || !modal) return;
+
+    window.closeMoodModal = () => {
+        modal.classList.add('hidden');
+    };
+
+    btn.onclick = () => {
+        if (!localStorage.getItem('access_token')) {
+            showMessage('Оставлять статус могут только авторизованные студенты', 'error');
+            return;
+        }
+        modal.classList.remove('hidden');
+    };
+
+    emojiBtns.forEach(eb => {
+        eb.onclick = () => {
+            emojiBtns.forEach(b => b.classList.remove('selected'));
+            eb.classList.add('selected');
+            selectedEmoji = eb.getAttribute('data-emoji');
+        };
+    });
+
+    if (saveBtn) {
+        saveBtn.onclick = async () => {
+            if (!selectedEmoji) {
+                showMessage('Выберите эмодзи!', 'error');
+                return;
+            }
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Отправка...';
+            try {
+                const res = await fetch('/api/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        emoji: selectedEmoji,
+                        status_text: input.value.trim()
+                    })
+                });
+
+                if (res.ok) {
+                    showMessage('Статус обновлён!', 'success');
+                    closeMoodModal();
+                    loadSocialStatus();
+                } else {
+                    showMessage('Не удалось обновить статус', 'error');
+                }
+            } catch (e) {
+                showMessage('Ошибка сети', 'error');
+            }
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Поделиться';
+        };
+    }
+}
 
 window.addEventListener('online', () => { showMessage('Соединение восстановлено', 'success'); });
 
