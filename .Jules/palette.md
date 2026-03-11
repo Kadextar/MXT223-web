@@ -1,0 +1,3 @@
+## 2024-03-11 - Custom Toggle Switch Accessibility
+**Learning:** When using custom styled inputs (like toggle switches where the native input is visually hidden), standard `<label for="id">` might not provide enough context if the description is split across multiple elements (e.g., a title and a subtitle). Also, hiding the native input often removes its default focus ring, making keyboard navigation difficult or invisible.
+**Action:** Use `aria-labelledby="id1 id2"` on the hidden input to explicitly associate all relevant descriptive text elements. Always add a `:focus-visible` CSS rule targeting the custom visual element (e.g., `input:focus-visible + .slider`) to restore the keyboard focus indicator.

@@ -69,6 +69,12 @@
             background-color: var(--primary);
         }
 
+        /* Keyboard focus indicator */
+        input:focus-visible+.slider {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
         input:checked+.slider:before {
             transform: translateX(22px);
         }
@@ -220,7 +226,7 @@
                     <h3>🔐 Смена пароля</h3>
                     <form id="password-form">
                         <div class="form-group">
-                            <label>Текущий пароль</label>
+                            <label for="old-password">Текущий пароль</label>
                             <div class="password-wrapper">
                                 <input type="password" id="old-password" placeholder="Введите текущий пароль" required
                                     autocomplete="current-password">
@@ -230,7 +236,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Новый пароль</label>
+                            <label for="new-password">Новый пароль</label>
                             <div class="password-wrapper">
                                 <input type="password" id="new-password" placeholder="Введите новый пароль" required
                                     autocomplete="new-password">
@@ -241,7 +247,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Подтвердите новый пароль</label>
+                            <label for="confirm-password">Подтвердите новый пароль</label>
                             <div class="password-wrapper">
                                 <input type="password" id="confirm-password" placeholder="Повторите новый пароль"
                                     required autocomplete="new-password">
@@ -264,7 +270,7 @@
                 <div class="profile-card">
                     <h3>🎨 Внешний вид</h3>
                     <div class="setting-row" style="margin-top: 16px;">
-                        <label style="color: var(--text-main); font-weight: 600;">Тема</label>
+                        <label for="theme-select" style="color: var(--text-main); font-weight: 600;">Тема</label>
                         <select id="theme-select" class="theme-select"
                             style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
                             <option value="dark">Тёмная</option>
@@ -274,7 +280,7 @@
                         </select>
                     </div>
                     <div class="setting-row" style="margin-top: 12px;">
-                        <label style="color: var(--text-main); font-weight: 600;">Акцент</label>
+                        <label for="accent-select" style="color: var(--text-main); font-weight: 600;">Акцент</label>
                         <select id="accent-select"
                             style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
                             <option value="blue">Синий</option>
@@ -286,23 +292,23 @@
                     <div class="setting-row"
                         style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong style="color: var(--text-main);">AMOLED (чёрный фон)</strong>
-                            <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Максимально тёмная тема
+                            <strong id="amoled-label" style="color: var(--text-main);">AMOLED (чёрный фон)</strong>
+                            <p id="amoled-desc" class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Максимально тёмная тема
                             </p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="amoled-toggle">
+                        <label class="toggle-switch" for="amoled-toggle">
+                            <input type="checkbox" id="amoled-toggle" aria-labelledby="amoled-label amoled-desc">
                             <span class="slider round"></span>
                         </label>
                     </div>
                     <div class="setting-row"
                         style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong style="color: var(--text-main);">Крупный шрифт</strong>
-                            <p class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Для слабого зрения</p>
+                            <strong id="large-font-label" style="color: var(--text-main);">Крупный шрифт</strong>
+                            <p id="large-font-desc" class="text-muted" style="font-size: 0.85rem; margin: 2px 0 0;">Для слабого зрения</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="large-font-toggle">
+                        <label class="toggle-switch" for="large-font-toggle">
+                            <input type="checkbox" id="large-font-toggle" aria-labelledby="large-font-label large-font-desc">
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -315,7 +321,7 @@
                         парах. Если на вашем устройстве не получается — просто открывайте приложение, расписание всегда
                         под рукой.</p>
                     <div class="setting-row" style="margin-bottom: 12px;">
-                        <label style="color: var(--text-main); font-weight: 600;">Напомнить за</label>
+                        <label for="reminder-minutes" style="color: var(--text-main); font-weight: 600;">Напомнить за</label>
                         <select id="reminder-minutes" class="theme-select"
                             style="margin-top: 8px; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main);">
                             <option value="0">Выкл</option>
