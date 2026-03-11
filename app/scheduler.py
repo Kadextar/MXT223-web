@@ -1,8 +1,19 @@
-import asyncio
+import json
 import logging
 from datetime import datetime, timedelta
+
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from pywebpush import WebPushException, webpush
+
+from app.config import (
+    NOTIFY_BEFORE_LESSON_MINUTES,
+    SEMESTER_START,
+    VAPID_CLAIM_EMAIL,
+    VAPID_PRIVATE_KEY,
+)
+from app.database import database
 
 
 def _row_to_dict(row):
@@ -13,11 +24,6 @@ def _row_to_dict(row):
         return dict(row)
     except Exception:
         return {k: row[k] for k in row.keys()} if hasattr(row, "keys") else {}
-from apscheduler.triggers.cron import CronTrigger
-from app.database import database
-from app.config import VAPID_PRIVATE_KEY, VAPID_CLAIM_EMAIL, SEMESTER_START, NOTIFY_BEFORE_LESSON_MINUTES
-from pywebpush import webpush, WebPushException
-import json
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

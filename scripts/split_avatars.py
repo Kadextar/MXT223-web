@@ -1,5 +1,6 @@
-from PIL import Image
 import os
+
+from PIL import Image
 
 # Input path (matches the artifact path from previous step)
 INPUT_PATH = "/Users/azamatsatullaev/.gemini/antigravity/brain/d7564e10-9fe2-4c00-b28b-bfd16da1a383/memoji_avatar_set_1769800765787.png"

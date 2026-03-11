@@ -1,9 +1,11 @@
 import json
-from fastapi import APIRouter, Header, Depends, BackgroundTasks
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Header
 from fastapi.responses import JSONResponse
-from pywebpush import webpush, WebPushException
+from pywebpush import WebPushException, webpush
+
+from app.config import VAPID_CLAIM_EMAIL, VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY
 from app.database import database
-from app.config import VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY, VAPID_CLAIM_EMAIL
 from app.dependencies import require_admin
 from app.logging_config import logger
 
@@ -16,7 +18,7 @@ async def subscribe_push(data: dict, authorization: str = Header(None)):
         # Require auth to link to student (optional, but good for tracking)
         student_id = "anonymous"
         if authorization:
-            from utils.jwt import verify_token, is_jwt_token
+            from utils.jwt import is_jwt_token, verify_token
             token = authorization.replace("Bearer ", "")
             if is_jwt_token(token):
                 payload = verify_token(token, "access")
@@ -92,7 +94,7 @@ async def notify_schedule_changed():
 
 @router.post("/admin/push")
 async def send_push_notification(
-    data: dict, background_tasks: BackgroundTasks, user=Depends(require_admin)
+    data: dict, background_tasks: BackgroundTasks, user: dict = Depends(require_admin)
 ):
     """Queue push to all subscribers; returns immediately (202). Sending runs in background."""
     if not VAPID_PRIVATE_KEY:

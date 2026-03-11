@@ -1,6 +1,8 @@
+import base64
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-import base64
+
 
 def b64url(data):
     return base64.urlsafe_b64encode(data).decode('utf-8').rstrip('=')
@@ -29,5 +31,5 @@ print("VAPID KEYS (Generated via cryptography)")
 print("=" * 60)
 print(f"VAPID_PUBLIC_KEY={public_b64}")
 print(f"VAPID_PRIVATE_KEY={private_b64}")
-print(f"VAPID_CLAIM_EMAIL=mailto:admin@mxt223.com")
+print("VAPID_CLAIM_EMAIL=mailto:admin@mxt223.com")
 print("=" * 60)

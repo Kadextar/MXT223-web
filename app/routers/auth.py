@@ -1,24 +1,26 @@
 import re
-from fastapi import APIRouter, Header, HTTPException, Depends, Request
-from app.models import (
-    LoginRequest,
-    ChangePasswordRequest,
-    RefreshTokenRequest,
-    ForgotPasswordRequest,
-    ResetPasswordRequest,
-    TOTPVerifyRequest,
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+
+from app.config import (
+    AVATAR_ALLOWED_PATTERN,
+    AVATAR_MAX_LENGTH,
+    PASSWORD_RESET_EXPIRE_MINUTES,
+    REMEMBER_ME_REFRESH_DAYS,
 )
 from app.database import database
 from app.dependencies import get_current_user
-from app.logging_config import logger
-from app.rate_limit import check_rate_limit, check_rate_limit_user
 from app.idempotency import get_idempotent_result, set_idempotent_result
-from app.config import (
-    AVATAR_MAX_LENGTH,
-    AVATAR_ALLOWED_PATTERN,
-    REMEMBER_ME_REFRESH_DAYS,
-    PASSWORD_RESET_EXPIRE_MINUTES,
+from app.logging_config import logger
+from app.models import (
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    LoginRequest,
+    RefreshTokenRequest,
+    ResetPasswordRequest,
+    TOTPVerifyRequest,
 )
+from app.rate_limit import check_rate_limit, check_rate_limit_user
 
 router = APIRouter(tags=["Auth"])
 
@@ -78,7 +80,7 @@ async def login_student(http_request: Request, request: LoginRequest):
     """Authenticate student with telegram_id and password"""
     check_rate_limit(http_request)
     try:
-        from utils.auth import verify_password, is_password_hashed, hash_password
+        from utils.auth import hash_password, is_password_hashed, verify_password
         from utils.jwt import create_access_token, create_refresh_token
         
         # Get student with password hash
@@ -183,7 +185,7 @@ async def refresh_access_token(http_request: Request, request: RefreshTokenReque
     """Refresh access token using refresh token"""
     check_rate_limit(http_request)
     try:
-        from utils.jwt import verify_token, create_access_token, create_refresh_token
+        from utils.jwt import create_access_token, create_refresh_token, verify_token
         
         # Verify refresh token
         payload = verify_token(request.refresh_token, "refresh")
@@ -214,7 +216,7 @@ async def refresh_access_token(http_request: Request, request: RefreshTokenReque
         raise
     except Exception as e:
         logger.exception("Token refresh error")
-        raise HTTPException(status_code=500, detail="Server error")
+        raise HTTPException(status_code=500, detail="Server error") from e
 
 @router.post("/change-password")
 async def change_password(
@@ -227,7 +229,8 @@ async def change_password(
         raise HTTPException(status_code=401, detail="Not authenticated")
     try:
         from fastapi.responses import JSONResponse
-        from utils.auth import verify_password, hash_password, is_password_hashed
+
+        from utils.auth import hash_password, is_password_hashed, verify_password
         from utils.jwt import verify_token
 
         token = authorization.replace("Bearer ", "")
@@ -275,7 +278,7 @@ async def change_password(
         raise
     except Exception as e:
         logger.exception("Password change error")
-        raise HTTPException(status_code=500, detail="Server error")
+        raise HTTPException(status_code=500, detail="Server error") from e
 
 
 # ----- 2FA TOTP -----
@@ -347,8 +350,8 @@ async def disable_2fa(body: TOTPVerifyRequest, current_user: dict = Depends(get_
 async def forgot_password(http_request: Request, req: ForgotPasswordRequest):
     """Create password reset token for telegram_id. In production send link by email/Telegram."""
     check_rate_limit(http_request)
-    from datetime import datetime, timedelta
     import secrets
+    from datetime import datetime, timedelta
     student = await database.fetch_one(
         "SELECT telegram_id FROM students WHERE telegram_id = :tid",
         {"tid": req.telegram_id}
@@ -370,6 +373,7 @@ async def forgot_password(http_request: Request, req: ForgotPasswordRequest):
 async def reset_password(req: ResetPasswordRequest):
     """Set new password using reset token."""
     from datetime import datetime
+
     from utils.auth import hash_password
     row = await database.fetch_one(
         "SELECT telegram_id, expires_at FROM password_reset_tokens WHERE token = :t",

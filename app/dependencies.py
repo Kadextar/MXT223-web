@@ -1,6 +1,8 @@
 from fastapi import Header, HTTPException
+
 from app.database import database
 from app.logging_config import logger
+
 
 async def get_current_user(authorization: str = Header(None)):
     """Get current user info from token"""
@@ -8,7 +10,7 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
         
         # Extract token from Bearer header
         token = authorization.replace("Bearer ", "")
@@ -37,7 +39,7 @@ async def get_current_user(authorization: str = Header(None)):
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception("Get user error")
         raise HTTPException(status_code=500, detail="Server error")
 
@@ -47,7 +49,7 @@ async def require_admin(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
         
         token = authorization.replace("Bearer ", "")
         
@@ -73,6 +75,6 @@ async def require_admin(authorization: str = Header(None)):
         return student
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception("Admin check error")
         raise HTTPException(status_code=500, detail="Server error")

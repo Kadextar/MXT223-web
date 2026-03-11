@@ -1,5 +1,5 @@
 """Pydantic schemas for API responses (OpenAPI)."""
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -12,11 +12,11 @@ class LessonItem(BaseModel):
     type: str
     teacher: str
     room: str
-    weeks: List[int]
+    weeks: list[int]
 
 
 class ScheduleResponse(BaseModel):
-    items: List[LessonItem]
+    items: list[LessonItem]
     total: int
     limit: int
     offset: int

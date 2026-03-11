@@ -4,8 +4,9 @@ Adds indexes to improve query performance
 """
 import asyncio
 import os
-from dotenv import load_dotenv
+
 import databases
+from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
