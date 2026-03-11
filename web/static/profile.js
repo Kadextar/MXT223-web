@@ -415,9 +415,11 @@ async function toggleNotifications() {
             const timeoutMsg = isMobile
                 ? 'Долго ожидание. Убедитесь, что открыли приложение с главного экрана (не из Safari). Разрешите уведомления и попробуйте снова.'
                 : 'Превышено время ожидания. Проверьте интернет и разрешения сайта.';
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error(timeoutMsg)), SUBSCRIBE_TIMEOUT_MS)
-            );
+
+            let timeoutId;
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutId = setTimeout(() => reject(new Error(timeoutMsg)), SUBSCRIBE_TIMEOUT_MS);
+            });
 
             const doSubscribe = async () => {
                 btn.textContent = 'Получение ключей...';
@@ -505,7 +507,11 @@ async function toggleNotifications() {
                 btn.style.background = 'var(--accent)';
             }; // end doSubscribe
 
-            await Promise.race([doSubscribe(), timeoutPromise]);
+            try {
+                await Promise.race([doSubscribe(), timeoutPromise]);
+            } finally {
+                clearTimeout(timeoutId);
+            }
         }
 
     } catch (error) {
@@ -650,6 +656,7 @@ if (largeFontToggle) {
 }
 
 // --- Countdown Widget ---
+let countdownInterval;
 function initCountdown() {
     const el = document.getElementById('countdown-days');
     if (!el) return;
@@ -671,7 +678,8 @@ function initCountdown() {
 
     updateCountdown();
     // Update every minute just in case they leave it open for days
-    setInterval(updateCountdown, 60000);
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(updateCountdown, 60000);
 }
 initCountdown();
 
