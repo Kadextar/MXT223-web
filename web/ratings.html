@@ -23,20 +23,24 @@
     </div>
 
     <div class="app-container">
-        <header class="header">
-            <div class="header-content">
-                <h1>Рейтинг</h1>
-                <p class="subtitle">Отзывы и топы</p>
+    <div class="app-container">
+        <header class="header-greeting-container" style="padding-top: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <button class="nav-btn" aria-label="Назад" style="width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border);">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="greeting-date" style="font-size: 1.5rem; margin: 0; text-align: center; flex: 1;">Рейтинг предметов</h1>
+                <div class="user-avatar-mini" style="width: 40px; height: 40px; border-radius: 50%; background: #ffe4e1; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                    <img src="/static/avatars/1.png" alt="Аватар" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+                </div>
             </div>
         </header>
 
-        <!-- Tabs -->
-        <div class="academics-tabs" style="height: auto; min-height: 0;">
-            <div class="tabs-pill" style="margin: 0 auto;">
-                <button class="tab-btn active" id="tab-btn-eval">Оценка</button>
-                <button class="tab-btn" id="tab-btn-rate">Лидеры</button>
-                <button class="tab-btn" id="tab-btn-my">Мои оценки</button>
-            </div>
+        <!-- New Premium Tabs -->
+        <div class="academics-tabs premium-tabs">
+            <button class="tab-btn active" id="tab-btn-eval">Сегодня</button>
+            <button class="tab-btn" id="tab-btn-rate">Неделя</button>
+            <button class="tab-btn" id="tab-btn-my">Месяц</button>
         </div>
 
         <main class="ratings-container" style="padding-bottom: 100px; margin-top: 20px;">
@@ -60,7 +64,51 @@
 
             <!-- VIEW: LEADERBOARD -->
             <div id="leaderboard-view" class="hidden">
-                <h3 style="text-align: center; color: var(--text-main); margin-bottom: 20px;">Топ-3 Предметов</h3>
+                <h3 style="text-align: center; color: var(--text-muted); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 40px;">Лучшие предметы</h3>
+                
+                <div class="podium-container">
+                    <!-- Second Place -->
+                    <div class="podium-step step-2">
+                        <div class="podium-avatar">
+                            <img src="https://images.unsplash.com/photo-1635322966219-b75ed372eb01?q=80&w=200&auto=format&fit=crop" alt="Marketing">
+                            <div class="podium-rank rank-2">2</div>
+                        </div>
+                        <div class="podium-base base-2">
+                            <div class="podium-subject-title">Маркетинг</div>
+                            <div class="podium-score">4.8</div>
+                        </div>
+                    </div>
+                    
+                    <!-- First Place -->
+                    <div class="podium-step step-1">
+                        <div class="podium-avatar highlight">
+                            <img src="https://images.unsplash.com/photo-1596495578065-6e0763fa1178?q=80&w=200&auto=format&fit=crop" alt="Hotel Business">
+                            <div class="podium-rank rank-1">1</div>
+                        </div>
+                        <div class="podium-base base-1">
+                            <div class="podium-subject-title" style="color:#106cff;">ГОСТИНИЧНЫЙ<br>БИЗНЕС</div>
+                            <div class="podium-score">4.9</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Third Place -->
+                    <div class="podium-step step-3">
+                        <div class="podium-avatar">
+                            <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=200&auto=format&fit=crop" alt="Economics">
+                            <div class="podium-rank rank-3">3</div>
+                        </div>
+                        <div class="podium-base base-3">
+                            <div class="podium-subject-title">Экономика</div>
+                            <div class="podium-score">4.7</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0 15px; padding: 0 10px;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Список предметов</h2>
+                    <a href="#" style="color: #106cff; font-weight: 600; text-decoration: none;">Все</a>
+                </div>
+
                 <div id="leaderboard-list">
                     <!-- Leaderboard items -->
                 </div>
@@ -147,11 +195,23 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="profile-nav">
-            <a href="/" class="nav-link" title="Меню"><i class="fas fa-th-large"></i></a>
-            <a href="/academics.html" class="nav-link" title="Предметы"><i class="fas fa-book"></i></a>
-            <a href="/ratings.html" class="nav-link active" title="Рейтинг"><i class="fas fa-star"></i></a>
-            <a href="/profile.html" class="nav-link" title="Профиль"><i class="fas fa-user"></i></a>
+        <nav class="profile-nav" role="navigation" aria-label="Главное меню">
+            <a href="/" class="nav-link" aria-current="page" aria-label="Главная">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/academics.html" class="nav-link" aria-label="Курсы">
+                <i class="fas fa-book" aria-hidden="true"></i>
+                <span>Курсы</span>
+            </a>
+            <a href="/ratings.html" class="nav-link active" aria-label="Рейтинг">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>Рейтинг</span>
+            </a>
+            <a href="/profile.html" class="nav-link" aria-label="Профиль">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <span>Профиль</span>
+            </a>
         </nav>
     </div>
 

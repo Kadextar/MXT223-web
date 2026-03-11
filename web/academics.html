@@ -22,29 +22,64 @@
     </div>
 
     <div class="app-container">
-        <header class="header">
-            <div class="header-content">
-                <h1>Предметы</h1>
-                <p class="subtitle">Учебный план</p>
+        <header class="header-greeting-container" style="padding-top: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h1 class="greeting-date" style="font-size: 1.8rem; margin: 0;">Мои Курсы</h1>
+                <button class="nav-btn" aria-label="Поиск" style="width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border);">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
         </header>
 
-        <!-- Tabs как в Рейтинге: Предметы | Экзамены -->
-        <div class="academics-tabs" style="height: auto; min-height: 0;">
-            <div class="tabs-pill" style="margin: 0 auto;">
-                <button type="button" class="tab-btn active" id="tab-btn-subjects"
-                    aria-selected="true">Предметы</button>
-                <button type="button" class="tab-btn" id="tab-btn-deadlines" aria-selected="false">Дедлайны и
-                    Экзамены</button>
-            </div>
+        <!-- New Premium Tabs -->
+        <div class="academics-tabs premium-tabs">
+            <button type="button" class="tab-btn active" id="tab-btn-all">Все</button>
+            <button type="button" class="tab-btn" id="tab-btn-mandatory">Обязательные</button>
+            <button type="button" class="tab-btn" id="tab-btn-optional">Факультативы</button>
         </div>
 
         <main class="academics-container" style="padding-bottom: 100px; margin-top: 20px;">
 
-            <!-- VIEW: Предметы -->
+            <!-- VIEW: Предметы (Курсы) -->
             <div id="subjects-view">
                 <div id="subjects-list" class="subjects-grid">
-                    <div class="empty-state">
+                    
+                    <!-- Premium Course Card (Mock) -->
+                    <div class="premium-course-card">
+                        <div class="course-cover-img" style="background-image: url('https://images.unsplash.com/photo-1542314831-c6a4d14effd4?q=80&w=600&auto=format&fit=crop');">
+                            <!-- Image bg -->
+                        </div>
+                        <div class="course-card-content">
+                            <div class="course-header-row">
+                                <span class="course-tag">ОБЯЗАТЕЛЬНЫЙ ПРЕДМЕТ</span>
+                                <div class="course-credits"><span>5</span><br>Кредитов</div>
+                            </div>
+                            <h3 class="course-title">Международный<br>гостиничный бизнес</h3>
+                            
+                            <div class="course-progress-section">
+                                <div class="progress-row">
+                                    <span class="progress-label">Лекции</span>
+                                    <span class="progress-value">11/18</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: 61%;"></div>
+                                </div>
+                                
+                                <div class="progress-row">
+                                    <span class="progress-label">Семинары</span>
+                                    <span class="progress-value">4/8</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: 50%;"></div>
+                                </div>
+                            </div>
+                            
+                            <button class="primary-action-btn course-action-btn">Продолжить обучение</button>
+                        </div>
+                    </div>
+                    <!-- /Premium Course Card -->
+
+                    <div class="empty-state hidden">
                         <p>Загрузка предметов...</p>
                     </div>
                 </div>
@@ -95,11 +130,23 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="profile-nav">
-            <a href="/" class="nav-link" title="Меню"><i class="fas fa-th-large"></i></a>
-            <a href="/academics.html" class="nav-link active" title="Предметы"><i class="fas fa-book"></i></a>
-            <a href="/ratings.html" class="nav-link" title="Рейтинг"><i class="fas fa-star"></i></a>
-            <a href="/profile.html" class="nav-link" title="Профиль"><i class="fas fa-user"></i></a>
+        <nav class="profile-nav" role="navigation" aria-label="Главное меню">
+            <a href="/" class="nav-link" aria-current="page" aria-label="Главная">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/academics.html" class="nav-link active" aria-label="Курсы">
+                <i class="fas fa-book" aria-hidden="true"></i>
+                <span>Курсы</span>
+            </a>
+            <a href="/ratings.html" class="nav-link" aria-label="Рейтинг">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>Рейтинг</span>
+            </a>
+            <a href="/profile.html" class="nav-link" aria-label="Профиль">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <span>Профиль</span>
+            </a>
         </nav>
     </div>
 

@@ -101,42 +101,46 @@
     </div>
 
     <div class="app-container">
-        <header class="header">
-            <div class="header-content">
-                <h1>Профиль</h1>
-                <p class="subtitle">Управление аккаунтом</p>
+        <header class="header-greeting-container" style="padding-top: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <button class="nav-btn" style="visibility: hidden; width: 40px; height: 40px;"></button>
+                <h1 class="greeting-date" style="font-size: 1.5rem; margin: 0; text-align: center; flex: 1;">Профиль</h1>
+                <button class="nav-btn" aria-label="Настройки" style="width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border);">
+                    <i class="fas fa-cog"></i>
+                </button>
             </div>
         </header>
 
-        <!-- New Profile Tabs -->
-        <div class="academics-tabs">
-            <div class="tabs-pill">
-                <button class="tab-btn active" onclick="switchTab('profile')">Профиль</button>
-                <button class="tab-btn" onclick="switchTab('security')">Безопасность</button>
-                <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
-            </div>
+        <!-- New Premium Tabs -->
+        <div class="academics-tabs premium-tabs">
+            <button class="tab-btn active" onclick="switchTab('profile')">Профиль</button>
+            <button class="tab-btn" onclick="switchTab('security')">Безопасность</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
         </div>
 
         <main class="profile-container">
 
             <!-- VIEW: PROFILE -->
             <div id="profile-view" class="tab-content">
-                <!-- Student Info Card -->
-                <div class="profile-card">
-                    <div class="profile-header">
-                        <div class="profile-avatar-container">
-                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar" loading="lazy"
-                                class="profile-avatar-img">
-                            <button class="edit-avatar-btn" id="edit-avatar-btn">🖊️</button>
+                <!-- Student Premium Info Card -->
+                <div class="premium-event-card profile-center-card" style="margin-bottom: 24px;">
+                    <div style="padding: 30px 20px 20px; display: flex; flex-direction: column; align-items: center;">
+                        <div class="profile-avatar-container" style="position: relative; margin-bottom: 16px;">
+                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar" loading="lazy" class="profile-avatar-img" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--bg-dark); box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+                            <button class="edit-avatar-btn" id="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: #106cff; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(16,108,255,0.4);"><i class="fas fa-pen" style="font-size: 0.8rem;"></i></button>
                         </div>
-                        <div class="profile-info">
-                            <h2 id="student-name" class="skeleton-line"
-                                style="width:160px;height:28px;border-radius:8px" aria-busy="true"> </h2>
-                            <p class="student-id" id="student-id">ID: ...</p>
-                            <div class="profile-stats"
-                                style="margin-top: 10px; font-size: 0.9em; color: var(--text-muted); display: flex; gap: 15px;">
-                                <span>🗓 С нами с: <b id="join-date">-</b></span>
-                                <span>⭐ Отзывов: <b id="reviews-count">0</b></span>
+                        <h2 id="student-name" style="font-size: 1.4rem; font-weight: 700; color: white; margin-bottom: 4px;">Загрузка...</h2>
+                        <span class="course-tag" style="background: rgba(16,108,255,0.15); margin-bottom: 16px;">МХТ-223</span>
+                        
+                        <div class="profile-stats-row" style="display: flex; gap: 24px; width: 100%; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.25rem; font-weight: 700; color: white;" id="reviews-count">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Отзывов</div>
+                            </div>
+                            <div style="width: 1px; background: rgba(255,255,255,0.05);"></div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.25rem; font-weight: 700; color: white;" id="join-date">-</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">С нами</div>
                             </div>
                         </div>
                     </div>
@@ -366,13 +370,24 @@
 
         </main>
 
-        <br><br><br> <!-- Spacer -->
-
-        <nav class="profile-nav">
-            <a href="/" class="nav-link" title="Меню"><i class="fas fa-th-large"></i></a>
-            <a href="/academics.html" class="nav-link" title="Предметы"><i class="fas fa-book"></i></a>
-            <a href="/ratings.html" class="nav-link" title="Рейтинг"><i class="fas fa-star"></i></a>
-            <a href="/profile.html" class="nav-link active" title="Профиль"><i class="fas fa-user"></i></a>
+        <!-- Navigation -->
+        <nav class="profile-nav" role="navigation" aria-label="Главное меню">
+            <a href="/" class="nav-link" aria-current="page" aria-label="Главная">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/academics.html" class="nav-link" aria-label="Курсы">
+                <i class="fas fa-book" aria-hidden="true"></i>
+                <span>Курсы</span>
+            </a>
+            <a href="/ratings.html" class="nav-link" aria-label="Рейтинг">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>Рейтинг</span>
+            </a>
+            <a href="/profile.html" class="nav-link active" aria-label="Профиль">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <span>Профиль</span>
+            </a>
         </nav>
     </div>
 

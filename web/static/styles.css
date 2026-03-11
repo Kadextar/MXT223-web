@@ -19,30 +19,33 @@
     --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    --primary: #5b7cff;
-    --primary-dim: rgba(91, 124, 255, 0.15);
-    --secondary: #a78bfa;
-    --accent: #22d3a6;
+    /* Blue accent from mockup */
+    --primary: #106cff; 
+    --primary-dim: rgba(16, 108, 255, 0.15);
+    --secondary: #6366f1; /* purple */
+    --accent: #10b981; /* green */
 
-    --bg-dark: #08090e;
-    --card-bg: rgba(255, 255, 255, 0.04);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --glass-highlight: rgba(255, 255, 255, 0.06);
+    /* Very dark almost black blue */
+    --bg-dark: #12141d;
+    --card-bg: #1c1f2e; 
+    --card-border: rgba(255, 255, 255, 0.05);
+    --glass-highlight: rgba(255, 255, 255, 0.08);
 
-    --bg-light: #f0f2f8;
-    --card-light: rgba(255, 255, 255, 0.82);
+    --bg-light: #f8fafc;
+    --card-light: #ffffff;
     --card-border-light: rgba(0, 0, 0, 0.06);
     --text-dark: #0f172a;
     --text-muted-light: #64748b;
-    --glass-shadow-light: 0 12px 40px rgba(15, 23, 42, 0.08);
+    --glass-shadow-light: 0 12px 40px rgba(15, 23, 42, 0.05);
 
     --text-main: #f8fafc;
-    --text-muted: rgba(248, 250, 252, 0.72);
-    --text-secondary: rgba(248, 250, 252, 0.5);
+    --text-muted: #94a3b8;
+    --text-secondary: #64748b;
 
-    --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* Font from mockup looks like Inter or standard system font */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    --neon-glow: 0 0 24px rgba(91, 124, 255, 0.25);
+    --neon-glow: 0 0 24px rgba(16, 108, 255, 0.25);
 }
 
 /* Dashboard Grid Styles */
@@ -520,23 +523,18 @@ h1.greeting-date {
 /* Floating Navigation (Glass pill) */
 .profile-nav {
     position: fixed;
-    bottom: var(--space-5);
-    left: var(--space-4);
-    right: var(--space-4);
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
-    background: rgba(12, 12, 18, 0.72);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-2xl);
+    background: #171a23; /* Solid bottom bar color matching mockup */
+    border-top: 1px solid var(--card-border);
     padding: 0;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 64px;
-    box-shadow: var(--shadow-lg);
-    width: auto;
-    min-width: 0;
+    height: 60px; /* Slightly taller */
+    padding-bottom: env(safe-area-inset-bottom); /* For iPhone notch */
 }
 
 /* ПК: компактный таб-бар — не растягивать на весь экран, меньше высота и иконки */
@@ -573,11 +571,17 @@ h1.greeting-date {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     transition: color 0.22s var(--ease-out);
     position: relative;
-    padding: 0;
+    padding: 8px 0;
     border-radius: 0;
+    gap: 4px;
+}
+
+.nav-link span {
+    font-size: 0.65rem;
+    font-weight: 500;
 }
 
 .nav-link:hover {
@@ -608,22 +612,23 @@ h1.greeting-date {
    Let's keep the floating pill but make it look like the Dynamic Island logic or modern dock. */
 @media (max-width: 768px) {
     .profile-nav {
-        left: 15px;
-        right: 15px;
-        bottom: calc(20px + env(safe-area-inset-bottom));
-        border-radius: 30px;
-        height: 65px;
-        background: rgba(10, 10, 15, 0.75);
-        /* Slightly darker on mobile for contrast */
+        /* Reset floating properties for full width bar */
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0;
+        height: auto;
+        min-height: 60px;
+        background: #171a23; 
     }
 
     .nav-link {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
     /* Content Padding */
     .app-container {
-        padding-bottom: calc(110px + env(safe-area-inset-bottom));
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
     }
 }
 
@@ -1247,6 +1252,283 @@ body {
     color: var(--text-main);
 }
 
+/* ========================================= */
+/*  RATINGS LEADERBOARD PODIUM STYLES        */
+/* ========================================= */
+
+.podium-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0 40px;
+    height: 250px;
+    padding: 0 10px;
+}
+
+.podium-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 30%;
+}
+
+.podium-avatar {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-bottom: -15px;
+    z-index: 2;
+    border: 3px solid var(--card-bg);
+}
+
+.podium-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.podium-avatar.highlight {
+    width: 90px;
+    height: 90px;
+    border-color: #f59e0b; /* Golden border for 1st place */
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.podium-rank {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    background: var(--card-border);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 2px solid var(--bg-dark);
+}
+
+.rank-1 {
+    background: #f59e0b;
+    color: white;
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+}
+
+.rank-3 { background: #d97706; } /* Bronze ish */
+
+.podium-base {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-bottom: none;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 10px 10px;
+    z-index: 1;
+}
+
+.base-1 { background: rgba(16, 108, 255, 0.15); border-color: rgba(16, 108, 255, 0.3); height: 160px; }
+.base-2 { height: 120px; }
+.base-3 { height: 100px; }
+
+.podium-subject-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 8px;
+    margin-top: auto;
+}
+
+.podium-score {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: white;
+}
+
+body.light-mode .podium-base,
+body.light-mode .podium-rank:not(.rank-1):not(.rank-3) {
+    background: white;
+    border-color: rgba(0,0,0,0.05);
+}
+
+body.light-mode .podium-score {
+    color: #000;
+}
+
+body.light-mode .podium-avatar {
+    border-color: var(--bg-light);
+}
+
+/* ========================================= */
+/*  ACADEMICS PAGE PREMIUM STYLES            */
+/* ========================================= */
+
+.premium-tabs {
+    display: flex;
+    gap: 0;
+    margin: 10px 0 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    padding: 0 10px;
+}
+
+.premium-tabs .tab-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.premium-tabs .tab-btn.active {
+    color: #106cff;
+    font-weight: 600;
+}
+
+.premium-tabs .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #106cff;
+    border-radius: 2px 2px 0 0;
+}
+
+.premium-course-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.course-cover-img {
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+}
+
+.course-card-content {
+    padding: 20px;
+}
+
+.course-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.course-tag {
+    color: #106cff; /* Vibrant blue text */
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.course-credits {
+    background: rgba(16, 108, 255, 0.1);
+    color: #3b82f6;
+    padding: 8px 12px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.course-credits span {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.course-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.25;
+    margin-bottom: 24px;
+}
+
+.course-progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.progress-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+}
+
+.progress-label {
+    color: var(--text-muted);
+}
+
+.progress-value {
+    color: white;
+    font-weight: 600;
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #106cff;
+    border-radius: 3px;
+}
+
+.course-action-btn {
+    border-radius: 20px;
+}
+
+body.light-mode .premium-tabs {
+    border-bottom-color: rgba(0,0,0,0.05);
+}
+
+body.light-mode .premium-tabs .tab-btn {
+    color: var(--text-muted-light);
+}
+
+body.light-mode .premium-tabs .tab-btn.active {
+    color: #106cff;
+}
+
+body.light-mode .course-title,
+body.light-mode .progress-value {
+    color: #000;
+}
+
+body.light-mode .progress-bar-bg {
+    background: #e2e8f0;
+}
 .icon-btn.fav-btn {
     font-size: 0.95rem;
 }

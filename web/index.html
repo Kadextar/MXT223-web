@@ -105,9 +105,49 @@
             <span id="rate-after-lesson-text"></span>
             <a href="/ratings.html" id="rate-after-lesson-link" class="rate-after-lesson-link">Оценить</a>
         </div>
-        <div id="live-status" class="live-widget hidden">
-            <!-- Live status injected by JS -->
+        <!-- Today Header -->
+        <div class="dashboard-section-header">
+            <h2>Сейчас</h2>
+            <div class="live-pulse-badge"><span class="pulse-dot"></span>В ЭФИРЕ</div>
         </div>
+
+        <!-- Live Widget (Seminars etc) -->
+        <div id="live-status" class="live-widget hidden" aria-label="Текущее занятие">
+            <!-- Content injected by JS but structure styled generally via CSS -->
+        </div>
+
+        <!-- Default mock for the screenshot's 'Live' Card -->
+        <div class="premium-event-card">
+            <div class="event-image-bg">
+                <span class="event-tag">СЕМИНАР</span>
+            </div>
+            <div class="event-details-content">
+                <h3 class="event-title">Международный гостиничный бизнес</h3>
+                <div class="event-meta">
+                    <span class="event-time"><i class="far fa-clock"></i> 08:00 - 09:20</span>
+                    <span class="event-room"><i class="fas fa-map-marker-alt"></i> Ауд. 405</span>
+                </div>
+                <div class="event-prof">
+                    <i class="fas fa-user-alt"></i> Проф. Иванова М.С.
+                </div>
+                <button class="primary-action-btn"><i class="fas fa-star"></i> Оценить занятие</button>
+            </div>
+        </div>
+
+        <!-- Mood Stats Widget -->
+        <div class="mood-stats-widget">
+            <div class="mood-emoji-circle">🙂</div>
+            <div class="mood-stats-text">
+                <span class="mood-stats-label">Настроение группы</span>
+                <span class="mood-stats-value">Продуктивное (85%)</span>
+            </div>
+            <button class="secondary-btn">Статус</button>
+        </div>
+
+        <div class="dashboard-section-header mt-4">
+            <h2>Далее сегодня</h2>
+        </div>
+
         <div id="next-lesson-widget" class="next-lesson-widget hidden" aria-label="Следующая пара">
             <span class="next-lesson-label">Следующая пара</span>
             <div id="next-lesson-content"></div>
@@ -228,10 +268,22 @@
 
         <!-- Bottom Navigation -->
         <nav class="profile-nav" role="navigation" aria-label="Главное меню">
-            <a href="/" class="nav-link active" aria-current="page" aria-label="Расписание"><i class="fas fa-th-large" aria-hidden="true"></i></a>
-            <a href="/academics.html" class="nav-link" aria-label="Предметы"><i class="fas fa-book" aria-hidden="true"></i></a>
-            <a href="/ratings.html" class="nav-link" aria-label="Рейтинг"><i class="fas fa-star" aria-hidden="true"></i></a>
-            <a href="/profile.html" class="nav-link" aria-label="Профиль"><i class="fas fa-user" aria-hidden="true"></i></a>
+            <a href="/" class="nav-link active" aria-current="page" aria-label="Главная">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>Главная</span>
+            </a>
+            <a href="/academics.html" class="nav-link" aria-label="Курсы">
+                <i class="fas fa-book" aria-hidden="true"></i>
+                <span>Курсы</span>
+            </a>
+            <a href="/ratings.html" class="nav-link" aria-label="Рейтинг">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>Рейтинг</span>
+            </a>
+            <a href="/profile.html" class="nav-link" aria-label="Профиль">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <span>Профиль</span>
+            </a>
         </nav>
     </div>
 
