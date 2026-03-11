@@ -9,7 +9,6 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
-from starlette.requests import Request
 
 from app.config import APP_VERSION, BASE_DIR, CORS_ORIGINS, ENV, IS_PRODUCTION, LOG_JSON, SENTRY_DSN
 from app.database import database, init_db

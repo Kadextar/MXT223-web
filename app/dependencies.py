@@ -39,9 +39,9 @@ async def get_current_user(authorization: str = Header(None)):
         }
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
         logger.exception("Get user error")
-        raise HTTPException(status_code=500, detail="Server error")
+        raise HTTPException(status_code=500, detail="Server error") from e
 
 async def require_admin(authorization: str = Header(None)):
     """Dependency to check if user is admin"""
@@ -75,6 +75,6 @@ async def require_admin(authorization: str = Header(None)):
         return student
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
         logger.exception("Admin check error")
-        raise HTTPException(status_code=500, detail="Server error")
+        raise HTTPException(status_code=500, detail="Server error") from e
