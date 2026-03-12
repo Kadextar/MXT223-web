@@ -2,7 +2,8 @@ from typing import Optional
 
 from fastapi import APIRouter
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
-from app.config import BASE_DIR, APP_VERSION, ENV, REDIS_URL
+
+from app.config import APP_VERSION, BASE_DIR, ENV, REDIS_URL
 from app.database import database
 
 router = APIRouter(tags=["Pages"])
@@ -49,6 +50,7 @@ PAGE_ROUTES = [
 async def metrics():
     """Prometheus metrics (request count, error count)."""
     from fastapi.responses import PlainTextResponse
+
     from app.metrics import get_prometheus_export
     return PlainTextResponse(get_prometheus_export(), media_type="text/plain; charset=utf-8")
 

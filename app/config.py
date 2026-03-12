@@ -1,7 +1,8 @@
-from pathlib import Path
 import os
-from dotenv import load_dotenv
 from datetime import datetime
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -12,7 +13,7 @@ def _get_version() -> str:
     """Single source of truth: read from pyproject.toml or fallback."""
     import re
     try:
-        with open(BASE_DIR / "pyproject.toml", "r", encoding="utf-8") as f:
+        with open(BASE_DIR / "pyproject.toml", encoding="utf-8") as f:
             content = f.read()
         m = re.search(r'^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
         return m.group(1) if m else "1.0.0"

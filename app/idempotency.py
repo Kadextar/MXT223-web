@@ -2,7 +2,7 @@
 import time
 from typing import Any, Optional
 
-from fastapi import Header, HTTPException, Request
+from fastapi import Header, Request
 
 # key -> (status_code, response_body, expiry_time)
 _store: dict[str, tuple[int, Any, float]] = {}

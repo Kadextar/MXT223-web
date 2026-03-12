@@ -1,5 +1,6 @@
 import databases
-from app.config import DATABASE_URL, DATABASE_CONNECT_TIMEOUT
+
+from app.config import DATABASE_CONNECT_TIMEOUT, DATABASE_URL
 from app.logging_config import logger
 
 # Add connect_timeout for PostgreSQL
@@ -113,7 +114,7 @@ async def init_db():
     await database.execute(query)
 
     # Exam reminders (push "завтра экзамен" for users who subscribed)
-    await database.execute(f"""
+    await database.execute("""
         CREATE TABLE IF NOT EXISTS exam_reminders (
             student_id TEXT NOT NULL,
             exam_id INTEGER NOT NULL,
@@ -166,7 +167,7 @@ async def init_db():
         pass
 
     # User favorites (subjects) — sync across devices
-    await database.execute(f"""
+    await database.execute("""
         CREATE TABLE IF NOT EXISTS user_favorites (
             student_id TEXT NOT NULL,
             subject_name TEXT NOT NULL,

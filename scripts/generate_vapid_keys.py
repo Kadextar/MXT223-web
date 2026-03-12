@@ -1,8 +1,9 @@
 """
 Generate VAPID keys for web push notifications
 """
-from py_vapid import Vapid
 import base64
+
+from py_vapid import Vapid
 
 # Generate VAPID keys
 vapid = Vapid()
@@ -25,7 +26,7 @@ print("=" * 60)
 print("\nAdd these to your .env file:\n")
 print(f"VAPID_PUBLIC_KEY={public_key_b64}")
 print(f"VAPID_PRIVATE_KEY={private_pem.strip()}")
-print(f"VAPID_CLAIM_EMAIL=mailto:admin@mxt223.com")
+print("VAPID_CLAIM_EMAIL=mailto:admin@mxt223.com")
 print("\n" + "=" * 60)
 print("\nIMPORTANT: Keep the private key secret!")
 print("=" * 60)

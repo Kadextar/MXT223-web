@@ -1,21 +1,20 @@
 """Rate limiting for auth and sensitive endpoints."""
 import time
 from collections import defaultdict
-from typing import Tuple
 
-from fastapi import Request, HTTPException
+from fastapi import HTTPException, Request
 
 from app.config import (
-    RATE_LIMIT_REQUESTS,
-    RATE_LIMIT_WINDOW_SECONDS,
     API_RATE_LIMIT_REQUESTS,
     API_RATE_LIMIT_WINDOW_SECONDS,
+    RATE_LIMIT_REQUESTS,
+    RATE_LIMIT_WINDOW_SECONDS,
 )
 from app.logging_config import logger
 
 # key -> (count, window_start)
-_store: dict[str, Tuple[int, float]] = defaultdict(lambda: (0, 0.0))
-_api_store: dict[str, Tuple[int, float]] = defaultdict(lambda: (0, 0.0))
+_store: dict[str, tuple[int, float]] = defaultdict(lambda: (0, 0.0))
+_api_store: dict[str, tuple[int, float]] = defaultdict(lambda: (0, 0.0))
 
 
 def _client_key(request: Request) -> str:
@@ -60,7 +59,7 @@ def check_api_rate_limit(request: Request) -> None:
 
 
 # Per-user rate limit (for change-password, admin actions)
-_user_store: dict[str, Tuple[int, float]] = defaultdict(lambda: (0, 0.0))
+_user_store: dict[str, tuple[int, float]] = defaultdict(lambda: (0, 0.0))
 USER_RATE_LIMIT = 5
 USER_RATE_WINDOW = 60
 

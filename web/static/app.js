@@ -456,6 +456,8 @@ function renderSchedule() {
 
     lessons.sort((a, b) => a.pair - b.pair);
 
+    const fragment = document.createDocumentFragment();
+
     lessons.forEach(lesson => {
         const time = PAIR_TIMES[lesson.pair] || "—";
         const typeClass = lesson.type === 'lecture' ? 'lecture' : 'seminar';
@@ -505,8 +507,10 @@ function renderSchedule() {
                 </div>
             </div>
         `;
-        container.appendChild(card);
+        fragment.appendChild(card);
     });
+
+    container.appendChild(fragment);
 }
 // (Original Listeners for Week Navigation below)
 function updateLiveStatus() {
@@ -554,13 +558,16 @@ function updateLiveStatus() {
         }
     }
 
-    // Очищаем активные классы
-    document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
+    // Очищаем активные классы (только если нужно)
+    const currentlyActive = document.querySelector('.lesson-card.active');
+    if (currentlyActive && (!activeLesson || currentlyActive.id !== `lesson-${activeLesson.pair}`)) {
+        currentlyActive.classList.remove('active');
+    }
 
     if (activeLesson) {
         // Подсвечиваем карточку
         const card = document.getElementById(`lesson-${activeLesson.pair}`);
-        if (card) card.classList.add('active');
+        if (card && !card.classList.contains('active')) card.classList.add('active');
 
         // Считаем прогресс
         const totalDuration = activeLesson.end - activeLesson.start;
@@ -569,22 +576,33 @@ function updateLiveStatus() {
         const minutesLeft = Math.ceil((totalDuration - elapsed) / (1000 * 60));
 
         dom.liveWidget.classList.remove('hidden');
-        dom.liveWidget.innerHTML = `
-            <div class="live-header">
-                <div class="live-badge">
-                    <div class="live-dot"></div>
-                    Сейчас идёт
+
+        // Create or update DOM conditionally
+        if (dom.liveWidget.dataset.lessonId !== `active-${activeLesson.pair}`) {
+            dom.liveWidget.innerHTML = `
+                <div class="live-header">
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        Сейчас идёт
+                    </div>
+                    <div class="live-time" id="live-time-text">${minutesLeft} мин до конца</div>
                 </div>
-                <div class="live-time">${minutesLeft} мин до конца</div>
-            </div>
-            <div class="live-subject">${activeLesson.subject}</div>
-            <div class="live-location">
-                <i class="fas fa-map-marker-alt"></i> ${activeLesson.room} • ${activeLesson.teacher}
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: ${percent}%"></div>
-            </div>
-        `;
+                <div class="live-subject">${activeLesson.subject}</div>
+                <div class="live-location">
+                    <i class="fas fa-map-marker-alt"></i> ${activeLesson.room} • ${activeLesson.teacher}
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="live-progress-bar" style="width: ${percent}%"></div>
+                </div>
+            `;
+            dom.liveWidget.dataset.lessonId = `active-${activeLesson.pair}`;
+        } else {
+            // Update only dynamic parts
+            const timeText = document.getElementById('live-time-text');
+            if (timeText) timeText.textContent = `${minutesLeft} мин до конца`;
+            const progressBar = document.getElementById('live-progress-bar');
+            if (progressBar) progressBar.style.width = `${percent}%`;
+        }
     } else if (nextLesson) {
         // Если перемена (до следующей пары < 40 минут)
         const diffMs = nextLesson.start - now;
@@ -592,39 +610,51 @@ function updateLiveStatus() {
 
         if (diffMinutes <= 40) {
             dom.liveWidget.classList.remove('hidden');
-            dom.liveWidget.innerHTML = `
-                <div class="live-header">
-                    <div class="live-badge" style="color: #60a5fa; background: rgba(96, 165, 250, 0.1);">
-                        <i class="fas fa-coffee"></i> Перемена
+            if (dom.liveWidget.dataset.lessonId !== `break-${nextLesson.pair}`) {
+                dom.liveWidget.innerHTML = `
+                    <div class="live-header">
+                        <div class="live-badge" style="color: #60a5fa; background: rgba(96, 165, 250, 0.1);">
+                            <i class="fas fa-coffee"></i> Перемена
+                        </div>
+                        <div class="live-time" id="live-time-text">Начало через ${diffMinutes} мин</div>
                     </div>
-                    <div class="live-time">Начало через ${diffMinutes} мин</div>
-                </div>
-                <div class="live-subject">Далее: ${nextLesson.subject}</div>
-                <div class="live-location">
-                     <i class="fas fa-walking"></i> ${nextLesson.room}
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: 0%"></div>
-                </div>
-           `;
+                    <div class="live-subject">Далее: ${nextLesson.subject}</div>
+                    <div class="live-location">
+                         <i class="fas fa-walking"></i> ${nextLesson.room}
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+               `;
+               dom.liveWidget.dataset.lessonId = `break-${nextLesson.pair}`;
+            } else {
+                const timeText = document.getElementById('live-time-text');
+                if (timeText) timeText.textContent = `Начало через ${diffMinutes} мин`;
+            }
         } else {
             dom.liveWidget.classList.add('hidden');
+            dom.liveWidget.dataset.lessonId = '';
         }
     } else {
         dom.liveWidget.classList.add('hidden');
+        dom.liveWidget.dataset.lessonId = '';
     }
     // Блок «Следующая пара» (время, предмет, аудитория)
     if (dom.nextLessonWidget && nextLesson) {
         const timeStr = PAIR_TIMES[nextLesson.pair] ? PAIR_TIMES[nextLesson.pair].split(' - ')[0] : '—';
         dom.nextLessonWidget.classList.remove('hidden');
-        dom.nextLessonWidget.innerHTML = `
-            <span class="next-lesson-label">Следующая пара</span>
-            <span class="next-lesson-time">${timeStr}</span>
-            <span class="next-lesson-subject">${nextLesson.subject}</span>
-            <span class="next-lesson-room"><i class="fas fa-map-marker-alt"></i> ${nextLesson.room}</span>
-        `;
+        if (dom.nextLessonWidget.dataset.lessonId !== `next-${nextLesson.pair}`) {
+            dom.nextLessonWidget.innerHTML = `
+                <span class="next-lesson-label">Следующая пара</span>
+                <span class="next-lesson-time">${timeStr}</span>
+                <span class="next-lesson-subject">${nextLesson.subject}</span>
+                <span class="next-lesson-room"><i class="fas fa-map-marker-alt"></i> ${nextLesson.room}</span>
+            `;
+            dom.nextLessonWidget.dataset.lessonId = `next-${nextLesson.pair}`;
+        }
     } else if (dom.nextLessonWidget) {
         dom.nextLessonWidget.classList.add('hidden');
+        dom.nextLessonWidget.dataset.lessonId = '';
     }
     updatePersonalTip();
 }
@@ -749,7 +779,8 @@ async function init() {
 
     // 4. Live Update and widgets
     updateLiveStatus();
-    setInterval(updateLiveStatus, 30000);
+    if (window.liveStatusInterval) clearInterval(window.liveStatusInterval);
+    window.liveStatusInterval = setInterval(updateLiveStatus, 30000);
     loadNextLessonWidget();
     loadVisitors();
 
@@ -846,7 +877,8 @@ async function init() {
         }
         if (btn) btn.disabled = false;
     });
-    setInterval(updateRateAfterLessonBanner, 60 * 1000);
+    if (window.rateBannerInterval) clearInterval(window.rateBannerInterval);
+    window.rateBannerInterval = setInterval(updateRateAfterLessonBanner, 60 * 1000);
     updatePersonalTip();
     loadPoll();
     initSocialMood();
@@ -1089,9 +1121,13 @@ function initLessonReminders() {
     }
 }
 
+let reminderInterval;
 function scheduleReminderCheck() {
     const minutes = parseInt(localStorage.getItem('reminder_minutes') || '15', 10);
     if (minutes <= 0) return;
+
+    if (reminderInterval) clearInterval(reminderInterval);
+
     const check = () => {
         const now = new Date();
         const dayIdx = now.getDay();
@@ -1104,16 +1140,27 @@ function scheduleReminderCheck() {
             if (!timeRange) continue;
             const [startStr] = timeRange.split(' - ');
             const start = parseTime(startStr, now);
+
             if (start > now && start <= inM) {
-                if (!document.hidden) return;
+                const todayStr = now.toISOString().split('T')[0];
+                const cacheKey = `reminded_${lesson.pair}_${todayStr}`;
+
+                if (localStorage.getItem(cacheKey)) continue;
+
+                if (!document.hidden) {
+                    // Even if we don't notify visually due to the tab being open, mark as reminded
+                    localStorage.setItem(cacheKey, '1');
+                    return;
+                }
                 try {
                     new Notification(`Через ${minutes} мин пара`, { body: `${lesson.subject}, ${lesson.room}`, icon: '/static/icons/icon-192x192.png' });
+                    localStorage.setItem(cacheKey, '1');
                 } catch (_) { }
                 return;
             }
         }
     };
-    setInterval(check, 60 * 1000);
+    reminderInterval = setInterval(check, 60 * 1000);
     check();
 }
 
