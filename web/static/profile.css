@@ -19,6 +19,13 @@
     padding: var(--space-6);
     margin-bottom: var(--space-6);
     box-shadow: var(--shadow-sm);
+    transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 30px rgba(6, 10, 18, 0.35);
 }
 
 .profile-section {
@@ -40,7 +47,7 @@
 }
 
 .profile-inline-link {
-    color: var(--primary, #6366f1);
+    color: var(--primary, #2ee5a8);
     text-decoration: none;
     font-weight: 500;
 }
@@ -86,8 +93,12 @@
     justify-content: center;
     cursor: pointer;
     color: #fff;
-    box-shadow: 0 4px 12px rgba(91, 124, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(46, 229, 168, 0.35);
     transition: transform 0.2s var(--ease-out);
+}
+
+.edit-avatar-btn i {
+    font-size: 0.8rem;
 }
 
 .edit-avatar-btn:hover {
@@ -100,6 +111,82 @@
     font-weight: 700;
     color: var(--text-main);
     letter-spacing: -0.02em;
+}
+
+/* Profile hero */
+.profile-hero {
+    margin-bottom: 24px;
+}
+
+.profile-hero-inner {
+    padding: 30px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.profile-hero-avatar {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.profile-hero-avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 24px rgba(6, 10, 18, 0.45);
+}
+
+.profile-hero-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.profile-hero-tag {
+    margin-bottom: 16px;
+    background: var(--primary-dim);
+    color: var(--primary);
+    border: 1px solid rgba(46, 229, 168, 0.3);
+}
+
+.profile-hero-stats {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    justify-content: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 16px;
+}
+
+.profile-hero-stat {
+    text-align: center;
+}
+
+.profile-hero-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.profile-hero-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.profile-hero-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.profile-countdown-card {
+    background: linear-gradient(135deg, rgba(91, 214, 255, 0.12), rgba(46, 229, 168, 0.08));
+    border: 1px solid rgba(91, 214, 255, 0.25);
 }
 
 .student-id {
@@ -284,7 +371,7 @@
     outline: none;
     border-color: var(--primary);
     background: rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 15px rgba(91, 214, 255, 0.1);
 }
 
 .password-wrapper {
@@ -324,12 +411,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(91, 214, 255, 0.3);
 }
 
 .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 8px 25px rgba(91, 214, 255, 0.5);
 }
 
 .logout-btn {
@@ -413,7 +500,7 @@
 
 .avatar-option.selected {
     border-color: var(--primary);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 20px rgba(91, 214, 255, 0.4);
 }
 
 /* Light Mode Overrides for Profile Specifics */
@@ -456,7 +543,7 @@ body.light-mode .toggle-password {
 body.light-mode .form-group input:focus {
     border-color: var(--primary);
     background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(91, 214, 255, 0.1);
 }
 
 /* New "Beautiful" Button Styles */
@@ -474,13 +561,12 @@ body.light-mode .form-group input:focus {
 
 /* Notification Button: Soft Violet/Indigo Gradient */
 #enable-notifications-btn {
-    background: linear-gradient(135deg, #818cf8, #6366f1) !important;
-    /* Soft Indigo */
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    background: linear-gradient(135deg, var(--secondary), var(--primary)) !important;
+    box-shadow: 0 4px 15px rgba(91, 214, 255, 0.25);
 }
 
 #enable-notifications-btn:hover {
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 6px 16px rgba(46, 229, 168, 0.35);
     transform: translateY(-2px);
 }
 

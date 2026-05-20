@@ -12,23 +12,22 @@
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/academics.css?v=78">
     <link rel="stylesheet" href="/static/exams.css">
-    <meta name="theme-color" content="#ecfdf5">
+    <meta name="theme-color" content="#0b0d11">
 </head>
 
 <body>
     <div class="background-globes">
-        <div class="globe globe-1" style="background: rgba(16, 185, 129, 0.2);"></div>
-        <div class="globe globe-2" style="background: rgba(5, 150, 105, 0.2);"></div>
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
     </div>
 
     <div class="app-container">
-        <header class="header-greeting-container" style="padding-top: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <h1 class="greeting-date" style="font-size: 1.8rem; margin: 0;">Мои Курсы</h1>
-                <button class="nav-btn" aria-label="Поиск" style="width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border);">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
+        <header class="page-header">
+            <div style="width: 40px;"></div>
+            <h1 class="page-header-title">Мои Курсы</h1>
+            <button class="icon-btn-round" aria-label="Поиск">
+                <i class="fas fa-search"></i>
+            </button>
         </header>
 
         <!-- New Premium Tabs -->
@@ -38,7 +37,7 @@
             <button type="button" class="tab-btn" id="tab-btn-optional">Факультативы</button>
         </div>
 
-        <main class="academics-container" style="padding-bottom: 100px; margin-top: 20px;">
+        <main class="academics-container">
 
             <!-- VIEW: Предметы (Курсы) -->
             <div id="subjects-view">
@@ -92,20 +91,18 @@
             <!-- VIEW: Экзамены и Дедлайны -->
             <div id="exams-view" class="hidden">
                 <div class="section-title" style="margin: 0 20px 15px;">Мои дедлайны</div>
-                <div class="deadline-form-container"
-                    style="margin: 0 20px 20px; background: var(--card-bg); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <div class="deadline-form-container surface-card" style="margin: 0 20px 20px;">
                     <form id="deadline-form" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <input type="text" id="deadline-title" placeholder="Что нужно сделать?" required
-                            class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
-                        <input type="date" id="deadline-date" required class="form-group"
+                            class="form-input" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                        <input type="date" id="deadline-date" required class="form-input"
                             style="width: auto; margin-bottom: 0;">
                         <button type="submit" class="submit-btn"
                             style="width: auto; padding: 10px 15px; font-size: 0.9rem;">Добавить</button>
                     </form>
                 </div>
 
-                <ul id="deadlines-list" class="deadlines-list"
-                    style="margin: 0 20px 30px; padding: 0; list-style: none;">
+                <ul id="deadlines-list" class="deadlines-list">
                     <li class="empty-state text-muted" style="text-align: center;">Загрузка дедлайнов...</li>
                 </ul>
 

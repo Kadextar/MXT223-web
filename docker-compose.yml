@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: mxt223-app
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the database file directly to persist schedule data on the VPS host
+      - ./schedule.db:/app/schedule.db
+    env_file:
+      - .env
+    environment:
+      - ENV=production
+      - PORT=8000

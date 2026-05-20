@@ -424,6 +424,7 @@ function renderSchedule() {
 
     // If it's a weekend (or no day selected)
     if (state.selectedDay === 'weekend') {
+        renderTimeline([]);
         container.innerHTML = `
             <div class="empty-state empty-state-friendly">
                 <div class="empty-icon">😌</div>
@@ -442,6 +443,7 @@ function renderSchedule() {
     }
 
     if (lessons.length === 0) {
+        renderTimeline([]);
         const favMsg = state.showFavoritesOnly
             ? '<p>В избранном ничего нет</p><p class="subtitle">Отметьте предметы звёздочкой на карточках</p>'
             : '<p>В этот день занятий нет</p><p class="subtitle">Выберите другой день или неделю</p>';
@@ -456,12 +458,15 @@ function renderSchedule() {
 
     lessons.sort((a, b) => a.pair - b.pair);
 
+    // ── Render new iOS timeline layout ──
+    renderTimeline(lessons);
+
+    // ── Also render classic cards (kept for compatibility, hidden by CSS) ──
     lessons.forEach(lesson => {
         const time = PAIR_TIMES[lesson.pair] || "—";
         const typeClass = lesson.type === 'lecture' ? 'lecture' : 'seminar';
         const typeLabel = lesson.type === 'lecture' ? 'Лекция' : 'Семинар';
 
-        // Check for note (escape for XSS)
         const note = notes[lesson.subject];
         const noteHtml = note ? `<div class="lesson-note"><i class="fas fa-sticky-note"></i> ${escapeHtml(note)}</div>` : '';
         const noteBtnClass = note ? 'active' : '';
@@ -508,23 +513,100 @@ function renderSchedule() {
         container.appendChild(card);
     });
 }
+
+// ── iOS Timeline Renderer ──
+const TYPE_META = {
+    lecture:  { label: 'ЛЕКЦИЯ',   dotClass: 'type-dot-lecture' },
+    seminar:  { label: 'СЕМИНАР',  dotClass: 'type-dot-seminar' },
+    practice: { label: 'ПРАКТИКА', dotClass: 'type-dot-practice' },
+};
+
+function renderTimeline(allLessons) {
+    const timeline = document.getElementById('schedule-timeline');
+    const sectionTitle = document.getElementById('next-section-title');
+    if (!timeline) return;
+
+    // Determine if we're viewing today
+    const now = new Date();
+    const realWeek = getWeekNumber(now);
+    const todayDayName = DAYS_MAP[now.getDay()];
+    const isToday = state.selectedDay === todayDayName && state.currentWeek === realWeek;
+
+    let lessons = allLessons;
+
+    if (isToday) {
+        // Only show lessons that haven't ended yet
+        lessons = allLessons.filter(lesson => {
+            const timeRange = PAIR_TIMES[lesson.pair];
+            if (!timeRange) return true;
+            const endStr = timeRange.split(' - ')[1];
+            if (!endStr) return true;
+            const end = parseTime(endStr.trim(), now);
+            return end > now;
+        });
+
+        if (sectionTitle) {
+            sectionTitle.textContent = lessons.length > 0 ? 'Далее сегодня' : 'Занятия окончены';
+        }
+    } else {
+        if (sectionTitle) sectionTitle.textContent = 'Расписание дня';
+    }
+
+    timeline.innerHTML = '';
+
+    if (lessons.length === 0) {
+        const msg = isToday
+            ? '<p>Все занятия на сегодня окончены 🎉</p><p class="subtitle">Отдыхай!</p>'
+            : '<p>В этот день занятий нет</p><p class="subtitle">Выберите другой день или неделю</p>';
+        timeline.innerHTML = `
+            <div class="empty-state empty-state-friendly" style="margin: 0 0 20px;">
+                <div class="empty-icon">${isToday ? '✅' : '📅'}</div>
+                ${msg}
+            </div>`;
+        return;
+    }
+
+    lessons.forEach(lesson => {
+        const time = PAIR_TIMES[lesson.pair] || '—';
+        const startTime = time.split(' - ')[0];
+        const meta = TYPE_META[lesson.type] || TYPE_META.lecture;
+
+        const row = document.createElement('div');
+        row.className = 'timeline-row';
+        row.innerHTML = `
+            <div class="timeline-time">${startTime}</div>
+            <div class="timeline-card">
+                <div class="timeline-card-left">
+                    <span class="timeline-card-type">
+                        <span class="timeline-type-dot ${meta.dotClass}"></span>
+                        ${meta.label}
+                    </span>
+                    <span class="timeline-card-subject">${escapeHtml(lesson.subject)}</span>
+                    <span class="timeline-card-meta">${escapeHtml(lesson.room)} • ${escapeHtml(lesson.teacher)}</span>
+                </div>
+                <i class="fas fa-chevron-right timeline-card-chevron"></i>
+            </div>
+        `;
+        timeline.appendChild(row);
+    });
+}
 // (Original Listeners for Week Navigation below)
 function updateLiveStatus() {
     const now = new Date();
-    // Определяем текущий день недели
     let dayIdx = now.getDay();
     const currentDayName = DAYS_MAP[dayIdx];
 
-    // Показывать Live статус ТОЛЬКО если пользователь смотрит на расписание СЕГОДНЯШНЕГО дня
-    // И если мы на текущей неделе
-    const realWeek = getWeekNumber(now);
+    const nowSectionHeader = document.getElementById('now-section-header');
+    const nowCard = document.getElementById('now-card');
 
-    // Но state.currentDate может отличаться от now, если мы переключали недели
-    // Сравним визуальный день с реальным
+    // Only show live section on the current real day + current real week
+    const realWeek = getWeekNumber(now);
     const visualIsToday = state.selectedDay === currentDayName && state.currentWeek === realWeek;
 
     if (!visualIsToday) {
-        dom.liveWidget.classList.add('hidden');
+        if (nowSectionHeader) nowSectionHeader.style.display = 'none';
+        if (nowCard) nowCard.style.display = 'none';
+        if (dom.liveWidget) dom.liveWidget.classList.add('hidden');
         if (dom.nextLessonWidget) dom.nextLessonWidget.classList.add('hidden');
         document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
         return;
@@ -535,18 +617,15 @@ function updateLiveStatus() {
     let nextLesson = null;
 
     for (const lesson of lessons) {
-        const timeRange = PAIR_TIMES[lesson.pair]; // "09:30 - 10:50"
+        const timeRange = PAIR_TIMES[lesson.pair];
         if (!timeRange) continue;
-
         const [startStr, endStr] = timeRange.split(' - ');
         const start = parseTime(startStr, now);
         const end = parseTime(endStr, now);
-
         if (now >= start && now <= end) {
             activeLesson = { ...lesson, start, end };
             break;
         }
-
         if (now < start) {
             if (!nextLesson || start < nextLesson.start) {
                 nextLesson = { ...lesson, start, end };
@@ -554,66 +633,60 @@ function updateLiveStatus() {
         }
     }
 
-    // Очищаем активные классы
+    // Clear active highlights on old cards
     document.querySelectorAll('.lesson-card').forEach(el => el.classList.remove('active'));
 
+    // ── Update the "Сейчас" Now Card ──
     if (activeLesson) {
-        // Подсвечиваем карточку
+        // Show the now-card section
+        if (nowSectionHeader) nowSectionHeader.style.display = '';
+        if (nowCard) nowCard.style.display = '';
+
+        // Populate with real data
+        const timeRange = PAIR_TIMES[activeLesson.pair] || '—';
+        const typeLabel = activeLesson.type === 'seminar' ? 'СЕМИНАР' :
+                          activeLesson.type === 'practice' ? 'ПРАКТИКА' : 'ЛЕКЦИЯ';
+
+        const tagEl = document.getElementById('now-card-tag');
+        const titleEl = document.getElementById('now-card-title');
+        const timeEl = document.getElementById('now-card-time');
+        const roomEl = document.getElementById('now-card-room');
+        const teacherEl = document.getElementById('now-card-teacher');
+
+        if (tagEl) tagEl.textContent = typeLabel;
+        if (titleEl) titleEl.textContent = activeLesson.subject;
+        if (timeEl) timeEl.innerHTML = `<i class="far fa-clock"></i> ${timeRange}`;
+        if (roomEl) roomEl.innerHTML = `<i class="fas fa-location-dot"></i> Ауд. ${activeLesson.room}`;
+        if (teacherEl) teacherEl.textContent = activeLesson.teacher;
+
+        // Highlight lesson card in old view
         const card = document.getElementById(`lesson-${activeLesson.pair}`);
         if (card) card.classList.add('active');
 
-        // Считаем прогресс
+        // Progress info in old live-widget (keep for compat)
         const totalDuration = activeLesson.end - activeLesson.start;
         const elapsed = now - activeLesson.start;
-        const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
         const minutesLeft = Math.ceil((totalDuration - elapsed) / (1000 * 60));
-
-        dom.liveWidget.classList.remove('hidden');
-        dom.liveWidget.innerHTML = `
-            <div class="live-header">
-                <div class="live-badge">
-                    <div class="live-dot"></div>
-                    Сейчас идёт
-                </div>
-                <div class="live-time">${minutesLeft} мин до конца</div>
-            </div>
-            <div class="live-subject">${activeLesson.subject}</div>
-            <div class="live-location">
-                <i class="fas fa-map-marker-alt"></i> ${activeLesson.room} • ${activeLesson.teacher}
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: ${percent}%"></div>
-            </div>
-        `;
-    } else if (nextLesson) {
-        // Если перемена (до следующей пары < 40 минут)
-        const diffMs = nextLesson.start - now;
-        const diffMinutes = Math.ceil(diffMs / (1000 * 60));
-
-        if (diffMinutes <= 40) {
+        if (dom.liveWidget) {
             dom.liveWidget.classList.remove('hidden');
             dom.liveWidget.innerHTML = `
                 <div class="live-header">
-                    <div class="live-badge" style="color: #60a5fa; background: rgba(96, 165, 250, 0.1);">
-                        <i class="fas fa-coffee"></i> Перемена
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        Сейчас идёт
                     </div>
-                    <div class="live-time">Начало через ${diffMinutes} мин</div>
+                    <div class="live-time">${minutesLeft} мин до конца</div>
                 </div>
-                <div class="live-subject">Далее: ${nextLesson.subject}</div>
-                <div class="live-location">
-                     <i class="fas fa-walking"></i> ${nextLesson.room}
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: 0%"></div>
-                </div>
-           `;
-        } else {
-            dom.liveWidget.classList.add('hidden');
+            `;
         }
     } else {
-        dom.liveWidget.classList.add('hidden');
+        // No active lesson — hide the "Сейчас" section
+        if (nowSectionHeader) nowSectionHeader.style.display = 'none';
+        if (nowCard) nowCard.style.display = 'none';
+        if (dom.liveWidget) dom.liveWidget.classList.add('hidden');
     }
-    // Блок «Следующая пара» (время, предмет, аудитория)
+
+    // ── Update "Следующая пара" widget ──
     if (dom.nextLessonWidget && nextLesson) {
         const timeStr = PAIR_TIMES[nextLesson.pair] ? PAIR_TIMES[nextLesson.pair].split(' - ')[0] : '—';
         dom.nextLessonWidget.classList.remove('hidden');
@@ -628,6 +701,7 @@ function updateLiveStatus() {
     }
     updatePersonalTip();
 }
+
 
 function updatePersonalTip() {
     const el = document.getElementById('personal-tip');
@@ -715,24 +789,24 @@ function applySmartBackgrounds() {
 
     if (hour >= 6 && hour < 12) {
         // Утро: Нежные, рассветные тона
-        root.style.setProperty('--globe-color-1', 'rgba(253, 164, 175, 0.4)'); /* Rose */
-        root.style.setProperty('--globe-color-2', 'rgba(125, 211, 252, 0.4)'); /* Sky */
-        root.style.setProperty('--globe-color-3', 'rgba(253, 230, 138, 0.3)'); /* Amber */
+        root.style.setProperty('--globe-color-1', 'rgba(255, 181, 71, 0.35)'); /* Warm */
+        root.style.setProperty('--globe-color-2', 'rgba(91, 214, 255, 0.35)'); /* Sky */
+        root.style.setProperty('--globe-color-3', 'rgba(46, 229, 168, 0.28)'); /* Teal */
     } else if (hour >= 12 && hour < 18) {
         // День: Энергичные, яркие
-        root.style.setProperty('--globe-color-1', 'rgba(59, 130, 246, 0.3)');  /* Blue */
-        root.style.setProperty('--globe-color-2', 'rgba(139, 92, 246, 0.3)');  /* Purple */
-        root.style.setProperty('--globe-color-3', 'rgba(16, 185, 129, 0.2)');  /* Emerald */
+        root.style.setProperty('--globe-color-1', 'rgba(46, 229, 168, 0.3)');  /* Teal */
+        root.style.setProperty('--globe-color-2', 'rgba(91, 214, 255, 0.3)');  /* Sky */
+        root.style.setProperty('--globe-color-3', 'rgba(255, 181, 71, 0.22)'); /* Warm */
     } else if (hour >= 18 && hour < 23) {
         // Вечер: Закатные, спокойные
-        root.style.setProperty('--globe-color-1', 'rgba(249, 115, 22, 0.3)');  /* Orange */
-        root.style.setProperty('--globe-color-2', 'rgba(168, 85, 247, 0.3)');  /* Purple */
-        root.style.setProperty('--globe-color-3', 'rgba(236, 72, 153, 0.2)');  /* Pink */
+        root.style.setProperty('--globe-color-1', 'rgba(255, 181, 71, 0.3)');  /* Warm */
+        root.style.setProperty('--globe-color-2', 'rgba(46, 229, 168, 0.28)'); /* Teal */
+        root.style.setProperty('--globe-color-3', 'rgba(91, 214, 255, 0.22)'); /* Sky */
     } else {
         // Ночь: Темные, глубокие
-        root.style.setProperty('--globe-color-1', 'rgba(30, 58, 138, 0.4)');   /* Deep Blue */
-        root.style.setProperty('--globe-color-2', 'rgba(88, 28, 135, 0.4)');   /* Deep Purple */
-        root.style.setProperty('--globe-color-3', 'rgba(55, 65, 81, 0.3)');    /* Slate */
+        root.style.setProperty('--globe-color-1', 'rgba(13, 39, 46, 0.42)');   /* Deep Teal */
+        root.style.setProperty('--globe-color-2', 'rgba(12, 33, 43, 0.42)');   /* Deep Sky */
+        root.style.setProperty('--globe-color-3', 'rgba(20, 29, 36, 0.35)');   /* Slate */
     }
 }
 

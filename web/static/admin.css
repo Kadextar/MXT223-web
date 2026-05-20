@@ -78,7 +78,7 @@
 .tab-btn.active {
     background: var(--primary);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(91, 124, 255, 0.35);
+    box-shadow: 0 4px 14px rgba(46, 229, 168, 0.3);
 }
 
 /* ----- Sections ----- */
@@ -141,9 +141,9 @@
 }
 
 .stat-icon-blue {
-    background: rgba(91, 124, 255, 0.2);
-    color: #7c9aff;
-    box-shadow: 0 0 20px rgba(91, 124, 255, 0.15);
+    background: rgba(91, 214, 255, 0.2);
+    color: var(--secondary);
+    box-shadow: 0 0 20px rgba(91, 214, 255, 0.15);
 }
 
 .stat-icon-amber {
@@ -305,9 +305,9 @@
 }
 
 .btn-add:hover {
-    background: #6b8aff;
+    background: #2acb95;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(91, 124, 255, 0.35);
+    box-shadow: 0 6px 20px rgba(46, 229, 168, 0.3);
 }
 
 .btn-secondary {
@@ -550,7 +550,7 @@ body.light-mode .admin-tabs {
 }
 
 body.light-mode .tab-btn.active {
-    box-shadow: 0 4px 14px rgba(91, 124, 255, 0.25);
+    box-shadow: 0 4px 14px rgba(46, 229, 168, 0.25);
 }
 
 body.light-mode .form-input,

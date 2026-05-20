@@ -13,26 +13,23 @@
     <link rel="stylesheet" href="/static/ratings.css">
     <link rel="stylesheet" href="/static/toast.css">
     <meta name="description" content="Рейтинг преподавателей МХТ-223">
-    <meta name="theme-color" content="#fff7ed">
+    <meta name="theme-color" content="#0b0d11">
 </head>
 
 <body>
     <div class="background-globes">
-        <div class="globe globe-1" style="background: rgba(245, 158, 11, 0.2);"></div>
-        <div class="globe globe-3" style="background: rgba(251, 191, 36, 0.2);"></div>
+        <div class="globe globe-1"></div>
+        <div class="globe globe-3"></div>
     </div>
 
     <div class="app-container">
-    <div class="app-container">
-        <header class="header-greeting-container" style="padding-top: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button class="nav-btn" aria-label="Назад" style="width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border);">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <h1 class="greeting-date" style="font-size: 1.5rem; margin: 0; text-align: center; flex: 1;">Рейтинг предметов</h1>
-                <div class="user-avatar-mini" style="width: 40px; height: 40px; border-radius: 50%; background: #ffe4e1; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                    <img src="/static/avatars/1.png" alt="Аватар" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
-                </div>
+        <header class="page-header">
+            <button class="icon-btn-round" aria-label="Назад">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="page-header-title">Рейтинг предметов</h1>
+            <div class="header-avatar">
+                <img src="/static/avatars/1.png" alt="Аватар" onerror="this.style.display='none'">
             </div>
         </header>
 
@@ -43,7 +40,7 @@
             <button class="tab-btn" id="tab-btn-my">Месяц</button>
         </div>
 
-        <main class="ratings-container" style="padding-bottom: 100px; margin-top: 20px;">
+        <main class="ratings-container">
 
             <!-- VIEW: EVALUATION -->
             <div id="evaluation-view">
@@ -86,7 +83,7 @@
                             <div class="podium-rank rank-1">1</div>
                         </div>
                         <div class="podium-base base-1">
-                            <div class="podium-subject-title" style="color:#106cff;">ГОСТИНИЧНЫЙ<br>БИЗНЕС</div>
+                            <div class="podium-subject-title podium-title-primary">ГОСТИНИЧНЫЙ<br>БИЗНЕС</div>
                             <div class="podium-score">4.9</div>
                         </div>
                     </div>
@@ -106,7 +103,7 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0 15px; padding: 0 10px;">
                     <h2 style="font-size: 1.25rem; font-weight: 700;">Список предметов</h2>
-                    <a href="#" style="color: #106cff; font-weight: 600; text-decoration: none;">Все</a>
+                    <a href="#" class="link-primary">Все</a>
                 </div>
 
                 <div id="leaderboard-list">

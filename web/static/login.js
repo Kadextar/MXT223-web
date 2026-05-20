@@ -66,6 +66,19 @@ loginForm.addEventListener('submit', async function (e) {
         }
     } catch (error) {
         console.error('Login error:', error);
+
+        // ── Локальный демо-режим (когда сервер недоступен) ──
+        const DEMO_ID = '1416641616';
+        const DEMO_PASS = 'azamat2026';
+        if (telegramId === DEMO_ID && password === DEMO_PASS) {
+            localStorage.setItem('access_token', 'demo_local');
+            localStorage.setItem('refresh_token', 'demo_local');
+            localStorage.setItem('student_id', DEMO_ID);
+            localStorage.setItem('student_name', 'Азамат');
+            window.location.href = '/';
+            return;
+        }
+
         showToast('Ошибка подключения к серверу', 'error');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Войти';

@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/static/profile.css">
     <link rel="stylesheet" href="/static/toast.css">
     <meta name="description" content="Профиль студента МХТ-223">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0b0d11">
     <style>
         /* Profile Specific Tab Tweaks */
         .academics-tabs {
@@ -88,7 +88,7 @@
         }
 
         body.light-mode input:checked+.slider {
-            background-color: #3b82f6;
+            background-color: var(--primary);
         }
     </style>
 </head>
@@ -101,14 +101,12 @@
     </div>
 
     <div class="app-container">
-        <header class="header-greeting-container" style="padding-top: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <button class="nav-btn" style="visibility: hidden; width: 40px; height: 40px;"></button>
-                <h1 class="greeting-date" style="font-size: 1.5rem; margin: 0; text-align: center; flex: 1;">Профиль</h1>
-                <button class="nav-btn" aria-label="Настройки" style="width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border);">
-                    <i class="fas fa-cog"></i>
-                </button>
-            </div>
+        <header class="page-header">
+            <div style="width: 40px;"></div>
+            <h1 class="page-header-title">Профиль</h1>
+            <button class="icon-btn-round" aria-label="Настройки">
+                <i class="fas fa-cog"></i>
+            </button>
         </header>
 
         <!-- New Premium Tabs -->
@@ -123,36 +121,35 @@
             <!-- VIEW: PROFILE -->
             <div id="profile-view" class="tab-content">
                 <!-- Student Premium Info Card -->
-                <div class="premium-event-card profile-center-card" style="margin-bottom: 24px;">
-                    <div style="padding: 30px 20px 20px; display: flex; flex-direction: column; align-items: center;">
-                        <div class="profile-avatar-container" style="position: relative; margin-bottom: 16px;">
-                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar" loading="lazy" class="profile-avatar-img" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--bg-dark); box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
-                            <button class="edit-avatar-btn" id="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: #106cff; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(16,108,255,0.4);"><i class="fas fa-pen" style="font-size: 0.8rem;"></i></button>
+                <div class="premium-event-card profile-center-card profile-hero">
+                    <div class="profile-hero-inner">
+                        <div class="profile-avatar-container profile-hero-avatar">
+                            <img src="/static/avatars/1.png" alt="Avatar" id="current-avatar" loading="lazy" class="profile-avatar-img profile-hero-avatar-img">
+                            <button class="edit-avatar-btn" id="edit-avatar-btn"><i class="fas fa-pen"></i></button>
                         </div>
-                        <h2 id="student-name" style="font-size: 1.4rem; font-weight: 700; color: white; margin-bottom: 4px;">Загрузка...</h2>
-                        <span class="course-tag" style="background: rgba(16,108,255,0.15); margin-bottom: 16px;">МХТ-223</span>
+                        <h2 id="student-name" class="profile-hero-name">Загрузка...</h2>
+                        <span class="course-tag profile-hero-tag">МХТ-223</span>
                         
-                        <div class="profile-stats-row" style="display: flex; gap: 24px; width: 100%; justify-content: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 1.25rem; font-weight: 700; color: white;" id="reviews-count">0</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Отзывов</div>
+                        <div class="profile-hero-stats">
+                            <div class="profile-hero-stat">
+                                <div class="profile-hero-value" id="reviews-count">0</div>
+                                <div class="profile-hero-label">Отзывов</div>
                             </div>
-                            <div style="width: 1px; background: rgba(255,255,255,0.05);"></div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 1.25rem; font-weight: 700; color: white;" id="join-date">-</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">С нами</div>
+                            <div class="profile-hero-divider"></div>
+                            <div class="profile-hero-stat">
+                                <div class="profile-hero-value" id="join-date">-</div>
+                                <div class="profile-hero-label">С нами</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Countdown Widget -->
-                <div class="profile-card profile-section" id="countdown-card"
-                    style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(59, 130, 246, 0.05)); border: 1px solid rgba(99, 102, 241, 0.3);">
+                <div class="profile-card profile-section profile-countdown-card" id="countdown-card">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div
-                                style="font-size: 2.5rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));">
+                                style="font-size: 2.5rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(91, 214, 255, 0.4));">
                                 🎓</div>
                             <div>
                                 <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-main); font-weight: 700;">

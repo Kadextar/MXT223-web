@@ -484,7 +484,7 @@ function renderContent() {
         const card = document.createElement('div');
         card.className = 'info-card';
         // Random avatar color
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+        const colors = ['#5bd6ff', '#2ee5a8', '#ffb547', '#f87171'];
         const color = colors[Math.floor(Math.random() * colors.length)];
 
         card.innerHTML = `
