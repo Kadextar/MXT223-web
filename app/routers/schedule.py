@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Query
+
 from app.database import database
 from app.logging_config import logger
-from app.schemas import LessonItem, ScheduleResponse
-from utils.cache import cached
+from app.schemas import ScheduleResponse
 
 router = APIRouter(tags=["Schedule"])
 

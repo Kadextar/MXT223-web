@@ -1,11 +1,11 @@
-import pytest
-import pytest_asyncio
 import os
-import asyncio
-from httpx import AsyncClient
-from app.main import app
-from app.database import database as app_database, init_db
+
+import pytest_asyncio
 from databases import Database
+from httpx import AsyncClient
+
+from app.database import init_db
+from app.main import app
 
 # Use a file-based SQLite db for tests to avoid concurrency issues with in-memory
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"

@@ -9,11 +9,10 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
-from starlette.requests import Request
 
-from app.config import BASE_DIR, SENTRY_DSN, CORS_ORIGINS, APP_VERSION, IS_PRODUCTION, ENV, LOG_JSON
+from app.config import APP_VERSION, BASE_DIR, CORS_ORIGINS, ENV, IS_PRODUCTION, LOG_JSON, SENTRY_DSN
 from app.database import database, init_db
-from app.logging_config import setup_logging, logger
+from app.logging_config import logger, setup_logging
 from app.middleware import (
     ApiRateLimitMiddleware,
     HTTPSRedirectMiddleware,
@@ -21,7 +20,7 @@ from app.middleware import (
     RequestLoggingMiddleware,
     SecurityHeadersMiddleware,
 )
-from app.routers import auth, schedule, admin, push, api, pages, ratings, extras
+from app.routers import admin, api, auth, extras, pages, push, ratings, schedule
 
 setup_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_log=LOG_JSON)
 

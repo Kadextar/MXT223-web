@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.mark.asyncio
 async def test_get_schedule(client):
     response = await client.get("/api/schedule")

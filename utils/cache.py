@@ -5,7 +5,7 @@ Optional: if REDIS_URL is set, use Redis for cache; else in-memory TTLCache.
 import hashlib
 import json
 from functools import wraps
-from typing import Callable, Any
+from typing import Any, Callable
 
 from cachetools import TTLCache
 
@@ -20,7 +20,6 @@ def _get_cache() -> Any:
     from app.config import CACHE_TTL_SECONDS, REDIS_URL
     if REDIS_URL:
         try:
-            import redis.asyncio as redis_async  # type: ignore
             schedule_cache = _RedisCache(REDIS_URL, ttl=CACHE_TTL_SECONDS)
         except Exception:
             schedule_cache = TTLCache(maxsize=100, ttl=CACHE_TTL_SECONDS)

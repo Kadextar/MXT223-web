@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import datetime
+from typing import Optional
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+
+from app.config import SEMESTER_START
 from app.database import database
 from app.dependencies import get_current_user
-from app.config import SEMESTER_START
-from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
 
 router = APIRouter(prefix="/ratings", tags=["Ratings"])
 
@@ -12,12 +14,12 @@ class RatingRequest(BaseModel):
     subject_name: str
     subject_type: str  # 'lecture' or 'seminar'
     rating: int  # 0-100
-    tags: List[str] = []
+    tags: list[str] = []
     comment: Optional[str] = None
     date: str  # YYYY-MM-DD
 
 @router.post("")
-async def submit_rating(data: RatingRequest, user=Depends(get_current_user)):
+async def submit_rating(data: RatingRequest, user: dict = Depends(get_current_user)):
     student_id = user["telegram_id"]
     query = """
         INSERT INTO subject_ratings (subject_name, subject_type, rating, tags, comment, student_id, lesson_date)
@@ -54,7 +56,7 @@ async def submit_rating(data: RatingRequest, user=Depends(get_current_user)):
     return {"status": "success", "message": "Rating saved"}
 
 @router.get("/my")
-async def get_my_ratings(user=Depends(get_current_user)):
+async def get_my_ratings(user: dict = Depends(get_current_user)):
     """List current user's ratings and weekly average for chart."""
     sid = user["telegram_id"]
     rows = await database.fetch_all(

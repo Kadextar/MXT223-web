@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
-from typing import Optional, List
-from fastapi import APIRouter, Header, HTTPException, Response, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from pydantic import BaseModel
+
+from app.config import APP_VERSION, DAY_MAPPING, FEATURE_FLAGS, PAIR_TIMES, SEMESTER_START
 from app.database import database
-from app.config import SEMESTER_START, PAIR_TIMES, DAY_MAPPING, FEATURE_FLAGS, APP_VERSION
-from app.logging_config import logger
-from app.models import RateTeacherRequest, SubjectReviewCreate, AnnouncementReadRequest
 from app.dependencies import get_current_user
+from app.logging_config import logger
+from app.models import AnnouncementReadRequest, RateTeacherRequest, SubjectReviewCreate
 from app.sanitize import sanitize_text
-from utils.cache import cached
 
 router = APIRouter(tags=["API"])
 
@@ -46,7 +47,7 @@ async def add_deadline(data: DeadlineCreate, user=Depends(get_current_user)):
         return {"success": True, "id": row["id"], "title": row["title"], "due_date": str(row["due_date"])}
     except Exception as e:
         logger.exception("deadline add")
-        raise HTTPException(status_code=500, detail="Failed to add deadline")
+        raise HTTPException(status_code=500, detail="Failed to add deadline") from e
 
 
 @router.delete("/deadlines/{deadline_id}")
@@ -58,16 +59,16 @@ async def delete_deadline(deadline_id: int, user=Depends(get_current_user)):
             {"id": deadline_id, "sid": user["telegram_id"]}
         )
         return {"success": True}
-    except Exception:
-        raise HTTPException(status_code=500, detail="Failed to delete")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to delete") from e
 
 
 class FavoritesUpdate(BaseModel):
-    subjects: List[str]
+    subjects: list[str]
 
 
 @router.get("/favorites")
-async def get_favorites(user=Depends(get_current_user)):
+async def get_favorites(user: dict = Depends(get_current_user)):
     """List current user's favorite subjects (synced across devices)."""
     try:
         rows = await database.fetch_all(
@@ -80,7 +81,7 @@ async def get_favorites(user=Depends(get_current_user)):
 
 
 @router.put("/favorites")
-async def set_favorites(data: FavoritesUpdate, user=Depends(get_current_user)):
+async def set_favorites(data: FavoritesUpdate, user: dict = Depends(get_current_user)):
     """Replace user's favorite subjects list."""
     sid = user["telegram_id"]
     await database.execute("DELETE FROM user_favorites WHERE student_id = :sid", {"sid": sid})
@@ -186,13 +187,13 @@ async def get_subjects():
         
         # Convert sets to lists
         result = []
-        for name, data in subjects.items():
+        for _name, data in subjects.items():
             data["teachers"] = list(data["teachers"])
             data["rooms"] = list(data["rooms"])
             result.append(data)
             
         return result
-    except Exception as e:
+    except Exception:
         logger.exception("Subjects error")
         return []
 
@@ -215,12 +216,12 @@ async def get_exams():
             }
             for r in rows
         ]
-    except Exception as e:
+    except Exception:
         return []
 
 
 @router.get("/exams/reminders")
-async def get_exam_reminders(user=Depends(get_current_user)):
+async def get_exam_reminders(user: dict = Depends(get_current_user)):
     """List exam ids the current user wants reminder for."""
     try:
         rows = await database.fetch_all(
@@ -233,7 +234,7 @@ async def get_exam_reminders(user=Depends(get_current_user)):
 
 
 @router.post("/exams/{exam_id:int}/remind")
-async def add_exam_reminder(exam_id: int, user=Depends(get_current_user)):
+async def add_exam_reminder(exam_id: int, user: dict = Depends(get_current_user)):
     """Subscribe to push reminder 1 day before this exam."""
     try:
         exam = await database.fetch_one("SELECT id FROM exams WHERE id = :eid", {"eid": exam_id})
@@ -252,12 +253,12 @@ async def add_exam_reminder(exam_id: int, user=Depends(get_current_user)):
         raise
     except Exception as e:
         logger.exception("add_exam_reminder")
-        raise HTTPException(status_code=500, detail="Failed to add reminder")
+        raise HTTPException(status_code=500, detail="Failed to add reminder") from e
     return {"success": True}
 
 
 @router.delete("/exams/{exam_id:int}/remind")
-async def remove_exam_reminder(exam_id: int, user=Depends(get_current_user)):
+async def remove_exam_reminder(exam_id: int, user: dict = Depends(get_current_user)):
     """Unsubscribe from exam reminder."""
     try:
         await database.execute(
@@ -265,8 +266,8 @@ async def remove_exam_reminder(exam_id: int, user=Depends(get_current_user)):
             {"sid": user["telegram_id"], "eid": exam_id},
         )
         return {"success": True}
-    except Exception:
-        raise HTTPException(status_code=500, detail="Failed to remove reminder")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to remove reminder") from e
 
 
 @router.get("/ratings")
@@ -298,7 +299,7 @@ async def get_ratings():
             })
             
         return result
-    except Exception as e:
+    except Exception:
         logger.exception("Ratings error")
         return []
 
@@ -308,8 +309,9 @@ async def rate_teacher(data: RateTeacherRequest, authorization: str = Header(Non
     if not authorization:
         raise HTTPException(status_code=401, detail="Auth required")
     try:
-        from utils.jwt import verify_token, is_jwt_token
         import hashlib
+
+        from utils.jwt import is_jwt_token, verify_token
 
         token = authorization.replace("Bearer ", "")
         if is_jwt_token(token):
@@ -414,7 +416,7 @@ async def get_announcement():
                     pass
             return out
         return None
-    except Exception as e:
+    except Exception:
         logger.exception("Announcement DB error")
         return None
 
@@ -449,7 +451,7 @@ async def mark_announcement_read(
         except Exception:
             pass
         return Response(status_code=204)
-    except Exception as e:
+    except Exception:
         logger.exception("announcement read error")
         return Response(status_code=204)
 
@@ -591,7 +593,7 @@ async def debug_promote_me(authorization: str = Header(None)):
         return {"status": "error", "message": "Authorization Bearer required (log in first)"}
 
     try:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
 
         token = authorization.replace("Bearer ", "")
         if not is_jwt_token(token):

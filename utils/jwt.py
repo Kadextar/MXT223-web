@@ -1,10 +1,11 @@
 """
 JWT token utilities for authentication
 """
+import os
 from datetime import datetime, timedelta
 from typing import Optional
+
 from jose import JWTError, jwt
-import os
 
 # JWT Configuration (overridable via env)
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-this-in-production")

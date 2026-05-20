@@ -1,12 +1,13 @@
 """Security and observability middleware."""
 import time
 import uuid
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse
+from starlette.responses import RedirectResponse, Response
 
-from app.logging_config import logger
 from app.config import IS_PRODUCTION
+from app.logging_config import logger
 
 # Security headers to add to every response (including static)
 SECURITY_HEADERS = {
@@ -73,11 +74,12 @@ class ApiRateLimitMiddleware(BaseHTTPMiddleware):
     """Apply global rate limit to all /api/* requests. Returns 429 if exceeded."""
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        from app.rate_limit import check_api_rate_limit
         from fastapi import HTTPException
+
+        from app.rate_limit import check_api_rate_limit
         try:
             check_api_rate_limit(request)
-        except HTTPException as e:
+        except HTTPException:
             return Response(
                 content='{"detail":"Too many requests. Try again later.","code":429}',
                 status_code=429,
@@ -90,7 +92,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Log method, path, status, duration, request_id for API requests. Update metrics."""
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        from app.metrics import inc_request_total, inc_request_errors_total
+        from app.metrics import inc_request_errors_total, inc_request_total
         path = request.scope.get("path", "")
         inc_request_total()
         if any(path.startswith(p) for p in LOG_SKIP_PREFIXES):

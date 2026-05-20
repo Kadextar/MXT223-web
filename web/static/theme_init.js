@@ -80,7 +80,8 @@ export function initTheme() {
         window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => applyTheme('system'));
     }
     if (saved === 'time') {
-        setInterval(() => applyTheme('time'), 60 * 1000);
+        if (window.themeTimeInterval) clearInterval(window.themeTimeInterval);
+        window.themeTimeInterval = setInterval(() => applyTheme('time'), 60 * 1000);
     }
 }
 

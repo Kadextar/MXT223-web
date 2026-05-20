@@ -1,16 +1,15 @@
 """Extras: visitors, polls, announcement comments, materials, achievements."""
 import json
-from datetime import date, datetime
-from typing import List, Optional
+from datetime import date
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel
 
 from app.database import database
 from app.logging_config import logger
-from app.sanitize import sanitize_text
-
 from app.models import DailyStatusCreate
+from app.sanitize import sanitize_text
 
 router = APIRouter(tags=["Extras"])
 
@@ -38,7 +37,7 @@ async def post_daily_status(
     """Post or update a status for today."""
     if not authorization:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    from utils.jwt import verify_token, is_jwt_token
+    from utils.jwt import is_jwt_token, verify_token
     token = authorization.replace("Bearer ", "")
     user_id = None
     if is_jwt_token(token):
@@ -65,7 +64,7 @@ async def post_daily_status(
         return {"success": True}
     except Exception as e:
         logger.error(f"Error posting status: {e}")
-        raise HTTPException(status_code=500, detail="Could not post status")
+        raise HTTPException(status_code=500, detail="Could not post status") from e
 
 
 def _visitor_id(request: Request, auth_user_id: Optional[str]) -> str:
@@ -86,7 +85,7 @@ async def get_visitors_today(
     """Record current visitor for today and return unique count. Call once per session."""
     user_id = None
     if authorization:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
         token = (authorization or "").replace("Bearer ", "")
         if is_jwt_token(token):
             payload = verify_token(token, "access")
@@ -115,7 +114,7 @@ async def get_visitors_today(
 # ----- Polls -----
 class PollCreate(BaseModel):
     question: str
-    options: List[str]
+    options: list[str]
 
 
 class PollVote(BaseModel):
@@ -166,7 +165,7 @@ async def vote_poll(
     """Vote for an option (one vote per user/identifier per poll)."""
     user_id = None
     if authorization:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
         token = (authorization or "").replace("Bearer ", "")
         if is_jwt_token(token):
             payload = verify_token(token, "access")
@@ -184,8 +183,8 @@ async def vote_poll(
             "INSERT INTO poll_votes (poll_id, user_identifier, option_index) VALUES (:pid, :uid, :opt)",
             {"pid": poll_id, "uid": vid, "opt": body.option_index},
         )
-    except Exception:
-        raise HTTPException(status_code=400, detail="Already voted")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Already voted") from e
     return {"success": True}
 
 
@@ -213,7 +212,7 @@ async def post_announcement_comment(
 ):
     user_id = "anonymous"
     if authorization:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
         token = (authorization or "").replace("Bearer ", "")
         if is_jwt_token(token):
             payload = verify_token(token, "access")
@@ -259,7 +258,7 @@ async def my_achievements(authorization: str = Header(None)):
     """Return achievements unlocked by current user."""
     user_id = None
     if authorization:
-        from utils.jwt import verify_token, is_jwt_token
+        from utils.jwt import is_jwt_token, verify_token
         token = (authorization or "").replace("Bearer ", "")
         if is_jwt_token(token):
             payload = verify_token(token, "access")

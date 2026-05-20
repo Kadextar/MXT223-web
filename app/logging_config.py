@@ -2,8 +2,8 @@
 import json
 import logging
 import sys
-from datetime import timezone
 from typing import Any
+
 
 def setup_logging(level: str = "INFO", json_log: bool = False) -> logging.Logger:
     """Configure root logger for the app. Returns app logger."""

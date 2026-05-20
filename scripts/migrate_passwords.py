@@ -4,11 +4,13 @@ Run this once before deploying the password hashing changes
 """
 import asyncio
 import os
-from dotenv import load_dotenv
-import databases
 
 # Add parent directory to path to import utils
 import sys
+
+import databases
+from dotenv import load_dotenv
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.auth import hash_password, is_password_hashed
@@ -49,7 +51,7 @@ async def migrate_passwords():
             print(f"✓ Migrated {student['telegram_id']}")
             migrated_count += 1
         
-        print(f"\n✅ Migration complete!")
+        print("\n✅ Migration complete!")
         print(f"   Migrated: {migrated_count}")
         print(f"   Skipped: {skipped_count}")
         print(f"   Total: {len(students)}")

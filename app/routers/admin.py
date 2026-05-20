@@ -1,11 +1,14 @@
 import json
-from fastapi import APIRouter, Depends, BackgroundTasks
+
+from fastapi import APIRouter, BackgroundTasks, Depends
+from pydantic import BaseModel
+
 from app.database import database
 from app.dependencies import require_admin
 from app.logging_config import logger
-from app.models import ScheduleItemCreate, TeacherCreate, AnnouncementUpdate
+from app.models import AnnouncementUpdate, ScheduleItemCreate, TeacherCreate
 from app.sanitize import sanitize_text
-from pydantic import BaseModel
+
 # Import get_schedule_nocache from schedule router to reuse logic if needed, 
 # or just re-implement/import helper. Since routers are separate, we might import the helper.
 # Ideally we move get_schedule_data logic to a crud/service layer, but for now we'll duplicate or cross-import.
@@ -36,7 +39,7 @@ async def get_admin_stats(user = Depends(require_admin)):
         counts["active_announcement"] = announcement["cnt"] > 0 if announcement else False
         
         return counts
-    except Exception as e:
+    except Exception:
         logger.exception("Stats error")
         return {}
 
@@ -60,7 +63,7 @@ async def get_admin_schedule(user = Depends(require_admin)):
                 "weeks": [row["week_start"], row["week_end"]]
             })
         return schedule
-    except Exception as e:
+    except Exception:
         return []
 
 @router.post("/admin/schedule")
